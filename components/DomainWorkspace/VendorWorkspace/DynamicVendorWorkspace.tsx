@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Image from "next/image";
 import { CreateVendorWorkspace } from "./CreateVendorWorkspaceDialog";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const VENDORS = [
   {
@@ -46,6 +46,7 @@ const VENDORS = [
 export default function VendorWorkspace() {
   const [searchTerm, setSearchTerm] = useState("");
   const { id } = useParams();
+  const router = useRouter();
 
   const filteredVendors = useMemo(() => {
     return VENDORS.filter((vendor) =>
@@ -109,7 +110,12 @@ export default function VendorWorkspace() {
         {filteredVendors.map((vendor) => (
           <Card
             key={vendor.id}
-            className="group p-0 cursor-pointer border-slate-200 hover:shadow-md transition-shadow duration-200 overflow-hidden">
+            className="group p-0 cursor-pointer border-slate-200 hover:shadow-md transition-shadow duration-200 overflow-hidden"
+            onClick={() =>
+              router.push(
+                `/domain-workspace/${id}/${vendor.name.split(" ").join("_")}`
+              )
+            }>
             <CardContent className="p-6 space-y-4">
               <p className="text-sm font-bold text-slate-700">{vendor.name}</p>
               <div className="h-20 flex items-center justify-center">

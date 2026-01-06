@@ -152,7 +152,6 @@ export default function CreateWorkspaceDialog() {
               />
             </div>
 
-            {/* Upload Icon Section */}
             <div className="space-y-4">
               <div>
                 <h3 className="text-sm font-bold">Upload Icon</h3>
@@ -167,7 +166,6 @@ export default function CreateWorkspaceDialog() {
               />
             </div>
 
-            {/* Actions */}
             <div className="flex justify-between pt-4">
               <Button
                 type="button"

@@ -33,7 +33,7 @@ const PRESET_COLORS = [
 ];
 
 interface CustomColorPickerProps {
-  form: UseFormReturn<VendorFormValues>;
+  form: UseFormReturn<any>;
   label?: string;
 }
 
