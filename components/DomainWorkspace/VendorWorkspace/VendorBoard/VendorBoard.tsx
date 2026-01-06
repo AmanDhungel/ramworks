@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 
 import { BoardList } from "./BoardList";
 import { SortableTaskCard } from "./SortableTaskCard";
+import { Input } from "@/components/ui/input";
 
 const INITIAL_DATA = [
   {
@@ -53,13 +54,12 @@ const INITIAL_DATA = [
 export default function VendorBoard() {
   const [lists, setLists] = useState(INITIAL_DATA);
   const [activeTask, setActiveTask] = useState<any>(null);
+  const [addList, setAddList] = useState<any>("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
-
-  // --- Handlers ---
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -153,7 +153,7 @@ export default function VendorBoard() {
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}>
-        <div className="flex gap-4 items-start overflow-x-auto pb-4 h-full">
+        <div className="flex gap-20 items-start overflow-x-auto pb-4 h-full">
           <SortableContext
             items={lists.map((l) => l.id)}
             strategy={horizontalListSortingStrategy}>
@@ -168,16 +168,32 @@ export default function VendorBoard() {
             ))}
           </SortableContext>
 
-          {/* Add Another List Button */}
           <Button
             variant="secondary"
-            className="min-w-[280px] justify-start bg-white/20 backdrop-blur-md text-slate-800 hover:bg-white/30 border-none">
-            <Plus className="h-4 w-4 mr-2" />
-            Add another list
+            className="min-w-[280px] items-center justify-start bg-white/20 backdrop-blur-md rounded-md p-4 border-none ">
+            <Plus className="h-4 w-4 mr-2  cursor-pointer " />
+            <Input
+              placeholder="Add another list"
+              className=" border-none  shadow-none bg-white/20! backdrop-blur"
+              value={addList}
+              onBlur={() => {
+                if (!addList.trim()) return;
+                setLists((prev) => [
+                  ...prev,
+                  {
+                    id: `list-${prev.length + 1}`,
+                    title: addList,
+                    isComplete: false,
+                    tasks: [],
+                  },
+                ]);
+                setAddList("");
+              }}
+              onChange={(e) => setAddList(e.target.value)}
+            />
           </Button>
         </div>
 
-        {/* Drag Overlay for smooth visual feedback */}
         <DragOverlay
           dropAnimation={{
             sideEffects: defaultDropAnimationSideEffects({
