@@ -41,7 +41,7 @@ const BoardCard = ({ board }: { board: Board }) => {
   const router = useRouter();
   return (
     <div
-      className="group relative cursor-pointer "
+      className="group relative cursor-pointer min-w-sm"
       onClick={() =>
         router.push(
           `/domain-workspace/${board.urlId}/${board.urlVendor}/${board.id}`
@@ -202,12 +202,10 @@ export default function VendorDashboard() {
         </div>
       </div>
 
-      <div className="overflow-y-scroll flex gap-20">
-        <div className="flex gap-20">
-          {filteredBoards.map((board) => (
-            <BoardCard key={board.id} board={board} />
-          ))}
-        </div>
+      <div className=" flex gap-10">
+        {filteredBoards.map((board) => (
+          <BoardCard key={board.id} board={board} />
+        ))}
 
         <CreateNewBoard />
       </div>

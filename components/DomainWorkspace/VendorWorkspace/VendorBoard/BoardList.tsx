@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { SortableTaskCard } from "./SortableTaskCard";
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
+import TaskManagerForm from "./AddCardDialog/AddCardForm";
 
 export const BoardList = ({ id, title, tasks, isComplete }: any) => {
   const [isHidden, setIsHidden] = useState(false);
@@ -90,13 +91,7 @@ export const BoardList = ({ id, title, tasks, isComplete }: any) => {
             </SortableContext>
           </div>
 
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-slate-600 hover:bg-white/50 mt-2 h-10 px-2 border border-transparent hover:border-slate-300">
-            <Plus className="h-4 w-4 mr-2" />
-            <span className="text-sm font-medium">Add a card</span>
-            <LayoutPanelTop className="h-4 w-4 ml-auto text-slate-400" />
-          </Button>
+          <TaskManagerForm />
         </>
       )}
     </div>
