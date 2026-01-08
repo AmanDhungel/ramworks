@@ -156,16 +156,16 @@ export default function DomainWorkspace() {
         {paginatedData.map((item) => (
           <Card
             key={item.id}
-            className="relative overflow-hidden group h-48 rounded-xl"
-            onClick={() =>
-              router.push(`/domain-workspace/${item.title.toLowerCase()}`)
-            }>
+            className="relative overflow-hidden group h-48 rounded-xl">
             <Image
               width={500}
               height={500}
               src={item.image}
               alt={item.title}
               className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
+              onClick={() =>
+                router.push(`/domain-workspace/${item.title.toLowerCase()}`)
+              }
             />
             <div className="absolute inset-0 bg-black/20" />
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-md flex items-center gap-2">
@@ -179,28 +179,40 @@ export default function DomainWorkspace() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 cursor-pointer">
-                    <ChevronRight
-                      onClick={() => setOpenMenuId(null)}
-                      className="h-4 w-4"
-                    />
+                    className="h-8 w-8 cursor-pointer"
+                    onClick={() => {
+                      setOpenMenuId(null);
+                    }}>
+                    <ChevronRight className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 cursor-pointer">
+                    className="h-8 w-8 cursor-pointer"
+                    onClick={() => {
+                      router.push("/domain-workspace/members");
+                    }}>
                     <Users className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 cursor-pointer">
-                    <Edit className="h-4 w-4" />
+                    <Edit
+                      className="h-4 w-4"
+                      onClick={(e) => {
+                        setOpenMenuId(null);
+                        e.stopPropagation();
+                      }}
+                    />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w- cursor-pointer">
+                    className="h-8 w- cursor-pointer"
+                    onClick={() => {
+                      router.push("/domain-workspace/settings");
+                    }}>
                     <Settings className="h-4 w-4" />
                   </Button>
                 </div>
@@ -209,7 +221,10 @@ export default function DomainWorkspace() {
                   variant="secondary"
                   size="icon"
                   className="h-8 w-8 bg-white/80"
-                  onClick={() => setOpenMenuId(item.id)}>
+                  onClick={(e) => {
+                    setOpenMenuId(item.id);
+                    e.stopPropagation();
+                  }}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               )}

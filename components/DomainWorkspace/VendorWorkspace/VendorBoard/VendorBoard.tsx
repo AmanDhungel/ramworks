@@ -21,7 +21,6 @@ import {
 } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 import { BoardList } from "./BoardList";
 import { SortableTaskCard } from "./SortableTaskCard";
 import { Input } from "@/components/ui/input";
@@ -54,54 +53,71 @@ const INITIAL_DATA = [
 export default function VendorBoard() {
   const [lists, setLists] = useState(INITIAL_DATA);
   const [activeTask, setActiveTask] = useState<any>(null);
-  const [addList, setAddList] = useState<any>("");
+  const [activeList, setActiveList] = useState<any>(null);
+  const [addList, setAddList] = useState<string>("");
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
+  function findContainer(id: string) {
+    if (!id) return null;
+    const list = lists.find((l) => l.id === id);
+    if (list) return list.id;
+    return lists.find((l) => l.tasks.some((t) => t.id === id))?.id;
+  }
+
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
-    const task = lists.flatMap((l) => l.tasks).find((t) => t.id === active.id);
-    setActiveTask(task);
+    const type = active.data.current?.type;
+
+    if (type === "task") {
+      const task = lists
+        .flatMap((l) => l.tasks)
+        .find((t) => t.id === active.id);
+      setActiveTask(task);
+    } else {
+      const list = lists.find((l) => l.id === active.id);
+      setActiveList(list);
+    }
   }
 
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over) return;
 
-    const activeId = active.id;
-    const overId = over.id;
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
 
     const activeContainer = findContainer(activeId);
-    const overContainer = findContainer(overId) || overId;
+    const overContainer = findContainer(overId);
 
     if (!activeContainer || !overContainer || activeContainer === overContainer)
       return;
+    if (active.data.current?.type !== "task") return;
 
     setLists((prev) => {
-      const activeItems =
-        prev.find((l) => l.id === activeContainer)?.tasks || [];
-      const overItems = prev.find((l) => l.id === overContainer)?.tasks || [];
+      const activeList = prev.find((l) => l.id === activeContainer);
+      const overList = prev.find((l) => l.id === overContainer);
 
-      const activeIndex = activeItems.findIndex((i) => i.id === activeId);
-      const overIndex = overItems.findIndex((i) => i.id === overId);
+      if (!activeList || !overList) return prev;
+
+      const activeIndex = activeList.tasks.findIndex((t) => t.id === activeId);
+      let overIndex = overList.tasks.findIndex((t) => t.id === overId);
+
+      if (overIndex === -1) overIndex = overList.tasks.length;
 
       return prev.map((list) => {
         if (list.id === activeContainer) {
           return {
             ...list,
-            tasks: list.tasks.filter((i) => i.id !== activeId),
+            tasks: list.tasks.filter((t) => t.id !== activeId),
           };
         }
         if (list.id === overContainer) {
           const newTasks = [...list.tasks];
-          newTasks.splice(
-            overIndex >= 0 ? overIndex : newTasks.length,
-            0,
-            activeItems[activeIndex]
-          );
+          newTasks.splice(overIndex, 0, activeList.tasks[activeIndex]);
           return { ...list, tasks: newTasks };
         }
         return list;
@@ -111,15 +127,26 @@ export default function VendorBoard() {
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      const activeContainer = findContainer(active.id);
-      const overContainer = findContainer(over.id);
+    if (!over) {
+      setActiveTask(null);
+      setActiveList(null);
+      return;
+    }
 
-      if (
-        activeContainer &&
-        overContainer &&
-        activeContainer === overContainer
-      ) {
+    // List reordering logic
+    if (active.data.current?.type === "container" && active.id !== over.id) {
+      setLists((prev) => {
+        const oldIndex = prev.findIndex((l) => l.id === active.id);
+        const newIndex = prev.findIndex((l) => l.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    }
+    // Task same-list reordering logic
+    else if (active.id !== over.id) {
+      const activeContainer = findContainer(active.id.toString());
+      const overContainer = findContainer(over.id.toString());
+
+      if (activeContainer && activeContainer === overContainer) {
         setLists((prev) =>
           prev.map((list) => {
             if (list.id === activeContainer) {
@@ -135,25 +162,37 @@ export default function VendorBoard() {
         );
       }
     }
+
     setActiveTask(null);
+    setActiveList(null);
   }
 
-  function findContainer(id: any) {
-    if (lists.find((l) => l.id === id)) return id;
-    return lists.find((l) => l.tasks.some((t) => t.id === id))?.id;
-  }
+  const handleAddList = () => {
+    if (!addList.trim()) return;
+
+    // Create a consistent string ID
+    const newListId = `list-${Math.random().toString(36).substr(2, 9)}`;
+
+    const newList = {
+      id: newListId,
+      title: addList,
+      isComplete: false,
+      tasks: [],
+    };
+
+    setLists((prev) => [...prev, newList]);
+    setAddList("");
+  };
 
   return (
-    <div
-      className="h-screen w-full 
-    bg-cover bg-center p-6">
+    <div className="h-screen w-full bg-slate-100 p-6">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}>
-        <div className="flex gap-20 items-start overflow-x-auto pb-4 h-full">
+        <div className="flex gap-6 items-start overflow-x-auto pb-4 h-full">
           <SortableContext
             items={lists.map((l) => l.id)}
             strategy={horizontalListSortingStrategy}>
@@ -168,41 +207,32 @@ export default function VendorBoard() {
             ))}
           </SortableContext>
 
-          <Button
-            variant="secondary"
-            className="min-w-[280px] items-center justify-start bg-white/20 backdrop-blur-md rounded-md p-4 border-none ">
-            <Plus className="h-4 w-4 mr-2  cursor-pointer " />
-            <Input
-              placeholder="Add another list"
-              className=" border-none  shadow-none bg-white/20! backdrop-blur"
-              value={addList}
-              onBlur={() => {
-                if (!addList.trim()) return;
-                setLists((prev) => [
-                  ...prev,
-                  {
-                    id: `list-${prev.length + 1}`,
-                    title: addList,
-                    isComplete: false,
-                    tasks: [],
-                  },
-                ]);
-                setAddList("");
-              }}
-              onChange={(e) => setAddList(e.target.value)}
-            />
-          </Button>
+          <div className="min-w-[280px] bg-white/50 backdrop-blur-md rounded-xl p-4 border border-slate-200 shadow-sm h-fit">
+            <div className="flex items-center gap-2">
+              <Plus className="h-4 w-4 text-slate-500" />
+              <Input
+                placeholder="Add another list"
+                value={addList}
+                onChange={(e) => setAddList(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleAddList()}
+              />
+            </div>
+          </div>
         </div>
 
-        <DragOverlay
-          dropAnimation={{
-            sideEffects: defaultDropAnimationSideEffects({
-              styles: { active: { opacity: "0.5" } },
-            }),
-          }}>
+        <DragOverlay adjustScale={false}>
           {activeTask ? (
-            <div className="w-[300px] cursor-grabbing">
+            <div className="w-[300px] opacity-90 rotate-2 shadow-2xl">
               <SortableTaskCard {...activeTask} />
+            </div>
+          ) : activeList ? (
+            <div className="w-[320px] opacity-90 shadow-2xl">
+              <BoardList
+                id={activeList.id}
+                title={activeList.title}
+                tasks={activeList.tasks}
+                isComplete={activeList.isComplete}
+              />
             </div>
           ) : null}
         </DragOverlay>

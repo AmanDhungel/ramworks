@@ -54,6 +54,20 @@ export const taskSchema = z.object({
       url: z.string(),
     })
   ),
+  location: z.object({
+    address: z.string().min(1, "Address is required"),
+    city: z.string().min(1, "City is required"),
+    zip: z.string().min(1, "Zip code is required"),
+    lat: z.number(),
+    lng: z.number(),
+    images: z.array(z.any()).optional(),
+    attendance: z.object({
+      clockInDate: z.string().min(1, "Clock-in date is required"),
+      clockInTime: z.string().min(1, "Clock-in time is required"),
+      clockOutDate: z.string().min(1, "Clock-out date is required"),
+      clockOutTime: z.string().min(1, "Clock-out time is required"),
+    }),
+  }),
 });
 
 export type TaskFormValues = z.infer<typeof taskSchema>;

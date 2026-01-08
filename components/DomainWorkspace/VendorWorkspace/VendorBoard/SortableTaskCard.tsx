@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  ChevronUp,
-  ChevronDown,
-  MoreHorizontal,
-  Copy,
-  Edit2,
-  Calendar,
-} from "lucide-react";
+import { ChevronUp, ChevronDown, Copy, Edit2, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -34,12 +27,17 @@ export const SortableTaskCard = ({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({
+    id: id,
+    data: {
+      type: "task",
+    },
+  });
 
   const style = {
     transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: isDragging ? 0.3 : 1,
   };
 
   return (
@@ -48,8 +46,8 @@ export const SortableTaskCard = ({
       style={style}
       {...attributes}
       {...listeners}
-      className="mb-3">
-      <Card className="border-slate-200 shadow-sm overflow-hidden bg-white">
+      className="mb-3 cursor-grab active:cursor-grabbing group">
+      <Card className="border-slate-200 shadow-sm overflow-hidden bg-white group-hover:border-blue-400 transition-colors">
         <div className="p-3 flex items-center justify-between border-b bg-slate-50/50">
           <span className="text-sm font-medium text-slate-600">{title}</span>
           <Button
@@ -80,8 +78,14 @@ export const SortableTaskCard = ({
                 </p>
               </div>
               <div className="flex gap-1">
-                <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
-                <Edit2 className="h-3 w-3 text-slate-400 cursor-pointer" />
+                <Copy
+                  className="h-3 w-3 text-slate-400 cursor-pointer hover:text-blue-500"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <Edit2
+                  className="h-3 w-3 text-slate-400 cursor-pointer hover:text-blue-500"
+                  onClick={(e) => e.stopPropagation()}
+                />
               </div>
             </div>
 
