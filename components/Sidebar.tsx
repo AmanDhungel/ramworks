@@ -22,6 +22,8 @@ import {
   UserCog,
   ChevronDown,
   LucideIcon,
+  WrenchIcon,
+  SmilePlus,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -110,6 +112,29 @@ const menuData: NavGroup[] = [
         title: "Holidays",
         icon: Calendar,
         link: "/hrm/holidays",
+        hasDropdown: false,
+      },
+      {
+        title: "Attendance",
+        icon: ClipboardCheck,
+        hasDropdown: true,
+        children: [{ title: "Daily Log", link: "/hrm/attendance/log" }],
+      },
+    ],
+  },
+  {
+    groupLabel: "Support / operations",
+    items: [
+      {
+        title: "Repair & Maintenance",
+        icon: WrenchIcon,
+        hasDropdown: false,
+        link: "/support-operation/repair-maintenance",
+      },
+      {
+        title: "Holidays",
+        icon: SmilePlus,
+        link: "/support-operation/complaints",
         hasDropdown: false,
       },
       {

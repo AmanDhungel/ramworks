@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, Users, Search } from "lucide-react";
 import { MemberCard } from "./MemberCard";
+import InviteMemberDialog from "./InviteWorkspaceMembersDialog";
 
 const MOCK_USERS = [
   {
@@ -42,9 +43,8 @@ export default function MembersPage() {
               🏠 / Domain Workspace / Members
             </p>
           </div>
-          <Button className="bg-[#FF6B35] hover:bg-[#e85a2a] text-white px-6">
-            <Users className="mr-2 h-4 w-4" /> Invite Workspace members
-          </Button>
+
+          <InviteMemberDialog />
         </div>
 
         <div className="p-6 border rounded-xl bg-white shadow-sm">
