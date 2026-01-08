@@ -6,20 +6,9 @@ import {
   Briefcase,
   Target,
   Rocket,
-  BarChart3,
-  Activity,
   UserCircle,
-  Ticket,
   Calendar,
   ClipboardCheck,
-  GraduationCap,
-  TrendingUp,
-  LogOut,
-  XCircle,
-  Wrench,
-  MessageSquare,
-  Box,
-  UserCog,
   ChevronDown,
   LucideIcon,
   WrenchIcon,
@@ -132,16 +121,10 @@ const menuData: NavGroup[] = [
         link: "/support-operation/repair-maintenance",
       },
       {
-        title: "Holidays",
+        title: "Complaints",
         icon: SmilePlus,
         link: "/support-operation/complaints",
         hasDropdown: false,
-      },
-      {
-        title: "Attendance",
-        icon: ClipboardCheck,
-        hasDropdown: true,
-        children: [{ title: "Daily Log", link: "/hrm/attendance/log" }],
       },
     ],
   },
@@ -160,7 +143,6 @@ const Sidebar = () => {
     <div className="w-64 h-screen bg-white border-r overflow-y-auto flex flex-col p-4 font-sans text-sm text-slate-600">
       {menuData.map((group, idx) => (
         <div key={idx} className="mb-6">
-          {/* Group Label */}
           <p className="text-[11px] font-bold text-slate-400 mb-4 tracking-wider uppercase">
             {group.groupLabel}
           </p>
@@ -171,7 +153,6 @@ const Sidebar = () => {
 
               return (
                 <div key={item.title}>
-                  {/* Parent Menu Item */}
                   <button
                     onClick={() =>
                       item.hasDropdown && toggleDropdown(item.title)
@@ -202,7 +183,6 @@ const Sidebar = () => {
                     )}
                   </button>
 
-                  {/* Dropdown Children */}
                   {item.hasDropdown && isOpen && (
                     <div className="ml-9 mt-1 space-y-1">
                       {item.children?.map((child) => (
