@@ -162,12 +162,14 @@ export default function DomainWorkspace() {
               height={500}
               src={item.image}
               alt={item.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105"
+              className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 cursor-pointer"
+            />
+            <div
+              className="absolute inset-0 bg-black/20"
               onClick={() =>
                 router.push(`/domain-workspace/${item.title.toLowerCase()}`)
               }
             />
-            <div className="absolute inset-0 bg-black/20" />
             <div className="absolute top-3 left-3 bg-white/90 backdrop-blur px-3 py-1 rounded-md flex items-center gap-2">
               <span className="text-xs font-bold text-gray-800 uppercase tracking-wide">
                 {item.title}
@@ -202,7 +204,6 @@ export default function DomainWorkspace() {
                       className="h-4 w-4"
                       onClick={(e) => {
                         setOpenMenuId(null);
-                        e.stopPropagation();
                       }}
                     />
                   </Button>
@@ -223,7 +224,6 @@ export default function DomainWorkspace() {
                   className="h-8 w-8 bg-white/80"
                   onClick={(e) => {
                     setOpenMenuId(item.id);
-                    e.stopPropagation();
                   }}>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -233,7 +233,6 @@ export default function DomainWorkspace() {
         ))}
       </div>
 
-      {/* Pagination Footer */}
       <div className="flex justify-between items-center mt-8 pt-4 border-t">
         <p className="text-sm text-muted-foreground">
           Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1} to{" "}
