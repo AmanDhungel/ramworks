@@ -2,6 +2,7 @@ import { icons } from "@/assets/icons/exports";
 import { Search, Circle, Languages } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useRef, useEffect } from "react";
+import AvatarDropdown from "./Auth/Profile";
 type TopBarProps = {
   setSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
   sidebarCollapsed?: boolean;
@@ -148,6 +149,7 @@ const TopBar: React.FC<TopBarProps> = ({
           </button>
 
           <div className="relative ml-2 max-md:ml-0">
+            <AvatarDropdown />
             <div
               className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
                 isOnline ? "bg-green-500" : "bg-gray-400"

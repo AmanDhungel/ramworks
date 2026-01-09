@@ -25,7 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <TanStackProvider>{children}</TanStackProvider>
+        <TanStackProvider>
+          <DashboardLayout>{children}</DashboardLayout>
+        </TanStackProvider>
       </body>
     </html>
   );

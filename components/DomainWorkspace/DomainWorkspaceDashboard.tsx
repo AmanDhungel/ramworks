@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Search,
   MoreHorizontal,
@@ -7,10 +7,8 @@ import {
   Users,
   Edit,
   Settings,
-  Plus,
-  CirclePlus,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -151,7 +149,6 @@ export default function DomainWorkspace() {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {paginatedData.map((item) => (
           <Card
@@ -165,7 +162,7 @@ export default function DomainWorkspace() {
               className="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 cursor-pointer"
             />
             <div
-              className="absolute inset-0 bg-black/20"
+              className="absolute inset-0 bg-black/20 cursor-pointer"
               onClick={() =>
                 router.push(`/domain-workspace/${item.title.toLowerCase()}`)
               }

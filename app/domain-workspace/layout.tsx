@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Roboto } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 
 import DashboardLayout from "@/components/ComponentsLayout";
 import TanStackProvider from "@/components/TanStackProvider";
@@ -25,7 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <TanStackProvider>{children}</TanStackProvider>
+        <TanStackProvider>
+          <DashboardLayout>{children}</DashboardLayout>
+        </TanStackProvider>
       </body>
     </html>
   );
