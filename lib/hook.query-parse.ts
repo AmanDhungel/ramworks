@@ -1,6 +1,6 @@
-'use client';
-import { ParsedUrlQuery } from 'querystring';
-import { useSearchParams } from 'next/navigation';
+"use client";
+import { ParsedUrlQuery } from "querystring";
+import { useSearchParams } from "next/navigation";
 
 interface AdditionalParams {
   [key: string]: string | number | undefined;
@@ -54,7 +54,7 @@ const useQueryParams = () => {
   const parseQueryParam = (
     params: string[] | null,
     additionalParams?: AdditionalParams,
-    defaultParams?: DefaultParams,
+    defaultParams?: DefaultParams
   ): URLSearchParams => {
     const query = new URLSearchParams();
     params?.forEach((param) => {

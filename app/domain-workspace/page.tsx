@@ -5,5 +5,15 @@ export const metadata: Metadata = {
   title: "Domain Workspace - Ramworks",
   description: "This is domain workspace page for ramworks",
 };
+import React, { Suspense } from "react";
 
-export default DomainWorkspace;
+const page = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {" "}
+      <DomainWorkspace />
+    </Suspense>
+  );
+};
+
+export default page;
