@@ -27,9 +27,7 @@ export const parseJson = async (value: string) => {
  */
 export async function Get({ url, params }: ApiProps) {
   try {
-    const endpointURL = params
-      ? `${apiUrl}${url}?${params}`
-      : `${apiUrl}${url}`;
+    const endpointURL = params ? `${url}?${params}` : `${url}`;
     const res = await fetch(endpointURL, {
       headers: await getHeaders(),
       method: "GET",
@@ -62,19 +60,24 @@ export async function Post<PayloadType, ResponseType>({
   data,
 }: MutatorProps<PayloadType>): Promise<ResponseType> {
   try {
-    const res = await fetch(`${url}`, {
-      headers: await getHeaders(),
+    const isFormData = data instanceof FormData;
+
+    const res = await fetch(url, {
       method: "POST",
-      body: JSON.stringify(data),
+      headers: isFormData ? undefined : await getHeaders(),
+      body: isFormData ? data : JSON.stringify(data),
     });
-    // if (res.status === 401) {
-    //   await logout();
-    //   throw new Error('Unauthorized');
-    // }
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || "Request failed");
+    }
+
     return (await res.json()) as ResponseType;
   } catch (error: any) {
-    if (error instanceof Error)
+    if (error instanceof Error) {
       throw new Error(error.message, { cause: error.cause });
+    }
     throw new Error("An error occurred.");
   }
 }

@@ -22,6 +22,7 @@ import {
 import Image from "next/image";
 import CreateWorkspaceDialog from "./CreateDomainWorkspaceDialog";
 import { useRouter } from "next/navigation";
+import { useGetWorkspace } from "@/services/workspace.service";
 
 const DOMAINS = [
   {
@@ -105,6 +106,10 @@ export default function DomainWorkspace() {
   const [currentPage, setCurrentPage] = useState(1);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const router = useRouter();
+
+  const { data: workspace } = useGetWorkspace();
+
+  console.log("workspace", workspace);
 
   const filteredDomains = useMemo(() => {
     return DOMAINS.filter((domain) =>

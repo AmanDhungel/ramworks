@@ -29,44 +29,66 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useCreateWorkspace } from "@/services/workspace.service";
+import { toast } from "react-toastify";
+import { AxiosError } from "axios";
 
 const formSchema = z.object({
   title: z.string().min(2, "Workspace title is required"),
-  imageFile: z.instanceof(File).optional().nullable(),
+  image_file: z
+    .instanceof(File)
+    .refine((file) => file?.size <= 1024 * 1024, "Max file size is 1MB")
+    .optional()
+    .nullable(),
+  icon_file: z
+    .instanceof(File)
+    .refine((file) => file?.size <= 1024 * 1024, "Max file size is 1MB")
+    .optional()
+    .nullable(),
   imageUrl: z.url().optional().or(z.literal("")),
-  iconFile: z.instanceof(File).optional().nullable(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type WorkSpaceFormValues = z.infer<typeof formSchema>;
 
 export default function CreateWorkspaceDialog() {
   const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const { mutate, isPending } = useCreateWorkspace();
 
-  const form = useForm<FormValues>({
+  const form = useForm<WorkSpaceFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       imageUrl: "",
-      imageFile: null,
-      iconFile: null,
+      image_file: null,
+      icon_file: null,
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (values: FormValues) => {
-      console.log("Submitting:", values);
-      return new Promise((resolve) => setTimeout(resolve, 1000));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
-      setOpen(false);
-      form.reset();
-    },
-  });
+  const onSubmit = (values: WorkSpaceFormValues) => {
+    const formData = new FormData();
 
-  const onSubmit = (values: FormValues) => {
-    mutation.mutate(values);
+    formData.append("title", values.title);
+
+    if (values.icon_file) {
+      formData.append("icon_file", values.icon_file);
+    }
+
+    if (values.image_file) {
+      formData.append("image_file", values.image_file);
+    }
+
+    mutate(formData, {
+      onSuccess: (msg) => {
+        setOpen(false);
+        toast.success(msg.message);
+        form.reset();
+      },
+      onError: (err: any) => {
+        toast.error(
+          err?.response?.data?.message || "Failed to create workspace"
+        );
+      },
+    });
   };
 
   return (
@@ -114,7 +136,7 @@ export default function CreateWorkspaceDialog() {
               </div>
 
               <FileUploadField
-                name="imageFile"
+                name="image_file"
                 control={form.control}
                 label="Only support .jpg, .png"
               />
@@ -160,7 +182,7 @@ export default function CreateWorkspaceDialog() {
                 </p>
               </div>
               <FileUploadField
-                name="iconFile"
+                name="icon_file"
                 control={form.control}
                 label="Only support .jpg, .png"
               />
@@ -177,8 +199,8 @@ export default function CreateWorkspaceDialog() {
               <Button
                 type="submit"
                 className="bg-orange-500 hover:bg-orange-600 w-32"
-                disabled={mutation.isPending}>
-                {mutation.isPending ? "Creating..." : "Done"}
+                disabled={isPending}>
+                {isPending ? "Creating..." : "Done"}
               </Button>
             </div>
           </form>
@@ -193,7 +215,7 @@ export function FileUploadField({
   control,
   label,
 }: {
-  name: "imageFile" | "iconFile";
+  name: any;
   control: any;
   label: string;
 }) {
@@ -223,7 +245,7 @@ export function FileUploadField({
 function DropzoneArea({
   onFileChange,
 }: {
-  onFileChange: (file: File) => void;
+  onFileChange: (file: File | null) => void;
 }) {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -254,7 +276,7 @@ function DropzoneArea({
         <span className="text-blue-600 underline">browse</span>
       </p>
       <p className="text-xs text-muted-foreground mt-1">
-        Max 10 MB files are allowed
+        Max 1 MB files are allowed
       </p>
     </div>
   );

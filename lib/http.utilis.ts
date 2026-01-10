@@ -7,7 +7,7 @@ import { cookies } from "next/headers";
 
 export async function checkSession() {
   const cookie = await cookies();
-  const accessToken: any = cookie?.get("access_token")?.value;
+  const accessToken: any = cookie?.get("user_token")?.value;
   if (accessToken) return true;
   return false;
 }
@@ -18,7 +18,7 @@ export async function checkSession() {
 
 export async function getHeaders() {
   const cookie = await cookies();
-  const accessToken: any = cookie?.get("access_token")?.value;
+  const accessToken: any = cookie?.get("user_token")?.value;
   let headers: {
     "Content-Type": string;
     Accept: string;

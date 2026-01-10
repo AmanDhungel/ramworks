@@ -4,6 +4,7 @@ import "./globals.css";
 
 import DashboardLayout from "@/components/ComponentsLayout";
 import TanStackProvider from "@/components/TanStackProvider";
+import { ToastContainer } from "react-toastify";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -26,6 +27,7 @@ export default function RootLayout({
       <body
         className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
         <TanStackProvider>{children}</TanStackProvider>
+        <ToastContainer />
       </body>
     </html>
   );
