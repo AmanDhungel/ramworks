@@ -61,24 +61,7 @@ const menuData: NavGroup[] = [
         link: "/crm/companies",
         hasDropdown: false,
       },
-      {
-        title: "Deals",
-        icon: Briefcase,
-        link: "/crm/deals",
-        hasDropdown: false,
-      },
-      { title: "Leads", icon: Target, link: "/crm/leads", hasDropdown: false },
-      {
-        title: "Pipeline",
-        icon: Rocket,
-        link: "/crm/pipeline",
-        hasDropdown: false,
-      },
-      {
-        title: "Analytics",
-        icon: Rocket,
-        hasDropdown: false,
-      },
+
       {
         title: "Activities",
         icon: TrendingUp,
@@ -95,18 +78,6 @@ const menuData: NavGroup[] = [
         icon: UserCircle,
         hasDropdown: true,
         children: [{ title: "Employee", link: "/hrm/employee" }],
-      },
-      {
-        title: "Holidays",
-        icon: Calendar,
-        link: "/hrm/holidays",
-        hasDropdown: false,
-      },
-      {
-        title: "Attendance",
-        icon: ClipboardCheck,
-        hasDropdown: true,
-        children: [{ title: "Daily Log", link: "/hrm/attendance/log" }],
       },
     ],
   },
@@ -134,10 +105,7 @@ const menuData: NavGroup[] = [
         title: "Sales",
         icon: ShoppingCart,
         hasDropdown: true,
-        children: [
-          { title: "Estimates", link: "#" },
-          { title: "Invoices", link: "/finance/invoices" },
-        ],
+        children: [{ title: "Invoices", link: "/finance/invoices" }],
       },
     ],
   },
