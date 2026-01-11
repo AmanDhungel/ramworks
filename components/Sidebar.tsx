@@ -13,6 +13,8 @@ import {
   LucideIcon,
   WrenchIcon,
   SmilePlus,
+  TrendingUp,
+  ShoppingCart,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -83,6 +85,17 @@ const menuData: NavGroup[] = [
         link: "/crm/pipeline",
         hasDropdown: false,
       },
+      {
+        title: "Analytics",
+        icon: Rocket,
+        hasDropdown: false,
+      },
+      {
+        title: "Activities",
+        icon: TrendingUp,
+        link: "/crm/activity",
+        hasDropdown: false,
+      },
     ],
   },
   {
@@ -92,10 +105,7 @@ const menuData: NavGroup[] = [
         title: "Employees",
         icon: UserCircle,
         hasDropdown: true,
-        children: [
-          { title: "List", link: "/hrm/employees/list" },
-          { title: "Add", link: "/hrm/employees/add" },
-        ],
+        children: [{ title: "Employee", link: "/hrm/employee" }],
       },
       {
         title: "Holidays",
@@ -125,6 +135,20 @@ const menuData: NavGroup[] = [
         icon: SmilePlus,
         link: "/support-operation/complaints",
         hasDropdown: false,
+      },
+    ],
+  },
+  {
+    groupLabel: "Finance & Accounts",
+    items: [
+      {
+        title: "Sales",
+        icon: ShoppingCart,
+        hasDropdown: true,
+        children: [
+          { title: "Estimates", link: "#" },
+          { title: "Invoices", link: "/finance/invoices" },
+        ],
       },
     ],
   },

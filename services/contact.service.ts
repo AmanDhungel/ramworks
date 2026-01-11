@@ -6,6 +6,7 @@ import { Post } from "@/lib/action";
 import { useSearchParams } from "next/navigation";
 import { ContactType } from "@/components/CRM/Contacts/ContactCard";
 import { ContactFormPayload } from "@/components/CRM/Contacts/CreateContactDialog";
+import { CompanyFormPayload } from "@/components/CRM/Company/CreateCompanyDialog";
 
 export type RatingEnum = "1" | "2" | "3" | "4" | "5";
 export type IndustryEnum =
@@ -26,6 +27,7 @@ export type SourceEnum =
 export type StatusEnum = "active" | "inactive";
 
 export type ContactFormValues = {
+  _id: string;
   name: string;
   job_title: string;
   company: string;
@@ -58,13 +60,13 @@ export type ContactFormValues = {
 
 export const useCreateContact = () => {
   return useMutation<
-    ApiResponseType<ContactFormPayload>,
+    ApiResponseType<CompanyFormPayload>,
     any,
-    ContactFormPayload
+    CompanyFormPayload
   >({
     mutationKey: ["createContact"],
-    mutationFn: (data: ContactFormPayload) =>
-      Post<ContactFormPayload, ApiResponseType<ContactFormPayload>>({
+    mutationFn: (data: CompanyFormPayload) =>
+      Post<CompanyFormPayload, ApiResponseType<CompanyFormPayload>>({
         url: "/client_api/contact/add",
         data: data,
       }),

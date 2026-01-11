@@ -1,3 +1,4 @@
+"use client";
 import {
   ChevronDown,
   Globe,
@@ -10,6 +11,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CompanyCard } from "./CompanyCard";
+import { CompanyFormDialog } from "./CreateCompanyDialog";
+import { useGetCompany } from "@/services/company.service";
 
 const COMPANIES = [
   {
@@ -50,6 +53,8 @@ const COMPANIES = [
 ];
 
 export default function CompaniesPage() {
+  const { data: companyData } = useGetCompany();
+  console.log("companyData", companyData?.data);
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       {/* Header */}
@@ -64,9 +69,7 @@ export default function CompaniesPage() {
           <Button variant="outline" className="h-9 gap-2">
             Export <ChevronDown className="w-4 h-4" />
           </Button>
-          <Button className="h-9 bg-orange-500 hover:bg-orange-600 gap-2">
-            <Plus className="w-4 h-4" /> Add New Company
-          </Button>
+          <CompanyFormDialog />
         </div>
       </div>
 
@@ -81,7 +84,7 @@ export default function CompaniesPage() {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-white">
-          {COMPANIES.map((company, idx) => (
+          {companyData?.data.map((company, idx) => (
             <CompanyCard key={idx} {...company} />
           ))}
         </div>
