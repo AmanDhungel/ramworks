@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Image from "next/image";
 import { CreateVendorWorkspace } from "./CreateVendorWorkspaceDialog";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useGetVendorWorkspace } from "@/services/vendorworkspace.service";
 
 const VENDORS = [
@@ -47,6 +47,8 @@ const VENDORS = [
 export default function VendorWorkspace() {
   const [searchTerm, setSearchTerm] = useState("");
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const workspaceId = searchParams.get("id");
   const router = useRouter();
 
   const { data } = useGetVendorWorkspace();
@@ -118,7 +120,9 @@ export default function VendorWorkspace() {
             className="group p-0 cursor-pointer border-slate-200 hover:shadow-md transition-shadow duration-200 overflow-hidden"
             onClick={() =>
               router.push(
-                `/domain-workspace/${id}/${vendor.name.split(" ").join("_")}`
+                `/domain-workspace/${id}/${vendor.name
+                  .split(" ")
+                  .join("_")}?vendor=${vendor._id}&workspace=${workspaceId}`
               )
             }>
             <CardContent className="p-6 space-y-4">

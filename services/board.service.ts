@@ -6,6 +6,7 @@ import { ActivityFormValues } from "@/components/CRM/Activities/NewActivityDialo
 import { CompanyType } from "./company.service";
 import { ContactFormValues } from "./contact.service";
 import { useSearchParams } from "next/navigation";
+import { VendorFormValues } from "@/components/DomainWorkspace/VendorWorkspace/CreateVendorWorkspaceDialog";
 
 export type ActivityType = {
   _id: string;
@@ -23,33 +24,45 @@ export type ActivityType = {
 };
 
 export const useCreateBoard = () => {
-  return useMutation<
-    ApiResponseType<ActivityFormValues>,
-    any,
-    ActivityFormValues
-  >({
-    mutationKey: ["createActivity"],
-    mutationFn: (data: ActivityFormValues) =>
-      Post<ActivityFormValues, ApiResponseType<ActivityFormValues>>({
-        url: data._id
-          ? `/client_api/activity/edit/${data._id}`
-          : "/client_api/activity/add",
+  return useMutation<ApiResponseType<VendorFormValues>, any, VendorFormValues>({
+    mutationKey: ["createBoard"],
+    mutationFn: (data: VendorFormValues) =>
+      Post<VendorFormValues, ApiResponseType<VendorFormValues>>({
+        url: "/client_api/board/create_board",
         data: data,
       }),
   });
 };
 
-export const useGetBoard = () => {
-  return useFetcher<ApiResponseType<ActivityType[]>>(
-    "activity",
+export const useGetBoard = (id: string) => {
+  return useFetcher<ApiResponseType<any[]>>(
+    "board",
     null,
-    "/client_api/activity"
+    `/client_api/board/vendor_boards/${id}`
   );
 };
+export const useGetDNDBoard = (id: string) => {
+  return useFetcher<ApiResponseType<any[]>>(
+    "dndboard",
+    null,
+    `/client_api/board/${id}`
+  );
+};
+// /api/board/add_tasklist/:board_id
+export const useCreateTaskList = (id: string) => {
+  return useMutation<ApiResponseType<VendorFormValues>, any, VendorFormValues>({
+    mutationKey: ["createBoard"],
+    mutationFn: (data: VendorFormValues) =>
+      Post<VendorFormValues, ApiResponseType<VendorFormValues>>({
+        url: "/client_api/board/add_tasklist/" + id,
+        data: data,
+      }),
+  });
+};
 
-export const useGetSingleActivity = (id: string) => {
+export const useGetSingleBoard = (id: string) => {
   return useFetcher<ApiResponseType<ActivityType>>(
-    ["singleActivity", id],
+    ["singleBoard", id],
     null,
     `/client_api/activity/${id}`
   );

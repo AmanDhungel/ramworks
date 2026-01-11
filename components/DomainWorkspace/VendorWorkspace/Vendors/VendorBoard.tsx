@@ -26,10 +26,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { CreateNewBoard } from "./CreateNewBoard";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useGetBoard } from "@/services/board.service";
 
 interface Board {
-  id: string;
+  _id: string;
   title: string;
   image: string;
   urlId: string;
@@ -39,12 +40,15 @@ interface Board {
 const BoardCard = ({ board }: { board: Board }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
+  const params = useParams();
+
+  console.log("params", params);
   return (
     <div
       className="group relative cursor-pointer min-w-sm"
       onClick={() =>
         router.push(
-          `/domain-workspace/${board.urlId}/${board.urlVendor}/${board.id}`
+          `/domain-workspace/${params.id}/${params.vendors}/${board._id}`
         )
       }>
       <Card className="overflow-hidden border-none shadow-sm rounded-2xl bg-white ring-1 ring-slate-200">
@@ -123,30 +127,14 @@ const BoardCard = ({ board }: { board: Board }) => {
 export default function VendorDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const { id, vendors } = useParams();
+  const vendor = useSearchParams().get("vendor");
+  const { data } = useGetBoard(vendor ?? "");
 
-  const filteredBoards = useMemo(() => {
-    const boards: Board[] = [
-      {
-        id: "1",
-        title: "Electrical Layout",
-        image:
-          "https://images.unsplash.com/photo-1581092162384-8987c1794ed9?auto=format&fit=crop&q=80&w=600",
-        urlId: (id as string) || "",
-        urlVendor: (vendors as string) || "",
-      },
-      {
-        id: "2",
-        title: "Modern Architecture",
-        image:
-          "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=600",
-        urlId: (id as string) || "",
-        urlVendor: (vendors as string) || "",
-      },
-    ];
-    return boards.filter((board) =>
-      board.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, id, vendors]);
+  // const filteredBoards = useMemo(() => {
+  //   return (data?.data ?? []).filter((board: Board) =>
+  //     board.title.toLowerCase().includes(searchQuery.toLowerCase())
+  //   );
+  // }, [searchQuery, id, vendors]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white p-8 space-y-8">
@@ -187,7 +175,7 @@ export default function VendorDashboard() {
           <Badge
             variant="secondary"
             className="rounded-md bg-slate-100 px-2 text-slate-600 border-none">
-            {filteredBoards.length}
+            {data?.data.length}
           </Badge>
         </div>
 
@@ -203,7 +191,7 @@ export default function VendorDashboard() {
       </div>
 
       <div className=" flex gap-10">
-        {filteredBoards.map((board) => (
+        {data?.data.map((board) => (
           <BoardCard key={board.id} board={board} />
         ))}
 

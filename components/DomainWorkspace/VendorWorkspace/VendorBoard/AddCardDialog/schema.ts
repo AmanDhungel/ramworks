@@ -26,7 +26,13 @@ export const taskSchema = z.object({
     z.object({
       id: z.string(),
       title: z.string(),
-      completed: z.boolean(),
+      items: z.array(
+        z.object({
+          id: z.string().min(1, "ID is required"),
+          title: z.string().min(1, "Title is required"),
+          completed: z.boolean(),
+        })
+      ),
     })
   ),
   members: z.array(z.string()),

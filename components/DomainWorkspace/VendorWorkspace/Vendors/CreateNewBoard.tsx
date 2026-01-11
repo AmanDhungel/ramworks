@@ -1,5 +1,5 @@
 import * as z from "zod";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -32,14 +32,19 @@ import {
 import { FileUploadField } from "../../CreateDomainWorkspaceDialog";
 import { CustomColorPicker } from "../CustomColorPicker";
 import { Card, CardContent } from "@/components/ui/card";
+import { useSearchParams } from "next/navigation";
+import { useCreateBoard } from "@/services/board.service";
+import { toast } from "react-toastify";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
 export const vendorSchema = z.object({
-  boardTitle: z.string().min(2, "Company name is required"),
+  title: z.string().min(2, "Company name is required"),
   Visibility: z.string().min(1, "Please select a company type"),
-  bgImage: z
+  vendor: z.string().min(1, "Please select a vendor type"),
+  workspace: z.string().min(1, "Please select a workspace type"),
+  background_images: z
     .custom<File>()
     .refine((file) => file instanceof File, "Logo is required")
     .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 10MB.`)
@@ -48,6 +53,9 @@ export const vendorSchema = z.object({
       ".jpg, .jpeg and .png files are accepted."
     )
     .optional(),
+  backgroundColor: z
+    .string()
+    .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
   labelColor: z
     .string()
     .regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Invalid hex color"),
@@ -58,33 +66,61 @@ export type VendorFormValues = z.infer<typeof vendorSchema>;
 export function CreateNewBoard() {
   const [open, setOpen] = React.useState(false);
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
+  const vendor = searchParams.get("vendor");
+  const workspace = searchParams.get("workspace");
+  const { mutate, isPending } = useCreateBoard();
 
   const form = useForm<VendorFormValues>({
     resolver: zodResolver(vendorSchema),
     defaultValues: {
-      boardTitle: "",
+      title: "",
       Visibility: "",
+      backgroundColor: "#4F46E5",
+      vendor: vendor ?? "",
       labelColor: "#4F46E5",
+      workspace: workspace ?? "",
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (values: VendorFormValues) => {
-      return new Promise((resolve) => setTimeout(resolve, 1000));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vendors"] });
-      setOpen(false);
-      form.reset();
-    },
-  });
+  useEffect(() => {
+    if (vendor && workspace) {
+      form.setValue("vendor", vendor);
+      form.setValue("workspace", workspace);
+    }
+  }, [searchParams, form]);
+
+  useEffect(() => {
+    if (form.getValues("labelColor")) {
+      form.setValue("backgroundColor", form.getValues("labelColor"));
+    }
+  }, [open]);
 
   const onSubmit = (data: VendorFormValues) => {
-    mutation.mutate(data);
+    const payload = {
+      ...data,
+      workspace: workspace,
+      vendor: vendor,
+    };
+    mutate(payload as any, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["vendors"] });
+        setOpen(false);
+        form.reset();
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || "Failed to create board");
+      },
+    });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        setOpen(!open);
+        form.reset();
+      }}>
       <DialogTrigger asChild>
         <Card className="flex h-50 cursor-pointer items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50/30 hover:bg-slate-50 transition-all rounded-2xl shadow-none">
           <CardContent className="flex items-center gap-2 font-semibold text-slate-800">
@@ -103,7 +139,7 @@ export function CreateNewBoard() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="boardTitle"
+              name="title"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Board title*</FormLabel>
@@ -142,7 +178,7 @@ export function CreateNewBoard() {
 
             <FormField
               control={form.control}
-              name="bgImage"
+              name="background_images"
               render={({ field: { onChange, value } }) => (
                 <FormItem>
                   <FormLabel>Upload Background Image</FormLabel>
@@ -152,7 +188,7 @@ export function CreateNewBoard() {
                   <FormControl>
                     <div className="space-y-4">
                       <FileUploadField
-                        name="imageFile"
+                        name="background_images"
                         control={form.control}
                         label="Only support .jpg, .png"
                       />
@@ -174,7 +210,9 @@ export function CreateNewBoard() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => form.setValue("bgImage", undefined)}>
+                            onClick={() =>
+                              form.setValue("background_images", undefined)
+                            }>
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
@@ -219,8 +257,8 @@ export function CreateNewBoard() {
               <Button
                 type="submit"
                 className="flex-1 bg-orange-500 hover:bg-orange-600"
-                disabled={mutation.isPending}>
-                {mutation.isPending ? "Creating..." : "Done"}
+                disabled={isPending}>
+                {isPending ? "Creating..." : "Done"}
               </Button>
             </div>
           </form>
