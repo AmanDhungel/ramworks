@@ -4,6 +4,7 @@ import "../globals.css";
 
 import DashboardLayout from "@/components/ComponentsLayout";
 import TanStackProvider from "@/components/TanStackProvider";
+import { Suspense } from "react";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -25,9 +26,11 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <TanStackProvider>
-          <DashboardLayout>{children}</DashboardLayout>
-        </TanStackProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <TanStackProvider>
+            <DashboardLayout>{children}</DashboardLayout>
+          </TanStackProvider>
+        </Suspense>
       </body>
     </html>
   );

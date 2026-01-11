@@ -5,6 +5,7 @@ import "./globals.css";
 import TanStackProvider from "@/components/TanStackProvider";
 import { ToastContainer } from "react-toastify";
 import { LoadingBar } from "@/components/Progress";
+import { Suspense } from "react";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -26,9 +27,11 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <TanStackProvider>{children}</TanStackProvider>
-        <ToastContainer />
-        <LoadingBar />
+        <Suspense fallback={<div>Loading...</div>}>
+          <TanStackProvider>{children}</TanStackProvider>
+          <ToastContainer />
+          <LoadingBar />
+        </Suspense>
       </body>
     </html>
   );
