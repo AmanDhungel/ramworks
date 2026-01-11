@@ -5,8 +5,7 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const isAuthenticated = request.cookies?.get("user_token")?.value;
   const accept = request.headers.get("accept-language");
-  console.log("isAuthenticated", isAuthenticated);
-  console.log("Header", accept);
+
   const protectedRoutes = [
     "/domain-workspace",
     "/register",

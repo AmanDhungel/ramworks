@@ -12,7 +12,11 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    domains: ["images.unsplash.com", "logo.clearbit.com"],
+    domains: [
+      "images.unsplash.com",
+      "logo.clearbit.com",
+      "ttg-script.onrender.com",
+    ],
   },
 };
 

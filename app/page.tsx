@@ -38,7 +38,6 @@ export default function LoginPage() {
   const onSubmit = (data: LoginFormValues) => {
     mutate(data, {
       onSuccess: (data) => {
-        console.log("Login successful!", data);
         loginData(data?.user);
         router.push("/domain-workspace");
       },

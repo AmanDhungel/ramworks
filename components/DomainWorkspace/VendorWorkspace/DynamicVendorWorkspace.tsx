@@ -14,6 +14,7 @@ import {
 import Image from "next/image";
 import { CreateVendorWorkspace } from "./CreateVendorWorkspaceDialog";
 import { useParams, useRouter } from "next/navigation";
+import { useGetVendorWorkspace } from "@/services/vendorworkspace.service";
 
 const VENDORS = [
   {
@@ -48,11 +49,15 @@ export default function VendorWorkspace() {
   const { id } = useParams();
   const router = useRouter();
 
+  const { data } = useGetVendorWorkspace();
+
   const filteredVendors = useMemo(() => {
-    return VENDORS.filter((vendor) =>
-      vendor.name.toLowerCase().includes(searchTerm.toLowerCase())
+    return (
+      data?.data?.filter((vendor) =>
+        vendor.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) ?? []
     );
-  }, [searchTerm]);
+  }, [searchTerm, data]);
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10 space-y-8">
@@ -109,7 +114,7 @@ export default function VendorWorkspace() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredVendors.map((vendor) => (
           <Card
-            key={vendor.id}
+            key={vendor._id}
             className="group p-0 cursor-pointer border-slate-200 hover:shadow-md transition-shadow duration-200 overflow-hidden"
             onClick={() =>
               router.push(
@@ -122,7 +127,7 @@ export default function VendorWorkspace() {
                 <Image
                   width={500}
                   height={500}
-                  src={vendor.logo}
+                  src={`${process.env.NEXT_PUBLIC_API_URL}${vendor.logo}`}
                   alt={vendor.name}
                   className="max-h-full max-w-full object-cover  transition-all"
                 />

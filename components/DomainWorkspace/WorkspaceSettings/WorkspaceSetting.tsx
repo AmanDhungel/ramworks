@@ -53,9 +53,7 @@ export default function WorkspaceSettingsPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: WorkspaceSettingsValues) => {
-      console.log("Saving to server:", values);
-    },
+    mutationFn: async (values: WorkspaceSettingsValues) => {},
   });
 
   const onSubmit = (values: WorkspaceSettingsValues) => mutation.mutate(values);

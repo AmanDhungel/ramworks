@@ -70,7 +70,6 @@ export function CreateNewBoard() {
 
   const mutation = useMutation({
     mutationFn: async (values: VendorFormValues) => {
-      console.log("Submitting:", values);
       return new Promise((resolve) => setTimeout(resolve, 1000));
     },
     onSuccess: () => {

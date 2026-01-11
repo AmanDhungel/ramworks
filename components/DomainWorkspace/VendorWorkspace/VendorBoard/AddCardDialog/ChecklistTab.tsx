@@ -16,8 +16,6 @@ export default function ChecklistTab() {
     ? (checklists.filter((i) => i.completed).length / checklists.length) * 100
     : 0;
 
-  console.log("checklists", checklists);
-
   return (
     <TabsContent value="checklists" className="space-y-6">
       <div>

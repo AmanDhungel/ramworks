@@ -67,11 +67,8 @@ export default function TaskManagerForm() {
   const mutation = useMutation({
     mutationFn: async (data: TaskFormValues) => {
       // API Call here
-      console.log("Submitting:", data);
     },
   });
-
-  console.log("form values", form.getValues());
 
   return (
     <Dialog>

@@ -42,9 +42,7 @@ export function CreateMaintenanceDialog() {
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
-  const onSubmit = (data: MaintenanceFormValues) => {
-    console.log("Final Data:", data);
-  };
+  const onSubmit = (data: MaintenanceFormValues) => {};
 
   return (
     <Dialog>

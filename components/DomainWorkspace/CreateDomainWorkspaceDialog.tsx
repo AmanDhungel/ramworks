@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,20 +29,36 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useCreateWorkspace } from "@/services/workspace.service";
+import {
+  useCreateWorkspace,
+  useGetSingleWorkSpace,
+  useGetWorkspace,
+} from "@/services/workspace.service";
 import { toast } from "react-toastify";
 import { AxiosError } from "axios";
+import useDialogOpen from "@/context/Dialog";
+import { useSearchParams } from "next/navigation";
+import { useUpdateParams } from "@/helper/removeparam";
 
 const formSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(2, "Workspace title is required"),
   image_file: z
-    .instanceof(File)
-    .refine((file) => file?.size <= 1024 * 1024, "Max file size is 1MB")
+    .union([
+      z
+        .instanceof(File)
+        .refine((file) => file?.size <= 1024 * 1024, "Max file size is 1MB"),
+      z.string(),
+    ])
     .optional()
     .nullable(),
   icon_file: z
-    .instanceof(File)
-    .refine((file) => file?.size <= 1024 * 1024, "Max file size is 1MB")
+    .union([
+      z
+        .instanceof(File)
+        .refine((file) => file?.size <= 1024 * 1024, "Max file size is 1MB"),
+      z.string(),
+    ])
     .optional()
     .nullable(),
   imageUrl: z.url().optional().or(z.literal("")),
@@ -51,8 +67,13 @@ const formSchema = z.object({
 export type WorkSpaceFormValues = z.infer<typeof formSchema>;
 
 export default function CreateWorkspaceDialog() {
-  const [open, setOpen] = useState(false);
+  const { open, setIsOpen } = useDialogOpen();
   const { mutate, isPending } = useCreateWorkspace();
+  const { data: singleWorkSpace } = useGetSingleWorkSpace();
+  const { removeParam } = useUpdateParams();
+  const queryClient = useQueryClient();
+  const params = useSearchParams();
+  const id = params.get("id");
 
   const form = useForm<WorkSpaceFormValues>({
     resolver: zodResolver(formSchema),
@@ -63,6 +84,24 @@ export default function CreateWorkspaceDialog() {
       icon_file: null,
     },
   });
+
+  useEffect(() => {
+    if (params.get("id")) {
+      form.reset({
+        title: singleWorkSpace?.data?.title,
+        image_file: singleWorkSpace?.data?.image,
+        icon_file: singleWorkSpace?.data?.icon,
+      });
+    } else {
+      form.reset({
+        title: "",
+        image_file: null,
+        icon_file: null,
+      });
+    }
+  }, [params.get("id"), singleWorkSpace, form]);
+
+  // const {} = useUpdateDomainWorkspace();
 
   const onSubmit = (values: WorkSpaceFormValues) => {
     const formData = new FormData();
@@ -76,11 +115,15 @@ export default function CreateWorkspaceDialog() {
     if (values.image_file) {
       formData.append("image_file", values.image_file);
     }
+    if (params.get("id")) {
+      formData.append("_id", params.get("id")!);
+    }
 
     mutate(formData, {
       onSuccess: (msg) => {
-        setOpen(false);
+        setIsOpen();
         toast.success(msg.message);
+        queryClient.invalidateQueries({ queryKey: ["workspace"] });
         form.reset();
       },
       onError: (err: any) => {
@@ -92,7 +135,13 @@ export default function CreateWorkspaceDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        setIsOpen();
+        form.reset();
+        removeParam("id");
+      }}>
       <DialogTrigger asChild>
         <Button className="bg-orange-500 hover:bg-orange-600 text-white">
           <CirclePlus className="w-4 h-4 mr-2" /> Create Domain Workspace
@@ -107,7 +156,6 @@ export default function CreateWorkspaceDialog() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Workspace Title */}
             <FormField
               control={form.control}
               name="title"
@@ -192,7 +240,7 @@ export default function CreateWorkspaceDialog() {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={() => setIsOpen()}
                 className="w-32">
                 Cancel
               </Button>

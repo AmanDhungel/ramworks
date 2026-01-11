@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 
+import DashboardLayout from "@/components/ComponentsLayout";
 import TanStackProvider from "@/components/TanStackProvider";
-import { ToastContainer } from "react-toastify";
-import { LoadingBar } from "@/components/Progress";
 
 const roboto = Roboto({
   variable: "--font-roboto",
@@ -26,9 +25,9 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <TanStackProvider>{children}</TanStackProvider>
-        <ToastContainer />
-        <LoadingBar />
+        <TanStackProvider>
+          <DashboardLayout>{children}</DashboardLayout>
+        </TanStackProvider>
       </body>
     </html>
   );

@@ -95,7 +95,6 @@ export default function MaintenanceRequestForm() {
   };
 
   const onSubmit = (data: FormValues) => {
-    console.log("Form Submitted:", data);
     alert(`Submitted with ${data.attachments.length} attachments`);
   };
 

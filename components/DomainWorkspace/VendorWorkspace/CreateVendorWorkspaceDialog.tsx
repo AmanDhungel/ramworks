@@ -1,8 +1,8 @@
 import * as z from "zod";
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { CirclePlus, X, Image as ImageIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -22,26 +22,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { FileUploadField } from "../CreateDomainWorkspaceDialog";
 import { CustomColorPicker } from "./CustomColorPicker";
+import { useCreateVendorWorkspace } from "@/services/vendorworkspace.service";
+import { toast } from "react-toastify";
+import { useSearchParams } from "next/navigation";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_FILE_SIZE = 1 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
 export const vendorSchema = z.object({
-  companyName: z.string().min(2, "Company name is required"),
-  companyType: z.string().min(1, "Please select a company type"),
-  logo: z
+  _id: z.string().optional(),
+  name: z.string().min(2, "Company name is required"),
+  domain: z.string().min(1, "Please select a company type"),
+  logo_file: z
     .custom<File>()
     .refine((file) => file instanceof File, "Logo is required")
-    .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 10MB.`)
+    .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 1MB.`)
     .refine(
       (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
       ".jpg, .jpeg and .png files are accepted."
@@ -56,31 +53,95 @@ export type VendorFormValues = z.infer<typeof vendorSchema>;
 
 export function CreateVendorWorkspace() {
   const [open, setOpen] = React.useState(false);
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
   const queryClient = useQueryClient();
 
   const form = useForm<VendorFormValues>({
     resolver: zodResolver(vendorSchema),
     defaultValues: {
-      companyName: "",
-      companyType: "Maintenance",
+      name: "",
+      domain: "",
       labelColor: "#4F46E5",
     },
   });
 
-  const mutation = useMutation({
-    mutationFn: async (values: VendorFormValues) => {
-      console.log("Submitting:", values);
-      return new Promise((resolve) => setTimeout(resolve, 1000));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vendors"] });
-      setOpen(false);
-      form.reset();
-    },
-  });
+  useEffect(() => {
+    if (id) {
+      form.setValue("domain", id);
+    }
+  }, [id, form]);
+
+  const { mutate, isPending } = useCreateVendorWorkspace();
+
+  // const mutation = useMutation({
+  //   mutationFn: async (values: VendorFormValues) => {
+  //     console.log("Submitting:", values);
+  //     return new Promise((resolve) => setTimeout(resolve, 1000));
+  //   },
+  //   onSuccess: () => {
+  //     queryClient.invalidateQueries({ queryKey: ["vendors"] });
+  //     setOpen(false);
+  //     form.reset();
+  //   },
+  // });
+
+  // const onSubmit = (values: WorkSpaceFormValues) => {
+  //   const formData = new FormData();
+
+  //   formData.append("title", values.title);
+
+  //   if (values.icon_file) {
+  //     formData.append("icon_file", values.icon_file);
+  //   }
+
+  //   if (values.image_file) {
+  //     formData.append("image_file", values.image_file);
+  //   }
+
+  //   mutate(formData, {
+  //     onSuccess: (msg) => {
+  //       setIsOpen();
+  //       toast.success(msg.message);
+  //       queryClient.invalidateQueries({ queryKey: ["workspace"] });
+  //       form.reset();
+  //     },
+  //     onError: (err: any) => {
+  //       toast.error(
+  //         err?.response?.data?.message || "Failed to create workspace"
+  //       );
+  //     },
+  //   });
+  // };
 
   const onSubmit = (data: VendorFormValues) => {
-    mutation.mutate(data);
+    const formData = new FormData();
+
+    formData.append("name", data.name);
+    formData.append("domain", data.domain);
+    formData.append("label_color", data.labelColor);
+
+    if (data.logo_file) {
+      if (data.logo_file instanceof FileList) {
+        formData.append("logo_file", data.logo_file[0]);
+      } else {
+        formData.append("logo_file", data.logo_file);
+      }
+    }
+
+    mutate(formData, {
+      onSuccess: (msg) => {
+        setOpen(false);
+        toast.success(msg.message);
+        queryClient.invalidateQueries({ queryKey: ["vendorworkspace"] });
+        form.reset();
+      },
+      onError: (err: any) => {
+        toast.error(
+          err?.response?.data?.message || "Failed to create workspace"
+        );
+      },
+    });
   };
 
   return (
@@ -90,7 +151,7 @@ export function CreateVendorWorkspace() {
           <CirclePlus className="w-4 h-4 mr-2" /> Create Vendor Workspace
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-125 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Create Vendors Workspace
@@ -101,7 +162,7 @@ export function CreateVendorWorkspace() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="companyName"
+              name="name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Company Name</FormLabel>
@@ -112,27 +173,18 @@ export function CreateVendorWorkspace() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
-              name="companyType"
+              name="domain"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className=" w-full">
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Maintenance">Maintenance</SelectItem>
-                      <SelectItem value="SaaS">SaaS</SelectItem>
-                      <SelectItem value="Logistics">Logistics</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <FormItem className="hidden">
+                  <FormControl>
+                    <Input
+                      placeholder="Enter company name"
+                      {...field}
+                      defaultValue={id ? id : ""}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -140,8 +192,8 @@ export function CreateVendorWorkspace() {
 
             <FormField
               control={form.control}
-              name="logo"
-              render={({ field: { onChange, value } }) => (
+              name="logo_file"
+              render={({ field: { value } }) => (
                 <FormItem>
                   <FormLabel>Upload Logo</FormLabel>
                   <p className="text-xs text-muted-foreground">
@@ -150,7 +202,7 @@ export function CreateVendorWorkspace() {
                   <FormControl>
                     <div className="space-y-4">
                       <FileUploadField
-                        name="imageFile"
+                        name="logo_file"
                         control={form.control}
                         label="Only support .jpg, .png"
                       />
@@ -160,7 +212,7 @@ export function CreateVendorWorkspace() {
                           <div className="flex items-center gap-3">
                             <ImageIcon className="h-5 w-5 text-slate-400" />
                             <div className="text-sm">
-                              <p className="font-medium truncate max-w-[200px]">
+                              <p className="font-medium truncate max-w-50">
                                 {value.name}
                               </p>
                               <p className="text-xs text-muted-foreground">
@@ -172,7 +224,9 @@ export function CreateVendorWorkspace() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => form.setValue("logo", undefined)}>
+                            onClick={() =>
+                              form.setValue("logo_file", undefined)
+                            }>
                             <X className="h-4 w-4" />
                           </Button>
                         </div>
@@ -206,8 +260,8 @@ export function CreateVendorWorkspace() {
               <Button
                 type="submit"
                 className="flex-1 bg-orange-500 hover:bg-orange-600"
-                disabled={mutation.isPending}>
-                {mutation.isPending ? "Creating..." : "Done"}
+                disabled={isPending}>
+                {isPending ? "Creating..." : "Done"}
               </Button>
             </div>
           </form>
