@@ -165,10 +165,7 @@ export default function TaskManagerForm() {
                       );
                     }}
                   />
-                  <span
-                    className={
-                      item.completed ? "line-through text-slate-400" : ""
-                    }>
+                  <span className={"line-through text-slate-400"}>
                     {item.title}
                   </span>
                 </div>

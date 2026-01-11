@@ -35,17 +35,6 @@ export type NavGroup = {
 
 const menuData: NavGroup[] = [
   {
-    groupLabel: "MAIN MENU",
-    items: [
-      {
-        title: "Dashboard",
-        icon: LayoutDashboard,
-        link: "/dashboard",
-        hasDropdown: false,
-      },
-    ],
-  },
-  {
     groupLabel: "Workspace",
     items: [
       {
