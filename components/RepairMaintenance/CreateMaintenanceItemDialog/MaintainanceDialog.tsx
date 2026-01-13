@@ -13,7 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { maintenanceSchema, MaintenanceFormValues } from "./schema";
+import {
+  maintenanceSchema,
+  MaintenanceFormValues,
+  MaintenanceRequest,
+  MaintenanceRequestSchema,
+} from "./schema";
 
 import Step1Details from "./Step1Details";
 import Step2Assignment from "./Step2Assignment";
@@ -21,16 +26,16 @@ import Step3Schedule from "./Step3Schedule";
 import Step4Summary from "./Step4Summary";
 import Image from "next/image";
 import { icons } from "@/assets/icons/exports";
+import { useCreateRAM } from "@/services/RAM.service";
+import { toast } from "react-toastify";
 
 export function CreateMaintenanceDialog() {
   const [step, setStep] = useState(1);
-  const form = useForm<MaintenanceFormValues>({
-    resolver: zodResolver(maintenanceSchema),
+  const form = useForm<MaintenanceRequest>({
+    resolver: zodResolver(MaintenanceRequestSchema),
     defaultValues: {
-      maintenanceType: "Scheduled",
       priority: "Medium",
       tags: [],
-      enableRecurrence: false,
     },
   });
 
@@ -42,7 +47,27 @@ export function CreateMaintenanceDialog() {
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
-  const onSubmit = (data: MaintenanceFormValues) => {};
+  const { mutate } = useCreateRAM();
+
+  console.log("form errors", form.formState.errors);
+
+  const onSubmit = (data: MaintenanceRequest) => {
+    const payload = {
+      ...data,
+      tags: JSON.stringify(data.tags),
+      cost_breakdown: JSON.stringify(data.cost_breakdown),
+    };
+    mutate(payload as any, {
+      onSuccess: () => {
+        form.reset();
+        toast.success("Successfully created item");
+        setStep(1);
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || "Failed to create item");
+      },
+    });
+  };
 
   return (
     <Dialog>
@@ -68,7 +93,6 @@ export function CreateMaintenanceDialog() {
           </Badge>
         </DialogHeader>
 
-        {/* Step Indicators */}
         <div className="flex justify-between items-center px-20 py-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex flex-col items-center gap-2 relative">
@@ -114,7 +138,7 @@ export function CreateMaintenanceDialog() {
                 <ChevronLeft className="mr-2 h-4 w-4" /> Previous
               </Button>
 
-              {step < 4 ? (
+              {step <= 4 ? (
                 <Button
                   type="button"
                   onClick={nextStep}

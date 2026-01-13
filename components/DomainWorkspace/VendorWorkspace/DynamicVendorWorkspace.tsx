@@ -131,7 +131,7 @@ export default function VendorWorkspace() {
                 <Image
                   width={500}
                   height={500}
-                  src={`${process.env.NEXT_PUBLIC_API_URL}${vendor.logo}`}
+                  src={`${process.env.NEXT_PUBLIC_API_URL}${vendor.logo ?? ""}`}
                   alt={vendor.name}
                   className="max-h-full max-w-full object-cover  transition-all"
                 />

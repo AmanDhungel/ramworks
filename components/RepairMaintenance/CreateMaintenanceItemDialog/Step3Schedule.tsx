@@ -14,8 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CalendarIcon } from "lucide-react";
+import { MaintenanceRequest } from "./schema";
+import { UseFormReturn } from "react-hook-form";
 
-export default function Step3Schedule({ form }: { form: any }) {
+export default function Step3Schedule({
+  form,
+}: {
+  form: UseFormReturn<MaintenanceRequest>;
+}) {
   const isRecurrenceEnabled = form.watch("enableRecurrence");
 
   return (
@@ -59,7 +65,7 @@ export default function Step3Schedule({ form }: { form: any }) {
         <div className="mt-4">
           <FormField
             control={form.control}
-            name="duration"
+            name="estimated_duration"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Estimated Duration</FormLabel>
@@ -74,7 +80,7 @@ export default function Step3Schedule({ form }: { form: any }) {
         </div>
       </div>
 
-      {/* Recurrence Settings Section */}
+      {/* Recurrence Settings Section
       <div className="p-4 border rounded-lg space-y-6">
         <div className="flex items-center justify-between">
           <h3 className="font-semibold text-slate-800">Recurrence Settings</h3>
@@ -196,7 +202,7 @@ export default function Step3Schedule({ form }: { form: any }) {
             </div>
           </div>
         )}
-      </div>
+      </div> */}
     </div>
   );
 }

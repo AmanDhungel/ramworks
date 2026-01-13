@@ -11,8 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, Plus, Upload, Check } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { MaintenanceFormValues } from "./schema";
+import { Path, UseFormReturn } from "react-hook-form";
+import { MaintenanceFormValues, MaintenanceRequest } from "./schema";
+import { Label } from "@/components/ui/label";
 
 const PRESET_TAGS = [
   "preventive",
@@ -25,7 +26,7 @@ const PRESET_TAGS = [
 export default function Step4Final({
   form,
 }: {
-  form: UseFormReturn<MaintenanceFormValues>;
+  form: UseFormReturn<MaintenanceRequest>;
 }) {
   const [tagInput, setTagInput] = useState("");
   const selectedTags = form.watch("tags") || [];
@@ -45,15 +46,14 @@ export default function Step4Final({
     );
   };
 
+  console.log("selectedTags", form.getValues());
   return (
     <div className="space-y-8">
-      {/* Cost Estimation Section */}
       <section className="p-6 border rounded-xl space-y-6 bg-white">
         <h3 className="text-lg font-bold text-slate-800">Cost Estimation</h3>
-
         <FormField
           control={form.control}
-          name="totalCost"
+          name="total_estimated_cost"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-semibold">
@@ -78,16 +78,31 @@ export default function Step4Final({
             Cost Breakdown (Optional)
           </h4>
           <div className="space-y-4">
-            {["Labor", "Materials", "Additional Charges"].map((label) => (
+            {["labor", "materials", "additional_charges"].map((label) => (
               <div key={label} className="space-y-1.5">
-                <p className="text-xs font-medium text-slate-500">{label}</p>
+                <p className="text-xs font-medium text-slate-500 capitalize">
+                  {label.replace("_", " ")}
+                </p>
                 <div className="relative">
                   <span className="absolute left-3 top-2.5 text-slate-400 text-sm">
                     $
                   </span>
                   <Input
+                    type="number"
+                    step="0.01" // Allows decimals
                     className="pl-7 bg-slate-50/50 border-slate-200 h-9"
                     placeholder="0.00"
+                    onChange={(e) => {
+                      const rawValue = e.target.value;
+                      const parsedValue =
+                        rawValue === "" ? 0 : parseFloat(rawValue);
+
+                      form.setValue(
+                        `cost_breakdown.${label}` as any,
+                        isNaN(parsedValue) ? 0 : parsedValue,
+                        { shouldValidate: true }
+                      );
+                    }}
                   />
                 </div>
               </div>
@@ -96,19 +111,19 @@ export default function Step4Final({
         </div>
       </section>
 
-      {/* Additional Information Section */}
       <section className="p-6 border rounded-xl space-y-6 bg-white">
         <h3 className="text-lg font-bold text-slate-800">
           Additional Information
         </h3>
 
-        {/* Tags Logic */}
         <div className="space-y-4">
           <FormLabel className="text-slate-700 font-semibold">Tags *</FormLabel>
           <div className="flex gap-2">
             <Input
               value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
+              onChange={(e) => {
+                setTagInput(e.target.value);
+              }}
               placeholder="Add tag and press Enter"
               className="bg-slate-50/50"
               onKeyDown={(e) =>
@@ -124,7 +139,6 @@ export default function Step4Final({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {/* Design preset tags (lorem placeholders in your image) */}
             {[1, 2].map((i) => (
               <Badge
                 key={`lorem-${i}`}
@@ -170,7 +184,7 @@ export default function Step4Final({
 
         <FormField
           control={form.control}
-          name="internalNotes"
+          name="internal_notes"
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-slate-700 font-semibold">
@@ -184,34 +198,45 @@ export default function Step4Final({
             </FormItem>
           )}
         />
-
-        {/* File Upload Design */}
+        {/* 
         <div className="space-y-3">
           <FormLabel className="text-slate-700 font-semibold">
             Attachments
           </FormLabel>
-          <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center bg-slate-50/30">
-            <Upload className="w-8 h-8 text-slate-400 mb-2" />
-            <p className="text-sm font-bold text-slate-700">Click to upload</p>
-            <p className="text-[10px] text-slate-400 mb-4 uppercase">
-              PDF, JPG, PNG up to 10MB
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="bg-white">
-              Browse File
-            </Button>
-          </div>
-        </div>
+          <Label htmlFor="">
+            <div className="border-2 border-dashed border-slate-200 rounded-xl p-8 flex flex-col items-center justify-center bg-slate-50/30">
+              <Upload className="w-8 h-8 text-slate-400 mb-2" />
+              <p className="text-sm font-bold text-slate-700">
+                Click to upload
+              </p>
+              <p className="text-[10px] text-slate-400 mb-4 uppercase">
+                PDF, JPG, PNG up to 10MB
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="bg-white">
+                Browse File
+              </Button>
+            </div>
+          </Label>
+          <Input
+            type="file"
+            className="hidden"
+            name=""
+            onChange={(e) => console.log(e.target.files)}
+          />
+        </div> */}
 
-        {/* Checkbox options */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center space-x-3">
             <Checkbox
               id="notify"
               className="data-[state=checked]:bg-orange-500 border-slate-300"
+              onCheckedChange={(e) =>
+                form.setValue("notify_affected_tenants", e as boolean)
+              }
             />
             <label
               htmlFor="notify"
@@ -223,6 +248,12 @@ export default function Step4Final({
             <Checkbox
               id="approval"
               className="data-[state=checked]:bg-orange-500 border-slate-300"
+              onCheckedChange={(e) =>
+                form.setValue(
+                  "require_approval_before_starting_work",
+                  e as boolean
+                )
+              }
             />
             <label
               htmlFor="approval"

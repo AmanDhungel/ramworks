@@ -23,6 +23,14 @@ export const useGetVendorWorkspace = () => {
   );
 };
 
+export const useGetVendorWorkspaceForRAM = ({ id }: { id: string }) => {
+  return useFetcher<ApiResponseType<VendorWorkspaceType[]>>(
+    "vendorworkspace",
+    null,
+    `/client_api/workspace/vendor_workspaces/${id}`
+  );
+};
+
 export const useCreateVendorWorkspace = () => {
   return useMutation<
     ApiResponseType<any>, // Response type

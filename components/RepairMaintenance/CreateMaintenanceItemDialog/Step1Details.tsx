@@ -2,6 +2,9 @@ import { Button } from "@/components/ui/button";
 import { FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { MaintenanceRequest } from "./schema";
+import { UseFormReturn } from "react-hook-form";
+import { useGetWorkspace } from "@/services/workspace.service";
 
 const categories = [
   { id: "HVAC", icon: "❄️" },
@@ -18,18 +21,23 @@ const categories = [
   { id: "Appliance Repair", icon: "🔧" },
 ];
 
-export default function Step1Details({ form }: { form: any }) {
+export default function Step1Details({
+  form,
+}: {
+  form: UseFormReturn<MaintenanceRequest>;
+}) {
+  const { data: workspace } = useGetWorkspace();
   return (
     <div className="space-y-8">
       <section>
         <h3 className="font-semibold mb-4 text-slate-700">Maintenance Type</h3>
         <div className="grid grid-cols-2 gap-4">
-          {["Scheduled", "Recurring", "Reported", "Emergency"].map((type) => (
+          {["scheduled", "recurring", "reported", "emergency"].map((type) => (
             <div
               key={type}
-              onClick={() => form.setValue("maintenanceType", type)}
-              className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                form.watch("maintenanceType") === type
+              onClick={() => form.setValue("type", type)}
+              className={`p-4 border rounded-lg cursor-pointer capitalize transition-all ${
+                form.watch("type") === type
                   ? "bg-orange-500 text-white border-orange-500"
                   : "bg-white text-slate-600"
               }`}>
@@ -43,17 +51,17 @@ export default function Step1Details({ form }: { form: any }) {
       <section>
         <h3 className="font-semibold mb-4 text-slate-700">Service Category</h3>
         <div className="grid grid-cols-3 gap-4">
-          {categories.map((cat) => (
+          {workspace?.data.map((cat) => (
             <div
-              key={cat.id}
-              onClick={() => form.setValue("serviceCategory", cat.id)}
+              key={cat._id}
+              onClick={() => form.setValue("domain_workspace", cat._id)}
               className={`p-6 border rounded-lg flex flex-col items-center gap-2 cursor-pointer transition-all ${
-                form.watch("serviceCategory") === cat.id
+                form.watch("domain_workspace") === cat._id
                   ? "bg-orange-500 text-white"
                   : "bg-white"
               }`}>
               <span className="text-xl">{cat.icon}</span>
-              <span className="text-sm font-medium">{cat.id}</span>
+              <span className="text-sm font-medium">{cat.title}</span>
             </div>
           ))}
         </div>
@@ -88,15 +96,15 @@ export default function Step1Details({ form }: { form: any }) {
           )}
         />
         <div className="flex gap-2">
-          {["Low", "Medium", "High", "Critical"].map((lvl) => (
+          {["low", "medium", "high", "critical"].map((lvl) => (
             <Button
               key={lvl}
               type="button"
               variant={form.watch("priority") === lvl ? "default" : "outline"}
               className={
                 form.watch("priority") === lvl
-                  ? "bg-orange-500 flex-1"
-                  : "flex-1"
+                  ? "bg-orange-500 flex-1 capitalize"
+                  : "flex-1 capitalize"
               }
               onClick={() => form.setValue("priority", lvl)}>
               {lvl}

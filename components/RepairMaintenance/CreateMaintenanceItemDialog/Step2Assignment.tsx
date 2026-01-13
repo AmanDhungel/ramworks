@@ -12,8 +12,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MaintenanceRequest } from "./schema";
+import { UseFormReturn } from "react-hook-form";
+import { useGetVendorWorkspaceForRAM } from "@/services/vendorworkspace.service";
+import { useGetBoard } from "@/services/board.service";
+import { useEffect, useState } from "react";
+import { SelectGroup, SelectLabel } from "@radix-ui/react-select";
 
-export default function Step2Assignment({ form }: { form: any }) {
+export default function Step2Assignment({
+  form,
+}: {
+  form: UseFormReturn<MaintenanceRequest>;
+}) {
+  const { data: vendorWorkspace } = useGetVendorWorkspaceForRAM({
+    id: form.getValues().domain_workspace,
+  });
+
+  const { data: board, isFetching } = useGetBoard(
+    form.watch().vendor_workspace
+  );
+
   return (
     <div className="space-y-6">
       {/* Property & Location Section */}
@@ -43,7 +61,7 @@ export default function Step2Assignment({ form }: { form: any }) {
 
         <FormField
           control={form.control}
-          name="unit"
+          name="location"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Unit / Location *</FormLabel>
@@ -71,21 +89,25 @@ export default function Step2Assignment({ form }: { form: any }) {
 
         <FormField
           control={form.control}
-          name="serviceProvider"
+          name="vendor_workspace"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Service Provider *</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select
+                onValueChange={field.onChange}
+                value={field.value} // Change this from defaultValue
+              >
                 <FormControl>
-                  <SelectTrigger className="bg-slate-50/50">
+                  <SelectTrigger className="w-full bg-slate-50/50">
                     <SelectValue placeholder="Select Service" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="provider-1">Rapid Fix Plumbing</SelectItem>
-                  <SelectItem value="provider-2">
-                    Elite HVAC Services
-                  </SelectItem>
+                  {vendorWorkspace?.data?.map((vw) => (
+                    <SelectItem key={vw._id} value={vw._id ?? ""}>
+                      {vw.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormItem>
@@ -94,21 +116,50 @@ export default function Step2Assignment({ form }: { form: any }) {
 
         <FormField
           control={form.control}
-          name="technician"
+          name="board"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Assigned Technician (Optional)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormLabel>Assigned Board</FormLabel>
+
+              <Select value={field.value ?? ""} onValueChange={field.onChange}>
                 <FormControl>
-                  <SelectTrigger className="bg-slate-50/50">
-                    <SelectValue placeholder="Auto-assign or select technician" />
+                  <SelectTrigger className="w-full bg-slate-50/50">
+                    <SelectValue
+                      placeholder={
+                        isFetching
+                          ? "Loading..."
+                          : "Auto-assign or select technician"
+                      }
+                    />
                   </SelectTrigger>
                 </FormControl>
+
                 <SelectContent>
-                  <SelectItem value="tech-1">John Doe</SelectItem>
-                  <SelectItem value="tech-2">Jane Smith</SelectItem>
+                  <SelectGroup>
+                    {isFetching && (
+                      <div className="p-2 text-sm text-muted-foreground text-center">
+                        Fetching boards...
+                      </div>
+                    )}
+                    {!isFetching &&
+                      board &&
+                      board?.data?.length > 0 &&
+                      board.data.map((b) => (
+                        <SelectItem key={b._id} value={b._id}>
+                          {b.name}
+                        </SelectItem>
+                      ))}
+
+                    {!isFetching &&
+                      (!board?.data || board.data.length === 0) && (
+                        <SelectLabel className="p-2 text-sm text-muted-foreground text-center">
+                          No boards found
+                        </SelectLabel>
+                      )}
+                  </SelectGroup>
                 </SelectContent>
               </Select>
+
               <FormDescription className="text-xs">
                 Leave empty to let the service provider assign
               </FormDescription>

@@ -36,7 +36,7 @@ export const useCreateBoard = () => {
 
 export const useGetBoard = (id: string) => {
   return useFetcher<ApiResponseType<any[]>>(
-    "board",
+    ["board", id],
     null,
     `/client_api/board/vendor_boards/${id}`
   );

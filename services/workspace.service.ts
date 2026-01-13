@@ -6,8 +6,8 @@ import { Post } from "@/lib/action";
 import { useSearchParams } from "next/navigation";
 
 export type WorkspaceType = {
-  createdAt: string; // "2026-01-09T17:56:50.073Z"
-  icon: string; // "/uploads/workspace/69614162750a0fba2d4e31e5/eNiQ7zgduAwqFIjZwUpfMWhM0juFl_y2.png"
+  createdAt: string;
+  icon: string;
   image: string; // "/uploads/workspace/69614162750a0fba2d4e31e5/38gsyFf0ovyCh4hbfvd8PMcdWHKcqaO5.png"
   title: string; // "SASDDD"
   updatedAt: string; // "2026-01-09T17:56:50.174Z"
