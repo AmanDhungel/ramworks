@@ -10,6 +10,7 @@ import {
   Users,
   Settings,
   Edit2,
+  Loader2,
 } from "lucide-react";
 
 import {
@@ -42,23 +43,21 @@ const BoardCard = ({ board }: { board: Board }) => {
   const router = useRouter();
   const params = useParams();
 
-  console.log("params", params);
   return (
-    <div
-      className="group relative cursor-pointer min-w-sm"
-      onClick={() =>
-        router.push(
-          `/domain-workspace/${params.id}/${params.vendors}/${board._id}`
-        )
-      }>
+    <div className="group relative cursor-pointer min-w-sm">
       <Card className="overflow-hidden border-none shadow-sm rounded-2xl bg-white ring-1 ring-slate-200">
         <div className="relative h-36 w-full overflow-hidden">
           <Image
             width={500}
             height={500}
-            src={board.image}
+            src={board.image || "/placeholder-image.png"}
             alt={board.title}
             className="h-full w-full object-cover"
+            onClick={() =>
+              router.push(
+                `/domain-workspace/${params.id}/${params.vendors}/${board._id}`
+              )
+            }
           />
 
           <div className="absolute top-3 right-3 flex items-center transition-all duration-200">
@@ -128,13 +127,13 @@ export default function VendorDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const { id, vendors } = useParams();
   const vendor = useSearchParams().get("vendor");
-  const { data } = useGetBoard(vendor ?? "");
+  const { data, isFetching } = useGetBoard(vendor ?? "");
 
-  // const filteredBoards = useMemo(() => {
-  //   return (data?.data ?? []).filter((board: Board) =>
-  //     board.title.toLowerCase().includes(searchQuery.toLowerCase())
-  //   );
-  // }, [searchQuery, id, vendors]);
+  const filteredBoards = useMemo(() => {
+    return (data?.data ?? []).filter((board: Board) =>
+      board.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, data?.data]);
 
   return (
     <div className="flex flex-col min-h-screen bg-white p-8 space-y-8">
@@ -191,11 +190,17 @@ export default function VendorDashboard() {
       </div>
 
       <div className=" flex gap-10">
-        {data?.data.map((board) => (
-          <BoardCard key={board.id} board={board} />
-        ))}
-
-        <CreateNewBoard />
+        {isFetching ? (
+          <Loader2 className="animate-spin" />
+        ) : (
+          <>
+            {filteredBoards &&
+              filteredBoards.map((board, index) => (
+                <BoardCard key={`${board.id}-${index}`} board={board} />
+              ))}
+            <CreateNewBoard />
+          </>
+        )}
       </div>
     </div>
   );

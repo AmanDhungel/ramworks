@@ -71,9 +71,6 @@ export default function InvoicePage() {
   const { mutate, isPending } = useCreateInvoices();
   const { data: contacts } = useGetContact();
 
-  console.log("isPending", form.formState.errors);
-  console.log("isPending", form.getValues());
-
   async function onSubmit(data: InvoiceFormValues) {
     const payload = {
       ...data,

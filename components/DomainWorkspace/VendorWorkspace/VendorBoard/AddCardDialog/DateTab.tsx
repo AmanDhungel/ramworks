@@ -24,7 +24,7 @@ export default function DateTab() {
           <Label>Date</Label>
           <FormField
             control={control}
-            name="deadline.date"
+            name="deadline"
             render={({ field: { onChange, value } }) => (
               <FormItem>
                 <FormLabel />
@@ -47,7 +47,9 @@ export default function DateTab() {
           <Input
             type="time"
             value={deadline.time || "12:00"}
-            onChange={(e) => setValue("deadline.time", e.target.value)}
+            // onChange={(e) =>
+            //   setValue("deadline", `${deadline} at ${e.target.value}`)
+            // }
             className="bg-slate-50 border-none"
           />
         </div>

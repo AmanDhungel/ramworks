@@ -34,10 +34,8 @@ export default function Step2Assignment({
 
   return (
     <div className="space-y-6">
-      {/* Property & Location Section */}
       <div className="p-4 border rounded-lg space-y-4">
         <h3 className="font-semibold text-slate-800">Property & Location</h3>
-
         <FormField
           control={form.control}
           name="property"
@@ -81,12 +79,10 @@ export default function Step2Assignment({
         />
       </div>
 
-      {/* Service Provider Section */}
       <div className="p-4 border rounded-lg space-y-4">
         <h3 className="font-semibold text-slate-800">
           Service Provider Assignment
         </h3>
-
         <FormField
           control={form.control}
           name="vendor_workspace"
@@ -121,7 +117,7 @@ export default function Step2Assignment({
             <FormItem>
               <FormLabel>Assigned Board</FormLabel>
 
-              <Select value={field.value ?? ""} onValueChange={field.onChange}>
+              <Select value={field.value || ""} onValueChange={field.onChange}>
                 <FormControl>
                   <SelectTrigger className="w-full bg-slate-50/50">
                     <SelectValue
@@ -146,7 +142,7 @@ export default function Step2Assignment({
                       board?.data?.length > 0 &&
                       board.data.map((b) => (
                         <SelectItem key={b._id} value={b._id}>
-                          {b.name}
+                          {b.title}
                         </SelectItem>
                       ))}
 

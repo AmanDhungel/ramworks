@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Globe,
   Plus,
+  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -24,13 +25,15 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useParams } from "next/navigation";
 import { useGetSingleContact } from "@/services/contact.service";
+import Loading from "@/components/Loading";
 
 export default function ProfileSidebar() {
   const { id } = useParams();
   const idString = Array.isArray(id) ? id[0] : id || "";
-  const { data } = useGetSingleContact(idString);
+  const { data, isLoading, isFetching } = useGetSingleContact(idString);
 
-  console.log("data", data);
+  if (isLoading || isFetching)
+    return <Loader2 className="animate-spin m-auto h-20 w-20 mt-20" />;
   return (
     <div className="max-w-[400px] mt-4 bg-white border rounded-lg overflow-hidden shadow-sm font-sans">
       <div className="relative h-32 bg-gradient-to-r from-orange-400 to-orange-600">

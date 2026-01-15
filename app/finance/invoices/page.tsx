@@ -1,3 +1,3 @@
-import CreateInvoiceForm from "@/components/Accounting/CreateInvoice";
+import InvoicesListPage from "@/components/Accounting/Invoices";
 
-export default CreateInvoiceForm;
+export default InvoicesListPage;

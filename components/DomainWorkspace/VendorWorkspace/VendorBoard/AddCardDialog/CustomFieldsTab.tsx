@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trash2 } from "lucide-react";
+import { TaskFormValues } from "./schema";
 
 export default function CustomFieldsTab() {
-  const { control, register } = useFormContext();
+  const { control, register } = useFormContext<TaskFormValues>();
+
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "customFields",
+    name: "custom_fields",
   });
 
   return (
@@ -19,7 +21,14 @@ export default function CustomFieldsTab() {
         <Button
           type="button"
           variant="outline"
-          onClick={() => append({ label: "", value: "" })}>
+          onClick={() =>
+            append({
+              field_name: "",
+              field_type: "text",
+              field_value: "",
+              field_options: [],
+            })
+          }>
           + Add Field
         </Button>
       </div>
@@ -34,21 +43,34 @@ export default function CustomFieldsTab() {
                 Field Name
               </Label>
               <Input
-                {...register(`customFields.${index}.label`)}
+                {...register(`custom_fields.${index}.field_name`)}
                 placeholder="e.g. Department"
                 className="bg-white"
               />
             </div>
+
             <div className="flex-1 space-y-1">
               <Label className="text-[10px] uppercase text-slate-500">
-                Value
+                Field Type
               </Label>
               <Input
-                {...register(`customFields.${index}.value`)}
+                {...register(`custom_fields.${index}.field_type`)}
+                placeholder="e.g. text"
+                className="bg-white"
+              />
+            </div>
+
+            <div className="flex-1 space-y-1">
+              <Label className="text-[10px] uppercase text-slate-500">
+                Field Value
+              </Label>
+              <Input
+                {...register(`custom_fields.${index}.field_value`)}
                 placeholder="e.g. Marketing"
                 className="bg-white"
               />
             </div>
+
             <Button
               variant="ghost"
               size="icon"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -11,7 +11,6 @@ import {
   DragStartEvent,
   DragOverEvent,
   DragEndEvent,
-  defaultDropAnimationSideEffects,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -20,71 +19,67 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { BoardList } from "./BoardList";
 import { SortableTaskCard } from "./SortableTaskCard";
 import { Input } from "@/components/ui/input";
-
-const INITIAL_DATA = [
-  {
-    id: "list-1",
-    title: "Lorem",
-    isComplete: true,
-    tasks: [
-      {
-        id: "task-1",
-        title: "Electrical Layout",
-        date: "10 Jan 2024",
-        assignee: { name: "Darlee Robertson", image: "" },
-      },
-      { id: "task-2", title: "[Example task]", date: "12 Jan 2024" },
-    ],
-  },
-  {
-    id: "list-2",
-    title: "Phase 2",
-    isComplete: false,
-    tasks: [
-      { id: "task-3", title: "Modern Architecture", date: "15 Jan 2024" },
-    ],
-  },
-];
+import {
+  useCreateTaskList,
+  useDragDropTask,
+  useGetDNDBoard,
+} from "@/services/board.service";
+import { useParams } from "next/navigation";
+import { toast } from "react-toastify";
+import Loading from "@/components/Loading";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function VendorBoard() {
-  const [lists, setLists] = useState(INITIAL_DATA);
+  const { board } = useParams();
+  const boardId = Array.isArray(board) ? board[0] : board;
+
+  const { data: dndBoard, isLoading } = useGetDNDBoard(boardId ?? "");
+  const { mutate: mutateTask } = useDragDropTask(boardId ?? "");
+
+  const [lists, setLists] = useState<any[]>([]);
   const [activeTask, setActiveTask] = useState<any>(null);
   const [activeList, setActiveList] = useState<any>(null);
-  const [addList, setAddList] = useState<string>("");
+  const [addList, setAddList] = useState("");
+  const queryClient = useQueryClient();
+
+  console.log(dndBoard?.data);
+
+  useEffect(() => {
+    if (dndBoard?.data?.task_lists) {
+      setTimeout(() => setLists(dndBoard.data.task_lists as any), 0);
+    }
+  }, [dndBoard]);
+
+  const { mutate } = useCreateTaskList(boardId ?? "");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  function findContainer(id: string) {
-    if (!id) return null;
-    const list = lists.find((l) => l.id === id);
-    if (list) return list.id;
-    return lists.find((l) => l.tasks.some((t) => t.id === id))?.id;
-  }
+  const findContainer = (id: string, type?: "task" | "container") => {
+    if (type === "container") return id;
 
-  function handleDragStart(event: DragStartEvent) {
-    const { active } = event;
+    const container = lists.find((l) => l.tasks.some((t: any) => t._id === id));
+    return container?._id ?? null;
+  };
+
+  const handleDragStart = ({ active }: DragStartEvent) => {
     const type = active.data.current?.type;
 
     if (type === "task") {
-      const task = lists
-        .flatMap((l) => l.tasks)
-        .find((t) => t.id === active.id);
-      setActiveTask(task);
+      setActiveTask(
+        lists.flatMap((l) => l.tasks).find((t) => t._id === active.id)
+      );
     } else {
-      const list = lists.find((l) => l.id === active.id);
-      setActiveList(list);
+      setActiveList(lists.find((l) => l._id === active.id));
     }
-  }
+  };
 
-  function handleDragOver(event: DragOverEvent) {
-    const { active, over } = event;
+  const handleDragOver = ({ active, over }: DragOverEvent) => {
     if (!over) return;
 
     const activeId = active.id.toString();
@@ -95,94 +90,278 @@ export default function VendorBoard() {
 
     if (!activeContainer || !overContainer || activeContainer === overContainer)
       return;
-    if (active.data.current?.type !== "task") return;
 
     setLists((prev) => {
-      const activeList = prev.find((l) => l.id === activeContainer);
-      const overList = prev.find((l) => l.id === overContainer);
+      const source = prev.find((l) => l._id === activeContainer)!;
+      const destination = prev.find((l) => l._id === overContainer)!;
 
-      if (!activeList || !overList) return prev;
-
-      const activeIndex = activeList.tasks.findIndex((t) => t.id === activeId);
-      let overIndex = overList.tasks.findIndex((t) => t.id === overId);
-
-      if (overIndex === -1) overIndex = overList.tasks.length;
+      const movedTask = source.tasks.find((t: any) => t._id === activeId);
+      if (!movedTask) return prev;
 
       return prev.map((list) => {
-        if (list.id === activeContainer) {
+        if (list._id === activeContainer) {
           return {
             ...list,
-            tasks: list.tasks.filter((t) => t.id !== activeId),
+            tasks: list.tasks.filter((t: any) => t._id !== activeId),
           };
         }
-        if (list.id === overContainer) {
-          const newTasks = [...list.tasks];
-          newTasks.splice(overIndex, 0, activeList.tasks[activeIndex]);
-          return { ...list, tasks: newTasks };
+
+        if (list._id === overContainer) {
+          return { ...list, tasks: [...list.tasks, movedTask] };
         }
+
         return list;
       });
     });
-  }
+  };
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
+  // const handleDragEnd = ({ active, over }: DragEndEvent) => {
+  //   if (!over) return setActiveTask(null);
+
+  //   if (active.data.current?.type === "container") {
+  //     setLists((prev) =>
+  //       arrayMove(
+  //         prev,
+  //         prev.findIndex((l) => l._id === active.id),
+  //         prev.findIndex((l) => l._id === over.id)
+  //       )
+  //     );
+  //   } else {
+  //     const containerId = findContainer(active.id.toString());
+  //     if (!containerId) return;
+
+  //     setLists((prev) =>
+  //       prev.map((list) => {
+  //         if (list._id !== containerId) return list;
+
+  //         return {
+  //           ...list,
+  //           tasks: arrayMove(
+  //             list.tasks,
+  //             list.tasks.findIndex((t: any) => t._id === active.id),
+  //             list.tasks.findIndex((t: any) => t._id === over.id)
+  //           ),
+  //         };
+  //       })
+  //     );
+  //   }
+
+  //   setActiveTask(null);
+  //   setActiveList(null);
+  // };
+
+  // const handleDragEnd = ({ active, over }: DragEndEvent) => {
+  //   if (!over) return setActiveTask(null);
+
+  //   if (active.data.current?.type === "task") {
+  //     const activeId = active.id.toString();
+  //     const overId = over.id.toString();
+
+  //     const sourceListId = findContainer(active.id, active.data.current?.type);
+  //     const destinationListId = findContainer(over.id, over.data.current?.type);
+
+  //     if (!sourceListId || !destinationListId) {
+  //       setActiveTask(null);
+  //       return;
+  //     }
+
+  //     setLists((prev) => {
+  //       const source = prev.find((l) => l._id === sourceListId);
+  //       const destination = prev.find((l) => l._id === destinationListId);
+
+  //       if (!source?.tasks || !destination?.tasks) return prev;
+
+  //       const sourceIndex = source.tasks.findIndex((t) => t._id === activeId);
+  //       let destinationIndex = destination.tasks.findIndex(
+  //         (t) => t._id === overId
+  //       );
+
+  //       // If dropping at empty space or end of list
+  //       if (destinationIndex === -1)
+  //         destinationIndex = destination.tasks.length;
+
+  //       const task = source.tasks[sourceIndex];
+  //       if (!task) return prev;
+
+  //       // Remove from source
+  //       const newSourceTasks = [...source.tasks];
+  //       newSourceTasks.splice(sourceIndex, 1);
+
+  //       // Add to destination
+  //       const newDestinationTasks = [...destination.tasks];
+  //       newDestinationTasks.splice(destinationIndex, 0, task);
+
+  //       // Prepare payload **after updating arrays**
+  //       mutateTask(
+  //         {
+  //           source_tasklist_id: sourceListId,
+  //           destination_tasklist_id: destinationListId,
+  //           source_index: sourceIndex,
+  //           destination_index: destinationIndex,
+  //         },
+  //         {
+  //           onSuccess: () => {
+  //             toast.success("Task moved");
+  //             queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+  //           },
+  //           onError: () => {
+  //             queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+  //           },
+  //         }
+  //       );
+
+  //       return prev.map((list) => {
+  //         if (list._id === sourceListId)
+  //           return { ...list, tasks: newSourceTasks };
+  //         if (list._id === destinationListId)
+  //           return { ...list, tasks: newDestinationTasks };
+  //         return list;
+  //       });
+  //     });
+  //   }
+
+  //   // Dragging entire list
+  //   if (active.data.current?.type === "container") {
+  //     setLists((prev) =>
+  //       arrayMove(
+  //         prev,
+  //         prev.findIndex((l) => l._id === active.id),
+  //         prev.findIndex((l) => l._id === over.id)
+  //       )
+  //     );
+  //   }
+
+  //   setActiveTask(null);
+  //   setActiveList(null);
+  // };
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over) {
       setActiveTask(null);
-      setActiveList(null);
       return;
     }
 
-    // List reordering logic
-    if (active.data.current?.type === "container" && active.id !== over.id) {
-      setLists((prev) => {
-        const oldIndex = prev.findIndex((l) => l.id === active.id);
-        const newIndex = prev.findIndex((l) => l.id === over.id);
-        return arrayMove(prev, oldIndex, newIndex);
-      });
-    }
-    // Task same-list reordering logic
-    else if (active.id !== over.id) {
-      const activeContainer = findContainer(active.id.toString());
-      const overContainer = findContainer(over.id.toString());
+    if (active.data.current?.type === "task") {
+      const activeId = active.id.toString();
+      const overId = over.id.toString();
 
-      if (activeContainer && activeContainer === overContainer) {
+      const sourceListId = findContainer(activeId, "task");
+      // Use the 'type' from 'over' data if available to help findContainer
+      const destinationListId = findContainer(
+        overId,
+        over.data.current?.type as any
+      );
+
+      if (!sourceListId || !destinationListId) {
+        setActiveTask(null);
+        return;
+      }
+
+      // --- NEW LOGIC START ---
+      // If the task is dropped within the same list, we only update local state
+      // and skip the mutateTask API call.
+      if (sourceListId === destinationListId) {
         setLists((prev) =>
           prev.map((list) => {
-            if (list.id === activeContainer) {
-              const oldIndex = list.tasks.findIndex((t) => t.id === active.id);
-              const newIndex = list.tasks.findIndex((t) => t.id === over.id);
-              return {
-                ...list,
-                tasks: arrayMove(list.tasks, oldIndex, newIndex),
-              };
-            }
-            return list;
+            if (list._id !== sourceListId) return list;
+            return {
+              ...list,
+              tasks: arrayMove(
+                list.tasks,
+                list.tasks.findIndex((t: any) => t._id === activeId),
+                list.tasks.findIndex((t: any) => t._id === overId)
+              ),
+            };
           })
         );
+        setActiveTask(null);
+        return;
       }
+      // --- NEW LOGIC END ---
+
+      setLists((prev) => {
+        const source = prev.find((l) => l._id === sourceListId);
+        const destination = prev.find((l) => l._id === destinationListId);
+
+        if (!source?.tasks || !destination?.tasks) return prev;
+
+        const sourceIndex = source.tasks.findIndex(
+          ({ t }: { t: { _id: string } }) => t._id === activeId
+        );
+        let destinationIndex = destination.tasks.findIndex(
+          ({ t }: { t: { _id: string } }) => t._id === overId
+        );
+
+        if (destinationIndex === -1)
+          destinationIndex = destination.tasks.length;
+
+        const task = source.tasks[sourceIndex];
+        if (!task) return prev;
+
+        const newSourceTasks = [...source.tasks];
+        newSourceTasks.splice(sourceIndex, 1);
+
+        const newDestinationTasks = [...destination.tasks];
+        newDestinationTasks.splice(destinationIndex, 0, task);
+
+        // API Call only happens here because we returned early above if IDs were the same
+        mutateTask(
+          {
+            source_tasklist_id: sourceListId,
+            destination_tasklist_id: destinationListId,
+            source_index: sourceIndex,
+            destination_index: destinationIndex,
+          },
+          {
+            onSuccess: () => {
+              toast.success("Task moved");
+              queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+            },
+            onError: () => {
+              queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+            },
+          }
+        );
+
+        return prev.map((list) => {
+          if (list._id === sourceListId)
+            return { ...list, tasks: newSourceTasks };
+          if (list._id === destinationListId)
+            return { ...list, tasks: newDestinationTasks };
+          return list;
+        });
+      });
+    }
+
+    // Dragging entire list logic remains the same
+    if (active.data.current?.type === "container") {
+      setLists((prev) =>
+        arrayMove(
+          prev,
+          prev.findIndex((l) => l._id === active.id),
+          prev.findIndex((l) => l._id === over.id)
+        )
+      );
     }
 
     setActiveTask(null);
     setActiveList(null);
-  }
-
+  };
   const handleAddList = () => {
     if (!addList.trim()) return;
 
-    // Create a consistent string ID
-    const newListId = `list-${Math.random().toString(36).substr(2, 9)}`;
+    mutate(
+      { title: addList },
+      {
+        onSuccess: () => toast.success("List created"),
+        onError: () => toast.error("Failed to create list"),
+      }
+    );
 
-    const newList = {
-      id: newListId,
-      title: addList,
-      isComplete: false,
-      tasks: [],
-    };
-
-    setLists((prev) => [...prev, newList]);
     setAddList("");
   };
+
+  if (isLoading) return <Loading />;
 
   return (
     <div className="h-screen w-full bg-slate-100 p-6">
@@ -192,49 +371,33 @@ export default function VendorBoard() {
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}>
-        <div className="flex gap-6 items-start overflow-x-auto pb-4 h-full">
+        <div className="flex gap-6 overflow-x-auto h-full">
           <SortableContext
-            items={lists.map((l) => l.id)}
+            items={lists.map((l) => l._id)}
             strategy={horizontalListSortingStrategy}>
             {lists.map((list) => (
               <BoardList
-                key={list.id}
-                id={list.id}
+                key={list._id}
+                id={list._id}
                 title={list.title}
                 tasks={list.tasks}
-                isComplete={list.isComplete}
+                isComplete={list.completed}
               />
             ))}
           </SortableContext>
 
-          <div className="min-w-[280px] bg-white/50 backdrop-blur-md rounded-xl p-4 border border-slate-200 shadow-sm h-fit">
-            <div className="flex items-center gap-2">
-              <Plus className="h-4 w-4 text-slate-500" />
-              <Input
-                placeholder="Add another list"
-                value={addList}
-                onChange={(e) => setAddList(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddList()}
-              />
-            </div>
+          <div className="min-w-[280px] bg-white rounded-xl p-4">
+            <Input
+              placeholder="Add another list"
+              value={addList}
+              onChange={(e) => setAddList(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddList()}
+            />
           </div>
         </div>
 
-        <DragOverlay adjustScale={false}>
-          {activeTask ? (
-            <div className="w-[300px] opacity-90 rotate-2 shadow-2xl">
-              <SortableTaskCard {...activeTask} />
-            </div>
-          ) : activeList ? (
-            <div className="w-[320px] opacity-90 shadow-2xl">
-              <BoardList
-                id={activeList.id}
-                title={activeList.title}
-                tasks={activeList.tasks}
-                isComplete={activeList.isComplete}
-              />
-            </div>
-          ) : null}
+        <DragOverlay>
+          {activeTask && <SortableTaskCard {...activeTask} />}
         </DragOverlay>
       </DndContext>
     </div>

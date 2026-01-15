@@ -4,22 +4,27 @@ import { CSS } from "@dnd-kit/utilities";
 import { ChevronUp, ChevronDown, Copy, Edit2, Calendar } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-interface TaskCardProps {
-  id: string;
+interface SortableTaskCardProps {
+  _id: string;
   title: string;
-  date?: string;
-  assignee?: { name: string; image: string };
+  createdAt?: string;
+  contacts?: { _id: string; name: string }[];
+  index: number;
+  tasklistId: string;
 }
 
 export const SortableTaskCard = ({
-  id,
+  _id,
   title,
-  date,
-  assignee,
-}: TaskCardProps) => {
+  createdAt,
+  contacts,
+  index,
+  tasklistId,
+}: SortableTaskCardProps) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
   const {
     attributes,
     listeners,
@@ -28,35 +33,35 @@ export const SortableTaskCard = ({
     transition,
     isDragging,
   } = useSortable({
-    id: id,
-    data: {
-      type: "task",
-    },
+    id: _id,
+    data: { type: "task", tasklist: tasklistId, index }, // ✅ important!
   });
 
   const style = {
-    transform: CSS.Translate.toString(transform),
+    transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.3 : 1,
+    opacity: isDragging ? 0.4 : 1,
   };
 
+  const primaryContact = contacts?.[0];
+
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className="mb-3 cursor-grab active:cursor-grabbing group">
+    <div ref={setNodeRef} style={style} className="mb-3 group">
       <Card className="border-slate-200 shadow-sm overflow-hidden bg-white group-hover:border-blue-400 transition-colors">
-        <div className="p-3 flex items-center justify-between border-b bg-slate-50/50">
+        {/* Drag Handle */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="p-3 flex items-center justify-between border-b bg-slate-50/50 cursor-grab active:cursor-grabbing">
           <span className="text-sm font-medium text-slate-600">{title}</span>
+
           <Button
             variant="ghost"
             size="icon"
             className="h-6 w-6"
             onClick={(e) => {
               e.stopPropagation();
-              setIsCollapsed(!isCollapsed);
+              setIsCollapsed((prev) => !prev);
             }}>
             {isCollapsed ? (
               <ChevronDown className="h-4 w-4" />
@@ -74,36 +79,37 @@ export const SortableTaskCard = ({
                   Initial Task fields
                 </p>
                 <p className="text-[10px] text-slate-500">
-                  Bill Name: Test Plumber Bill Type: Plumbing
+                  Priority data & custom fields available
                 </p>
               </div>
               <div className="flex gap-1">
                 <Copy
-                  className="h-3 w-3 text-slate-400 cursor-pointer hover:text-blue-500"
+                  className="h-3 w-3 text-slate-400 hover:text-blue-500 cursor-pointer"
                   onClick={(e) => e.stopPropagation()}
                 />
                 <Edit2
-                  className="h-3 w-3 text-slate-400 cursor-pointer hover:text-blue-500"
+                  className="h-3 w-3 text-slate-400 hover:text-blue-500 cursor-pointer"
                   onClick={(e) => e.stopPropagation()}
                 />
               </div>
             </div>
 
-            {assignee && (
+            {primaryContact && (
               <div className="flex items-center gap-2">
                 <Avatar className="h-6 w-6">
-                  <AvatarImage src={assignee.image} />
-                  <AvatarFallback>{assignee.name[0]}</AvatarFallback>
+                  <AvatarFallback>{primaryContact.name[0]}</AvatarFallback>
                 </Avatar>
                 <span className="text-xs font-medium text-slate-700">
-                  {assignee.name}
+                  {primaryContact.name}
                 </span>
               </div>
             )}
 
             <div className="flex items-center text-xs text-slate-400 gap-1 pt-2">
               <Calendar className="h-3 w-3" />
-              <span>{date || "10 Jan 2024"}</span>
+              <span>
+                {createdAt ? new Date(createdAt).toDateString() : "No date"}
+              </span>
             </div>
           </CardContent>
         )}

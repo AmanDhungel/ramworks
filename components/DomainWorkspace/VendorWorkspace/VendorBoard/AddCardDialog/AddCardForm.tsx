@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { taskSchema, TaskFormValues } from "./schema";
+import { AddTaskPayloadSchema, TaskFormValues } from "./schema";
 import { useMutation } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -31,47 +31,89 @@ import {
   Plus,
 } from "lucide-react";
 import DateTab from "./DateTab";
-import FormsTab from "./FormsTab";
 import AttachmentsTab from "./AttachmentsTab";
 import LocationTab from "./LocationTab";
 import CustomFieldsTab from "./CustomFieldsTab";
 import InvoicesTab from "./InvoicesTab";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useCreateTaskList, useCreateTasks } from "@/services/board.service";
+import { toast } from "react-toastify";
+import { useParams } from "next/navigation";
+import { FormField } from "@/components/ui/form";
+import useDialogOpen from "@/context/Dialog";
 
-export default function TaskManagerForm() {
+export default function TaskManagerForm({ id }: { id: string }) {
   const form = useForm<TaskFormValues>({
-    resolver: zodResolver(taskSchema),
+    resolver: zodResolver(AddTaskPayloadSchema),
     defaultValues: {
       title: "",
       description: "",
-      labels: [],
       checklists: [],
-      complete: false,
-      priority: null,
     },
   });
-
-  //Watching Value from the form
-  const selectedMembers = form.watch("members") || [];
+  const { open, setIsOpen } = useDialogOpen();
+  const selectedMembers = form.watch("contacts") || [];
   const checklists = form.watch("checklists");
   const deadline = form.watch("deadline");
-
+  const params = useParams();
+  const boardId = Array.isArray(params?.board)
+    ? params.board[0]
+    : params?.board ?? "";
   const toggleMember = (id: string) => {
     const next = selectedMembers.includes(id)
       ? selectedMembers.filter((m: string) => m !== id)
       : [...selectedMembers, id];
-    form.setValue("members", next);
+    form.setValue("contacts", next);
   };
 
-  const mutation = useMutation({
-    mutationFn: async (data: TaskFormValues) => {
-      // API Call here
-    },
-  });
+  const { mutate } = useCreateTasks(id);
+
+  const onSubmit = (data: TaskFormValues) => {
+    const formData = new FormData();
+
+    formData.append("_id", boardId ?? "");
+    formData.append("title", data.title);
+    formData.append("description", data.description ?? "");
+    formData.append("priority", data.priority);
+
+    formData.append("contacts", JSON.stringify(selectedMembers));
+    formData.append("checklists", JSON.stringify(data.checklists));
+    formData.append("custom_fields", JSON.stringify(data.custom_fields));
+    formData.append("label", JSON.stringify(data.labels));
+    formData.append("location", JSON.stringify(data.location));
+    formData.append("invoices", JSON.stringify(data.invoices));
+
+    if (data.attachments && data.attachments.length > 0) {
+      data.attachments.forEach((file) => {
+        formData.append("attachments", file); // append each file
+      });
+    }
+
+    if (data.location_photos && data.location_photos.length > 0) {
+      data.location_photos.forEach((file) => {
+        formData.append("location_photos", file);
+      });
+    }
+
+    mutate(formData as any, {
+      onSuccess: () => {
+        form.reset();
+        toast.success("successfully created task");
+      },
+      onError: (err: any) => {
+        toast.error(err?.response?.data?.message || "Failed to create task");
+      },
+    });
+  };
 
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        setIsOpen();
+        form.reset();
+      }}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -90,9 +132,8 @@ export default function TaskManagerForm() {
         </DialogHeader>
         <FormProvider {...form}>
           <form
-            onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-8">
-            {/* LEFT SECTION */}
             <div className="md:col-span-7 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -100,10 +141,7 @@ export default function TaskManagerForm() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-semibold">Complete</span>
-                  <Switch
-                    checked={form.watch("complete")}
-                    onCheckedChange={(val) => form.setValue("complete", val)}
-                  />
+                  <Switch />
                 </div>
               </div>
 
@@ -147,47 +185,42 @@ export default function TaskManagerForm() {
                 )
               )}
 
-              {checklists?.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 p-2 bg-slate-50 rounded">
-                  <Checkbox
-                    onCheckedChange={(checked) => {
-                      form.setValue(
-                        "checklists",
-                        form
-                          .getValues("checklists")
-                          .map((list) =>
-                            list.id === item.id
-                              ? { ...list, completed: checked === true }
-                              : list
-                          )
-                      );
-                    }}
-                  />
-                  <span className={"line-through text-slate-400"}>
-                    {item.title}
-                  </span>
+              {checklists?.map((checklist, checklistIndex) => (
+                <div key={checklistIndex} className="mb-4">
+                  <h1 className="font-bold">{checklist.title}</h1>
+
+                  {checklist.items.map((item, itemIndex) => (
+                    <div
+                      key={`${checklistIndex}-${itemIndex}`}
+                      className="flex items-center gap-3 p-2 bg-slate-50 rounded">
+                      <FormField
+                        control={form.control}
+                        name={`checklists.${checklistIndex}.items.${itemIndex}.completed`}
+                        render={({ field }) => (
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        )}
+                      />
+                      <span
+                        className={
+                          item.completed ? "line-through text-slate-400" : ""
+                        }>
+                        {item.text}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))}
 
               {deadline && (
                 <div className="flex items-center gap-3 p-2 bg-slate-50 rounded">
-                  <h1>DeadLine:</h1>
-                  <Input
-                    disabled
-                    value={
-                      deadline.date
-                        ? deadline.date instanceof Date
-                          ? deadline.date.toISOString().split("T")[0]
-                          : deadline.date
-                        : ""
-                    }
-                    type="date"
-                  />
-                  <Input disabled value={deadline.time} />
+                  <h1>Deadline:</h1>
+                  <Input disabled type="date" value={deadline} />
                 </div>
               )}
+              {/* <Input disabled value={deadline.time} /> */}
 
               <Tabs defaultValue="" className="w-full">
                 <TabsList className="flex flex-wrap h-auto bg-transparent gap-2 justify-start">
@@ -216,11 +249,11 @@ export default function TaskManagerForm() {
                     className="border px-4 py-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
                     🕒 Date
                   </TabsTrigger>
-                  <TabsTrigger
+                  {/* <TabsTrigger
                     value="forms"
                     className="border px-4 py-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
                     🕒 Forms
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                   <TabsTrigger
                     value="attachments"
                     className="border px-4 py-2 data-[state=active]:bg-orange-500 data-[state=active]:text-white">
@@ -250,7 +283,7 @@ export default function TaskManagerForm() {
                   <ChecklistTab />
                   <MembersTab />
                   <DateTab />
-                  <FormsTab />
+                  {/* <FormsTab /> */}
                   <AttachmentsTab />
                   <CustomFieldsTab />
                   <InvoicesTab />
@@ -288,33 +321,6 @@ function SelectedFieldsPreview() {
 
   return (
     <div className="space-y-4">
-      {labels.length > 0 && (
-        <div className="space-y-2">
-          <Label className="font-bold">Labels</Label>
-          <div className="flex flex-wrap gap-2">
-            {labels.map((l) => (
-              <div
-                key={l.id}
-                className="h-8 w-full rounded-md flex items-center px-3 text-white"
-                style={{ backgroundColor: l.color }}>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() =>
-                    setValue(
-                      "labels",
-                      labels.filter((x) => x.id !== l.id)
-                    )
-                  }
-                  className="ml-auto text-white hover:bg-white/20">
-                  Remove
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
       {priority && (
         <div className="space-y-2">
           <Label className="font-bold">Priority</Label>
@@ -341,7 +347,7 @@ function SelectedFieldsPreview() {
               type="button"
               variant="ghost"
               size="sm"
-              onClick={() => setValue("priority", null)}
+              onClick={() => setValue("priority", "")}
               className="ml-auto text-white hover:bg-white/20">
               Remove
             </Button>

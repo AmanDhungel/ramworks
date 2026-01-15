@@ -48,3 +48,10 @@ export const useGetSingleWorkSpace = () => {
     `/client_api/workspace/domain/${id}`
   );
 };
+export const useGetSingleWorkSpaceForRAM = (id: string) => {
+  return useFetcher<ApiResponseType<WorkspaceType>>(
+    "singleWorkspace",
+    null,
+    `/client_api/workspace/domain/${id}`
+  );
+};

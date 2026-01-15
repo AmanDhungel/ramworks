@@ -28,9 +28,11 @@ import Image from "next/image";
 import { icons } from "@/assets/icons/exports";
 import { useCreateRAM } from "@/services/RAM.service";
 import { toast } from "react-toastify";
+import useDialogOpen from "@/context/Dialog";
 
 export function CreateMaintenanceDialog() {
   const [step, setStep] = useState(1);
+  const { open, setIsOpen } = useDialogOpen();
   const form = useForm<MaintenanceRequest>({
     resolver: zodResolver(MaintenanceRequestSchema),
     defaultValues: {
@@ -49,8 +51,6 @@ export function CreateMaintenanceDialog() {
 
   const { mutate } = useCreateRAM();
 
-  console.log("form errors", form.formState.errors);
-
   const onSubmit = (data: MaintenanceRequest) => {
     const payload = {
       ...data,
@@ -62,6 +62,7 @@ export function CreateMaintenanceDialog() {
         form.reset();
         toast.success("Successfully created item");
         setStep(1);
+        setIsOpen();
       },
       onError: (err: any) => {
         toast.error(err?.response?.data?.message || "Failed to create item");
@@ -70,7 +71,7 @@ export function CreateMaintenanceDialog() {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setIsOpen}>
       <DialogTrigger>
         <Button className="bg-orange-600 hover:bg-orange-700">
           <Image
@@ -138,10 +139,13 @@ export function CreateMaintenanceDialog() {
                 <ChevronLeft className="mr-2 h-4 w-4" /> Previous
               </Button>
 
-              {step <= 4 ? (
+              {step < 4 ? (
                 <Button
                   type="button"
-                  onClick={nextStep}
+                  onClick={(e) => {
+                    nextStep();
+                    e.preventDefault();
+                  }}
                   className="bg-orange-500 hover:bg-orange-600">
                   Next <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>

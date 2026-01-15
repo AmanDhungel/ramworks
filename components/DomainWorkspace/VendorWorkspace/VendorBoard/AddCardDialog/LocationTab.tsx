@@ -1,18 +1,9 @@
+"use client";
 import { useFormContext, useWatch } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  MapPin,
-  Navigation,
-  Loader2,
-  Crosshair,
-  ImagePlus,
-  X,
-  FileText,
-  Calendar as CalendarIcon,
-  Clock,
-} from "lucide-react";
+import { MapPin, Crosshair, ImagePlus, X, FileText } from "lucide-react";
 import {
   MapContainer,
   TileLayer,
@@ -24,6 +15,7 @@ import { useState, useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Image from "next/image";
+import { TaskFormValues } from "./schema";
 
 const icon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -33,19 +25,20 @@ const icon = L.icon({
 });
 
 export default function LocationTab() {
-  const { register, setValue, control } = useFormContext();
+  const { register, setValue, control } = useFormContext<TaskFormValues>();
   const [isLocating, setIsLocating] = useState(false);
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const lat = useWatch({ control, name: "location.lat" });
-  const lng = useWatch({ control, name: "location.lng" });
-  const attachedImages = useWatch({ control, name: "location.images" }) || [];
+  // Use lat/lng inside "location" object
+  const lat = useWatch({ control, name: "location.lat" }) as number | undefined;
+  const lng = useWatch({ control, name: "location.lng" }) as number | undefined;
+  const attachedImages = useWatch({ control, name: "location_photos" }) || [];
 
   const defaultPos: [number, number] = [51.505, -0.09];
   const currentPos: [number, number] = lat && lng ? [lat, lng] : defaultPos;
 
-  // --- Geolocation & Reverse Geocode Logic ---
+  // --- Geolocation & Reverse Geocode ---
   const handleReverseGeocode = async (latitude: number, longitude: number) => {
     setIsLocating(true);
     try {
@@ -56,7 +49,7 @@ export default function LocationTab() {
       if (data.address) {
         setValue("location.address", data.display_name.split(",")[0]);
         setValue("location.city", data.address.city || data.address.town || "");
-        setValue("location.zip", data.address.postcode || "");
+        setValue("location.zip_code", data.address.postcode || "");
       }
     } finally {
       setIsLocating(false);
@@ -72,13 +65,13 @@ export default function LocationTab() {
     });
   };
 
-  // --- File Upload Logic ---
+  // --- File Upload ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       const newPreviews = files.map((file) => URL.createObjectURL(file));
       setPreviews((prev) => [...prev, ...newPreviews]);
-      setValue("location.images", [...attachedImages, ...files]);
+      setValue("location_photos", [...attachedImages, ...files]);
     }
   };
 
@@ -88,7 +81,7 @@ export default function LocationTab() {
       (_: any, i: number) => i !== index
     );
     setPreviews(updatedPreviews);
-    setValue("location.images", updatedFiles);
+    setValue("location_photos", updatedFiles);
   };
 
   // --- Map Logic ---
@@ -126,7 +119,7 @@ export default function LocationTab() {
       </div>
 
       <div className="space-y-6 border border-slate-200 rounded-xl p-6 bg-white shadow-sm">
-        {/* Map Header Section */}
+        {/* Map */}
         <div className="h-64 w-full rounded-lg border border-slate-200 overflow-hidden z-0">
           <MapContainer center={currentPos} zoom={13} className="h-full w-full">
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -136,64 +129,16 @@ export default function LocationTab() {
           </MapContainer>
         </div>
 
-        {/* Attendance Fields (Styled after provided image) */}
-        <div className="space-y-4">
-          <h4 className="text-sm font-bold text-slate-800">Attendance</h4>
-
-          <div className="space-y-4">
-            {/* Clock-in */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-slate-500">
-                Clock-in
-              </Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="relative">
-                  <Input
-                    type="date"
-                    {...register("location.attendance.clockInDate")}
-                    className="bg-slate-50/50 "
-                  />
-                </div>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    {...register("location.attendance.clockInTime")}
-                    className="bg-slate-50/50 "
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Clock-out */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-slate-500">
-                Clock-out
-              </Label>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="relative">
-                  <Input
-                    type="date"
-                    {...register("location.attendance.clockOutDate")}
-                    className="bg-slate-50/50 "
-                  />
-                </div>
-                <div className="relative">
-                  <Input
-                    type="time"
-                    {...register("location.attendance.clockOutTime")}
-                    className="bg-slate-50/50 "
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <hr className="border-slate-100" />
-
         {/* Address Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div className="md:col-span-2 space-y-2">
+            <Label className="text-xs text-slate-500">Location Objective</Label>
+            <Input
+              {...register("location.type")}
+              placeholder="Address fetched from map..."
+              value={"site_visit"}
+              className="bg-slate-50/50"
+            />
             <Label className="text-xs text-slate-500">Street Address</Label>
             <Input
               {...register("location.address")}
@@ -207,7 +152,10 @@ export default function LocationTab() {
           </div>
           <div className="space-y-2">
             <Label className="text-xs text-slate-500">Zip Code</Label>
-            <Input {...register("location.zip")} className="bg-slate-50/50" />
+            <Input
+              {...register("location.zip_code")}
+              className="bg-slate-50/50"
+            />
           </div>
         </div>
 
@@ -243,7 +191,7 @@ export default function LocationTab() {
                     width={500}
                     height={500}
                     src={src}
-                    alt={src}
+                    alt={`location-${index}`}
                     className="h-full w-full object-cover"
                   />
                   <button

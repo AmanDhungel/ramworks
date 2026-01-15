@@ -136,7 +136,6 @@ export function AddActivityDialog() {
     }
   }, [activityId, singleActivity?.data]);
 
-  console.log(form.getValues());
   const onSubmit = (data: ActivityFormValues) => {
     const payload = {
       ...data,
@@ -234,9 +233,7 @@ export function AddActivityDialog() {
                     <FormLabel className="font-semibold">
                       Activity Type
                     </FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="bg-slate-50/50 w-full">
                           <SelectValue placeholder="Select type" />
@@ -303,9 +300,7 @@ export function AddActivityDialog() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Owner</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select a Owner..." />

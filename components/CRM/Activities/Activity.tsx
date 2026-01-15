@@ -118,8 +118,6 @@ const ActivityTable = () => {
   const { data: activity } = useGetActivity();
   const { setParam } = useUpdateParams();
 
-  console.log("activity", activity);
-
   return (
     <div className="w-full bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       {/* --- Filter Section --- */}

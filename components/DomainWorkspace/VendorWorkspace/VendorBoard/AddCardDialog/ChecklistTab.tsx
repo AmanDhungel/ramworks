@@ -1,69 +1,125 @@
-import { useFormContext, useFieldArray } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useId, useState } from "react";
+import { TaskFormValues } from "./schema";
+import { FormControl, FormField, FormItem } from "@/components/ui/form";
+
+type ChecklistItem = {
+  text: string;
+  completed: boolean;
+};
 
 export default function ChecklistTab() {
-  const [inputValue, setInputValue] = useState("");
-  const { control, watch, setValue } = useFormContext();
-  const checklists: { id: string; title: string; completed: boolean }[] =
-    watch("checklists");
+  const { control, watch, setValue, getValues } =
+    useFormContext<TaskFormValues>();
 
-  const progress = checklists?.length
-    ? (checklists.filter((i) => i.completed).length / checklists.length) * 100
-    : 0;
+  const checklists = watch("checklists") ?? [];
+
+  const [currentTitle, setCurrentTitle] = useState("");
+  const [currentItem, setCurrentItem] = useState("");
+  const [currentItems, setCurrentItems] = useState<ChecklistItem[]>([]);
+
+  const addItem = () => {
+    if (!currentItem.trim()) return;
+
+    setCurrentItems((prev) => [
+      ...prev,
+      { text: currentItem, completed: false },
+    ]);
+
+    setCurrentItem("");
+  };
+
+  const addAll = () => {
+    if (!currentTitle.trim() || currentItems.length === 0) return;
+
+    setValue("checklists", [
+      ...checklists,
+      {
+        title: currentTitle,
+        items: currentItems,
+      },
+    ]);
+
+    setCurrentTitle("");
+    setCurrentItems([]);
+  };
 
   return (
     <TabsContent value="checklists" className="space-y-6">
-      <div>
-        <div className="flex justify-between mb-2">
-          <span className="font-bold">Checklist</span>
-          <span className="text-slate-500">{Math.round(progress)}%</span>
-        </div>
-        <Progress value={progress} className="h-2 bg-slate-100" />
-      </div>
-
-      {checklists?.map((item) => (
-        <div
-          key={item.id}
-          className="flex items-center gap-3 p-2 bg-slate-50 rounded">
-          <Checkbox checked={item.completed} />
-          <span className={item.completed ? "line-through text-slate-400" : ""}>
-            {item.title}
-          </span>
+      {checklists.map((list, index) => (
+        <div key={`list-${index}`} className="bg-slate-100 p-2 rounded text-sm">
+          <p className="font-bold">{list.title || "Untitled"}</p>
+          <ul className="list-none pl-4">
+            {list.items.map((i, idx) => (
+              <li
+                key={idx}
+                className={`flex gap-2 items-center -ml-4 mt-2 ${
+                  i.completed ? "line-through" : ""
+                }`}>
+                <FormField
+                  control={control}
+                  name={`checklists.${index}.items.${idx}.completed`}
+                  render={({ field }) => (
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+                {i.text}
+              </li>
+            ))}
+          </ul>
         </div>
       ))}
 
       <div className="space-y-2">
-        <p className="text-sm font-bold">Add an item</p>
+        <Input
+          placeholder="Checklist title"
+          value={currentTitle}
+          onChange={(e) => setCurrentTitle(e.target.value)}
+        />
+
         <div className="flex gap-2">
           <Input
-            placeholder="Add an item"
-            className="bg-slate-50 border-none"
-            value={inputValue}
-            onChange={(e) => {
-              setInputValue(e.target.value);
-            }}
+            placeholder="Checklist item"
+            value={currentItem}
+            onChange={(e) => setCurrentItem(e.target.value)}
           />
           <Button
-            className="bg-orange-500"
-            onClick={() => {
-              setValue("checklists", [
-                ...checklists,
-                {
-                  id: `list-${checklists.length + 1}`,
-                  title: inputValue,
-                  completed: false,
-                },
-              ]);
-              setInputValue("");
+            className="bg-orange-500 text-white"
+            onClick={(e) => {
+              addItem();
+              e.preventDefault();
             }}>
             + Add
           </Button>
         </div>
+
+        {currentItems.length > 0 && (
+          <div className="bg-slate-100 p-2 rounded text-sm">
+            <p className="font-bold">{currentTitle || "Untitled"}</p>
+            <ul className="list-disc pl-4">
+              {currentItems.map((i, idx) => (
+                <li key={idx}>{i.text}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        <Button
+          className="w-full bg-orange-500 text-white"
+          onClick={(e) => {
+            addAll();
+            e.preventDefault();
+          }}>
+          + Add All
+        </Button>
       </div>
     </TabsContent>
   );

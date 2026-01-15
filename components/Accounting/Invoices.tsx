@@ -122,7 +122,6 @@ const getStatusBadge = (status: string) => {
 export default function InvoicesListPage() {
   const { data: invoices } = useGetInvoices();
 
-  console.log(invoices);
   return (
     <div className="min-h-screen  p-4 md:p-6 font-sans text-slate-700">
       <div className="flex items-center justify-between mb-6">

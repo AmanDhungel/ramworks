@@ -3,6 +3,30 @@ import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TaskFormValues } from "./schema";
+import { useGetContact } from "@/services/contact.service";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const MOCK_USERS = [
   { id: "1", name: "John Doe", img: "https://github.com/shadcn.png" },
@@ -10,57 +34,81 @@ export const MOCK_USERS = [
 ];
 
 export default function MembersTab() {
-  const { watch, setValue } = useFormContext();
-  const selectedMembers = watch("members") || [];
-
-  const toggleMember = (id: string) => {
-    const next = selectedMembers.includes(id)
-      ? selectedMembers.filter((m: string) => m !== id)
-      : [...selectedMembers, id];
-    setValue("members", next);
-  };
+  const { control } = useFormContext<TaskFormValues>();
+  const { data: contacts } = useGetContact();
 
   return (
     <TabsContent value="members" className="space-y-4">
       <div className="space-y-4">
         <h3 className="font-bold">Members</h3>
-        <div className="space-y-2">
-          {/* {MOCK_USERS.filter((u) => selectedMembers.includes(u.id)).map(
-            (user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between p-2 bg-slate-50 rounded">
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={user.img} />
-                  </Avatar>
-                  <span className="text-sm">{user.name}</span>
-                </div>
-                <Button
-                  variant="destructive"
-                  onClick={() => toggleMember(user.id)}>
-                  Remove
-                </Button>
-              </div>
-            )
-          )} */}
-        </div>
+        <div className="space-y-2"></div>
 
         <div className="space-y-2 pt-4">
-          <p className="text-sm font-bold">Search Members</p>
-          <Input placeholder="Search" className="bg-slate-50 border-none" />
           <div className="space-y-1">
-            {MOCK_USERS.map((user) => (
-              <div
-                key={user.id}
-                onClick={() => toggleMember(user.id)}
-                className="flex items-center gap-2 p-2 hover:bg-slate-100 cursor-pointer rounded">
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={user.img} />
-                </Avatar>
-                <span className="text-sm">{user.name}</span>
-              </div>
-            ))}
+            <FormField
+              control={control}
+              name="contacts"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Members</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between font-normal",
+                            !field.value?.length && "text-muted-foreground"
+                          )}>
+                          {field?.value?.length > 0
+                            ? `${field?.value.length} members selected`
+                            : "Select members..."}
+                          <span className="ml-2 opacity-50">▼</span>
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search contacts..." />
+                        <CommandList>
+                          <CommandEmpty>No contact found.</CommandEmpty>
+                          <CommandGroup>
+                            {contacts?.data.map((contact) => (
+                              <CommandItem
+                                key={contact._id}
+                                value={contact.name}
+                                onSelect={() => {
+                                  const currentValue = field.value || [];
+                                  const newValue = currentValue.includes(
+                                    contact._id
+                                  )
+                                    ? currentValue.filter(
+                                        (v: string) => v !== contact._id
+                                      )
+                                    : [...currentValue, contact._id];
+                                  field.onChange(newValue);
+                                }}>
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value?.includes(contact._id)
+                                      ? "opacity-100"
+                                      : "opacity-0"
+                                  )}
+                                />
+                                {contact.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
       </div>

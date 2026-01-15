@@ -4,6 +4,7 @@ import {
   FormItem,
   FormLabel,
   FormControl,
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +15,7 @@ import { X, Plus, Upload, Check } from "lucide-react";
 import { Path, UseFormReturn } from "react-hook-form";
 import { MaintenanceFormValues, MaintenanceRequest } from "./schema";
 import { Label } from "@/components/ui/label";
+import { useGetSingleWorkSpaceForRAM } from "@/services/workspace.service";
 
 const PRESET_TAGS = [
   "preventive",
@@ -31,6 +33,10 @@ export default function Step4Final({
   const [tagInput, setTagInput] = useState("");
   const selectedTags = form.watch("tags") || [];
 
+  const { data: workspace } = useGetSingleWorkSpaceForRAM(
+    form.watch().domain_workspace
+  );
+
   const addTag = (tag: string) => {
     const cleanTag = tag.trim().toLowerCase();
     if (cleanTag && !selectedTags.includes(cleanTag)) {
@@ -46,7 +52,6 @@ export default function Step4Final({
     );
   };
 
-  console.log("selectedTags", form.getValues());
   return (
     <div className="space-y-8">
       <section className="p-6 border rounded-xl space-y-6 bg-white">
@@ -78,35 +83,107 @@ export default function Step4Final({
             Cost Breakdown (Optional)
           </h4>
           <div className="space-y-4">
-            {["labor", "materials", "additional_charges"].map((label) => (
-              <div key={label} className="space-y-1.5">
-                <p className="text-xs font-medium text-slate-500 capitalize">
-                  {label.replace("_", " ")}
-                </p>
-                <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-slate-400 text-sm">
-                    $
-                  </span>
-                  <Input
-                    type="number"
-                    step="0.01" // Allows decimals
-                    className="pl-7 bg-slate-50/50 border-slate-200 h-9"
-                    placeholder="0.00"
-                    onChange={(e) => {
-                      const rawValue = e.target.value;
-                      const parsedValue =
-                        rawValue === "" ? 0 : parseFloat(rawValue);
+            <FormField
+              control={form.control}
+              name="cost_breakdown.labor"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-slate-500">
+                    Labor
+                  </FormLabel>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 text-sm">
+                      $
+                    </span>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="pl-7 bg-slate-50/50 border-slate-200 h-9"
+                        {...field}
+                        onChange={(e) => {
+                          const val =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value);
+                          field.onChange(isNaN(val) ? 0 : val);
+                        }}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-[10px]" />
+                </FormItem>
+              )}
+            />
 
-                      form.setValue(
-                        `cost_breakdown.${label}` as any,
-                        isNaN(parsedValue) ? 0 : parsedValue,
-                        { shouldValidate: true }
-                      );
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+            <FormField
+              control={form.control}
+              name="cost_breakdown.materials"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-slate-500">
+                    Materials
+                  </FormLabel>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 text-sm">
+                      $
+                    </span>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="pl-7 bg-slate-50/50 border-slate-200 h-9"
+                        {...field}
+                        onChange={(e) => {
+                          const val =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value);
+                          field.onChange(isNaN(val) ? 0 : val);
+                        }}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-[10px]" />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cost_breakdown.additional_charges"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="text-xs font-medium text-slate-500">
+                    Additional Charges
+                  </FormLabel>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2.5 text-slate-400 text-sm">
+                      $
+                    </span>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        className="pl-7 bg-slate-50/50 border-slate-200 h-9"
+                        {...field}
+                        onChange={(e) => {
+                          const val =
+                            e.target.value === ""
+                              ? 0
+                              : parseFloat(e.target.value);
+                          field.onChange(isNaN(val) ? 0 : val);
+                        }}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage className="text-[10px]" />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
       </section>
@@ -234,6 +311,7 @@ export default function Step4Final({
             <Checkbox
               id="notify"
               className="data-[state=checked]:bg-orange-500 border-slate-300"
+              checked={form.watch().notify_affected_tenants}
               onCheckedChange={(e) =>
                 form.setValue("notify_affected_tenants", e as boolean)
               }
@@ -248,6 +326,7 @@ export default function Step4Final({
             <Checkbox
               id="approval"
               className="data-[state=checked]:bg-orange-500 border-slate-300"
+              checked={form.watch().require_approval_before_starting_work}
               onCheckedChange={(e) =>
                 form.setValue(
                   "require_approval_before_starting_work",
@@ -264,40 +343,43 @@ export default function Step4Final({
         </div>
       </section>
 
-      {/* Summary Section */}
       <section className="p-6 border rounded-xl bg-white space-y-4">
         <h3 className="text-lg font-bold text-slate-800">Summary</h3>
         <div className="space-y-4 text-sm">
           <div className="flex justify-between items-center py-1">
             <span className="text-slate-500">Type:</span>
             <Badge className="bg-blue-50 text-blue-600 border-blue-100 uppercase text-[10px] font-bold">
-              Scheduled
+              {form.watch().type}
             </Badge>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-slate-500">Category:</span>
-            <span className="font-bold text-slate-800">Carpentry</span>
+            <span className="font-bold text-slate-800">
+              {workspace?.data.title}
+            </span>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-slate-500">Priority:</span>
             <Badge className="bg-green-500 text-white border-none text-[10px] font-bold px-3">
-              LOW
+              {form.watch().priority}
             </Badge>
           </div>
           <div className="flex justify-between items-center py-1">
             <span className="text-slate-500">Scheduled:</span>
             <span className="font-bold text-slate-800">
-              2025-12-04 at 04:44
+              {form.watch().date} at {form.watch().time}
             </span>
           </div>
-          <div className="flex justify-between items-center py-1">
+          {/* <div className="flex justify-between items-center py-1">
             <span className="text-slate-500">Recurrence:</span>
             <span className="font-bold text-slate-800">Annual</span>
-          </div>
+          </div> */}
 
           <div className="pt-4 border-t flex justify-between items-center">
             <span className="text-slate-700 font-bold">Total Amount:</span>
-            <span className="text-orange-500 text-xl font-bold">$0.00</span>
+            <span className="text-orange-500 text-xl font-bold">
+              ${form.watch().total_estimated_cost}
+            </span>
           </div>
         </div>
       </section>

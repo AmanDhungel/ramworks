@@ -54,7 +54,6 @@ const COMPANIES = [
 
 export default function CompaniesPage() {
   const { data: companyData } = useGetCompany();
-  console.log("companyData", companyData?.data);
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
       {/* Header */}

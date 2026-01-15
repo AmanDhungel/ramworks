@@ -162,8 +162,6 @@ export function CompanyFormDialog() {
     });
   }
 
-  console.log("forms", form.formState.errors);
-
   return (
     <Dialog>
       <DialogTrigger asChild>

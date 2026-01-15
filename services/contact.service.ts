@@ -83,7 +83,7 @@ export const useGetContact = () => {
 
 export const useGetSingleContact = (id: string) => {
   return useFetcher<ApiResponseType<ContactType>>(
-    "singleContact",
+    ["singleContact", id],
     null,
     `/client_api/contact/${id}`
   );

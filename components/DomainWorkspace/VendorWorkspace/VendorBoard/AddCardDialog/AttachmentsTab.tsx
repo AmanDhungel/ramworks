@@ -1,21 +1,17 @@
 import { useFormContext } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { CloudUpload, X, FileText } from "lucide-react";
+import { TaskFormValues } from "./schema";
+import z from "zod";
 
 export default function AttachmentsTab() {
-  const { watch, setValue } = useFormContext();
-  const attachments = watch("attachments") || [];
+  const { watch, setValue } = useFormContext<TaskFormValues>();
+  const attachments = watch("attachments");
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const newFile = {
-        id: Math.random().toString(),
-        name: file.name,
-        size: (file.size / 1024 / 1024).toFixed(1) + "MB",
-        url: "#",
-      };
-      setValue("attachments", [...attachments, newFile]);
+      setValue("attachments", attachments ? [...attachments, file] : [file]);
     }
   };
 
@@ -45,7 +41,7 @@ export default function AttachmentsTab() {
       </div>
 
       <div className="space-y-2">
-        {attachments.map((file: any, idx: number) => (
+        {attachments?.map((file: any, idx: number) => (
           <div
             key={file.id}
             className="flex items-center justify-between p-3 border rounded-lg bg-white">
@@ -54,16 +50,19 @@ export default function AttachmentsTab() {
                 <FileText className="w-5 h-5 text-slate-500" />
               </div>
               <div>
-                <p className="text-sm font-medium">{file.name}</p>
+                <p className="text-sm font-medium w-15 overflow-y-clip">
+                  {file.name}
+                </p>
                 <p className="text-xs text-slate-400">{file.size}</p>
               </div>
             </div>
             <X
-              className="w-4 h-4 text-slate-400 cursor-pointer hover:text-red-500"
+              className="w-20 h-20 text-slate-400 cursor-pointer hover:text-red-500 ml-20"
+              size={20}
               onClick={() =>
                 setValue(
                   "attachments",
-                  attachments.filter((_: any, i: number) => i !== idx)
+                  attachments?.filter((_: any, i: number) => i !== idx)
                 )
               }
             />

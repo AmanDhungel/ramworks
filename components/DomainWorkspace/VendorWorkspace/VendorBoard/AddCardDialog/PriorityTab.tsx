@@ -1,8 +1,19 @@
 import { useFormContext } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { TaskFormValues } from "./schema";
 
-const priorities = [
+const priorities: Array<{
+  name:
+    | "Emergency"
+    | "Alert"
+    | "Critical"
+    | "Error"
+    | "Warning"
+    | "Notification"
+    | "Informational";
+  color: string;
+}> = [
   { name: "Emergency", color: "bg-red-600" },
   { name: "Alert", color: "bg-rose-400" },
   { name: "Critical", color: "bg-orange-500" },
@@ -13,7 +24,7 @@ const priorities = [
 ];
 
 export default function PriorityTab() {
-  const { setValue } = useFormContext();
+  const { setValue } = useFormContext<TaskFormValues>();
 
   return (
     <TabsContent value="priority" className="space-y-4">
@@ -24,7 +35,7 @@ export default function PriorityTab() {
             key={p.name}
             type="button"
             onClick={() => setValue("priority", p.name)}
-            className={`${p.color} text-white hover:opacity-90 min-w-[100px]`}>
+            className={`${p.color} text-white hover:opacity-90 min-w-[100px] capitalize`}>
             {p.name}
           </Button>
         ))}

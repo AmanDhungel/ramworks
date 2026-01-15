@@ -32,7 +32,6 @@ export default function CompanyProfileSidebar() {
   const idString = Array.isArray(id) ? id[0] : id || "";
   const { data: singleCompany } = useGetSingleCompany(idString);
 
-  console.log(singleCompany);
   return (
     <div className="max-w-[400px] mt-4 bg-white border rounded-lg overflow-hidden shadow-sm font-sans">
       {/* Header with Gradient Background */}

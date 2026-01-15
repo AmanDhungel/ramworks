@@ -50,7 +50,6 @@ export type ContactType = {
 };
 
 export const ContactCard = (contact: ContactType) => {
-  console.log("contact Tyasdad....", contact);
   const router = useRouter();
   return (
     <Card className="relative group hover:shadow-md transition-shadow duration-200">
