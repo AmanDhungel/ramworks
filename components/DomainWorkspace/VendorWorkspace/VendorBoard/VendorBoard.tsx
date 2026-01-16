@@ -347,6 +347,104 @@ export default function VendorBoard() {
   //   setActiveList(null);
   // };
 
+  //This is working
+  // const handleDragEnd = ({ active, over }: DragEndEvent) => {
+  //   setActiveTask(null);
+  //   setActiveList(null);
+
+  //   if (!over) return;
+
+  //   const activeId = active.id.toString();
+  //   const overId = over.id.toString();
+
+  //   // 1. Handle List Reordering
+  //   if (active.data.current?.type === "container") {
+  //     setLists((prev) =>
+  //       arrayMove(
+  //         prev,
+  //         prev.findIndex((l) => l._id === active.id),
+  //         prev.findIndex((l) => l._id === over.id)
+  //       )
+  //     );
+  //     return;
+  //   }
+
+  //   // 2. Handle Task Moving
+  //   const sourceListId = findContainer(activeId, "task");
+  //   const destinationListId = findContainer(
+  //     overId,
+  //     over.data.current?.type as any
+  //   );
+
+  //   if (!sourceListId || !destinationListId) return;
+
+  //   // Find the exact indices and the task object
+  //   const sourceList = lists.find((l) => l._id === sourceListId);
+  //   const destinationList = lists.find((l) => l._id === destinationListId);
+
+  //   // CRITICAL: Ensure your property access matches your data structure
+  //   // Change 't._id' to just '_id' if that's how your data looks
+  //   const sourceIndex = sourceList?.tasks.findIndex(
+  //     (t: any) => t._id === activeId
+  //   );
+  //   let destinationIndex = destinationList?.tasks.findIndex(
+  //     (t: any) => t._id === overId
+  //   );
+
+  //   if (sourceIndex === -1 || sourceIndex === undefined) return;
+
+  //   // Default to end of list if dropped over a container or not found
+  //   if (destinationIndex === -1 || destinationIndex === undefined) {
+  //     destinationIndex = destinationList?.tasks.length ?? 0;
+  //   }
+
+  //   // A. Same List Reorder
+  //   if (sourceListId === destinationListId) {
+  //     setLists((prev) =>
+  //       prev.map((list) => {
+  //         if (list._id !== sourceListId) return list;
+  //         return {
+  //           ...list,
+  //           tasks: arrayMove(list.tasks, sourceIndex, destinationIndex),
+  //         };
+  //       })
+  //     );
+  //     return;
+  //   }
+
+  //   // B. Cross List Move
+  //   // Call Mutation FIRST (or alongside)
+  //   mutateTask(
+  //     {
+  //       source_tasklist_id: sourceListId,
+  //       destination_tasklist_id: destinationListId,
+  //       source_index: sourceIndex,
+  //       destination_index: destinationIndex,
+  //     },
+  //     {
+  //       onSuccess: () => {
+  //         toast.success("Task moved");
+  //         queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+  //       },
+  //       onError: () => {
+  //         queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+  //       },
+  //     }
+  //   );
+
+  //   // Update Local State for Optimistic UI
+  //   setLists((prev) => {
+  //     const newLists = [...prev];
+  //     const sList = newLists.find((l) => l._id === sourceListId);
+  //     const dList = newLists.find((l) => l._id === destinationListId);
+
+  //     const [movedTask] = sList.tasks.splice(sourceIndex, 1);
+  //     dList.tasks.splice(destinationIndex, 0, movedTask);
+
+  //     return newLists;
+  //   });
+  // };
+
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     setActiveTask(null);
     setActiveList(null);
@@ -358,17 +456,20 @@ export default function VendorBoard() {
 
     // 1. Handle List Reordering
     if (active.data.current?.type === "container") {
-      setLists((prev) =>
-        arrayMove(
-          prev,
-          prev.findIndex((l) => l._id === active.id),
-          prev.findIndex((l) => l._id === over.id)
-        )
-      );
+      if (active.id !== over.id) {
+        setLists((prev) =>
+          arrayMove(
+            prev,
+            prev.findIndex((l) => l._id === active.id),
+            prev.findIndex((l) => l._id === over.id)
+          )
+        );
+        // If your API supports list reordering, trigger that mutation here
+      }
       return;
     }
 
-    // 2. Handle Task Moving
+    // 2. Handle Task Moving/Reordering
     const sourceListId = findContainer(activeId, "task");
     const destinationListId = findContainer(
       overId,
@@ -377,12 +478,9 @@ export default function VendorBoard() {
 
     if (!sourceListId || !destinationListId) return;
 
-    // Find the exact indices and the task object
     const sourceList = lists.find((l) => l._id === sourceListId);
     const destinationList = lists.find((l) => l._id === destinationListId);
 
-    // CRITICAL: Ensure your property access matches your data structure
-    // Change 't._id' to just '_id' if that's how your data looks
     const sourceIndex = sourceList?.tasks.findIndex(
       (t: any) => t._id === activeId
     );
@@ -392,27 +490,19 @@ export default function VendorBoard() {
 
     if (sourceIndex === -1 || sourceIndex === undefined) return;
 
-    // Default to end of list if dropped over a container or not found
+    // If dropped on an empty list or the container itself
     if (destinationIndex === -1 || destinationIndex === undefined) {
       destinationIndex = destinationList?.tasks.length ?? 0;
     }
 
-    // A. Same List Reorder
-    if (sourceListId === destinationListId) {
-      setLists((prev) =>
-        prev.map((list) => {
-          if (list._id !== sourceListId) return list;
-          return {
-            ...list,
-            tasks: arrayMove(list.tasks, sourceIndex, destinationIndex),
-          };
-        })
-      );
-      return;
-    }
+    // Check if anything actually changed (either list changed OR index changed)
+    const isSameList = sourceListId === destinationListId;
+    const isSameIndex = sourceIndex === destinationIndex;
 
-    // B. Cross List Move
-    // Call Mutation FIRST (or alongside)
+    if (isSameList && isSameIndex) return;
+
+    // --- TRIGGER MUTATION ---
+    // We trigger this for BOTH cross-list moves AND same-list reordering
     mutateTask(
       {
         source_tasklist_id: sourceListId,
@@ -422,25 +512,48 @@ export default function VendorBoard() {
       },
       {
         onSuccess: () => {
-          toast.success("Task moved");
+          toast.success("Position updated");
           queryClient.invalidateQueries({ queryKey: ["dndboard"] });
         },
         onError: () => {
+          // Revert or refresh on error
           queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+          toast.error("Failed to update position");
         },
       }
     );
 
-    // Update Local State for Optimistic UI
+    // --- OPTIMISTIC UI UPDATE ---
     setLists((prev) => {
-      const newLists = [...prev];
-      const sList = newLists.find((l) => l._id === sourceListId);
-      const dList = newLists.find((l) => l._id === destinationListId);
+      return prev.map((list) => {
+        // Logic for same list reorder
+        if (isSameList && list._id === sourceListId) {
+          return {
+            ...list,
+            tasks: arrayMove(list.tasks, sourceIndex, destinationIndex),
+          };
+        }
 
-      const [movedTask] = sList.tasks.splice(sourceIndex, 1);
-      dList.tasks.splice(destinationIndex, 0, movedTask);
+        // Logic for moving between different lists
+        if (list._id === sourceListId) {
+          return {
+            ...list,
+            tasks: list.tasks.filter((t: any) => t._id !== activeId),
+          };
+        }
 
-      return newLists;
+        if (list._id === destinationListId) {
+          const movedTask = sourceList?.tasks[sourceIndex];
+          const newTasks = [...list.tasks];
+          newTasks.splice(destinationIndex, 0, movedTask);
+          return {
+            ...list,
+            tasks: newTasks,
+          };
+        }
+
+        return list;
+      });
     });
   };
 
@@ -450,7 +563,10 @@ export default function VendorBoard() {
     mutate(
       { title: addList },
       {
-        onSuccess: () => toast.success("List created"),
+        onSuccess: () => {
+          toast.success("List created");
+          queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+        },
         onError: () => toast.error("Failed to create list"),
       }
     );
