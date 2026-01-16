@@ -235,105 +235,128 @@ export default function VendorBoard() {
   //   setActiveList(null);
   // };
 
+  // const handleDragEnd = ({ active, over }: DragEndEvent) => {
+  //   console.log("handleDragEnd", active, over);
+  //   if (!over) {
+  //     setActiveTask(null);
+  //     return;
+  //   }
+
+  //   if (active.data.current?.type === "task") {
+  //     const activeId = active.id.toString();
+  //     const overId = over.id.toString();
+
+  //     const sourceListId = findContainer(activeId, "task");
+  //     // Use the 'type' from 'over' data if available to help findContainer
+  //     const destinationListId = findContainer(
+  //       overId,
+  //       over.data.current?.type as any
+  //     );
+
+  //     if (!sourceListId || !destinationListId) {
+  //       setActiveTask(null);
+  //       return;
+  //     }
+
+  //     // --- NEW LOGIC START ---
+  //     // If the task is dropped within the same list, we only update local state
+  //     // and skip the mutateTask API call.
+  //     if (sourceListId === destinationListId) {
+  //       setLists((prev) =>
+  //         prev.map((list) => {
+  //           if (list._id !== sourceListId) return list;
+  //           return {
+  //             ...list,
+  //             tasks: arrayMove(
+  //               list.tasks,
+  //               list.tasks.findIndex((t: any) => t._id === activeId),
+  //               list.tasks.findIndex((t: any) => t._id === overId)
+  //             ),
+  //           };
+  //         })
+  //       );
+  //       setActiveTask(null);
+  //       return;
+  //     }
+
+  //     setLists((prev) => {
+  //       const source = prev.find((l) => l._id === sourceListId);
+  //       const destination = prev.find((l) => l._id === destinationListId);
+
+  //       if (!source?.tasks || !destination?.tasks) return prev;
+
+  //       const sourceIndex = source.tasks.findIndex(
+  //         ({ t }: { t: { _id: string } }) => t._id === activeId
+  //       );
+  //       let destinationIndex = destination.tasks.findIndex(
+  //         ({ t }: { t: { _id: string } }) => t._id === overId
+  //       );
+
+  //       if (destinationIndex === -1)
+  //         destinationIndex = destination.tasks.length;
+
+  //       const task = source.tasks[sourceIndex];
+  //       if (!task) return prev;
+
+  //       const newSourceTasks = [...source.tasks];
+  //       newSourceTasks.splice(sourceIndex, 1);
+
+  //       const newDestinationTasks = [...destination.tasks];
+  //       newDestinationTasks.splice(destinationIndex, 0, task);
+
+  //       mutateTask(
+  //         {
+  //           source_tasklist_id: sourceListId,
+  //           destination_tasklist_id: destinationListId,
+  //           source_index: sourceIndex,
+  //           destination_index: destinationIndex,
+  //         },
+  //         {
+  //           onSuccess: () => {
+  //             toast.success("Task moved");
+  //             queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+  //           },
+  //           onError: () => {
+  //             queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+  //           },
+  //         }
+  //       );
+
+  //       return prev.map((list) => {
+  //         if (list._id === sourceListId)
+  //           return { ...list, tasks: newSourceTasks };
+  //         if (list._id === destinationListId)
+  //           return { ...list, tasks: newDestinationTasks };
+  //         return list;
+  //       });
+  //     });
+  //   }
+
+  //   // Dragging entire list logic remains the same
+  //   if (active.data.current?.type === "container") {
+  //     setLists((prev) =>
+  //       arrayMove(
+  //         prev,
+  //         prev.findIndex((l) => l._id === active.id),
+  //         prev.findIndex((l) => l._id === over.id)
+  //       )
+  //     );
+  //   }
+
+  //   setActiveTask(null);
+  //   setActiveList(null);
+  // };
+
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    if (!over) {
-      setActiveTask(null);
-      return;
-    }
+    setActiveTask(null);
+    setActiveList(null);
 
-    if (active.data.current?.type === "task") {
-      const activeId = active.id.toString();
-      const overId = over.id.toString();
+    if (!over) return;
 
-      const sourceListId = findContainer(activeId, "task");
-      // Use the 'type' from 'over' data if available to help findContainer
-      const destinationListId = findContainer(
-        overId,
-        over.data.current?.type as any
-      );
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
 
-      if (!sourceListId || !destinationListId) {
-        setActiveTask(null);
-        return;
-      }
-
-      // --- NEW LOGIC START ---
-      // If the task is dropped within the same list, we only update local state
-      // and skip the mutateTask API call.
-      if (sourceListId === destinationListId) {
-        setLists((prev) =>
-          prev.map((list) => {
-            if (list._id !== sourceListId) return list;
-            return {
-              ...list,
-              tasks: arrayMove(
-                list.tasks,
-                list.tasks.findIndex((t: any) => t._id === activeId),
-                list.tasks.findIndex((t: any) => t._id === overId)
-              ),
-            };
-          })
-        );
-        setActiveTask(null);
-        return;
-      }
-      // --- NEW LOGIC END ---
-
-      setLists((prev) => {
-        const source = prev.find((l) => l._id === sourceListId);
-        const destination = prev.find((l) => l._id === destinationListId);
-
-        if (!source?.tasks || !destination?.tasks) return prev;
-
-        const sourceIndex = source.tasks.findIndex(
-          ({ t }: { t: { _id: string } }) => t._id === activeId
-        );
-        let destinationIndex = destination.tasks.findIndex(
-          ({ t }: { t: { _id: string } }) => t._id === overId
-        );
-
-        if (destinationIndex === -1)
-          destinationIndex = destination.tasks.length;
-
-        const task = source.tasks[sourceIndex];
-        if (!task) return prev;
-
-        const newSourceTasks = [...source.tasks];
-        newSourceTasks.splice(sourceIndex, 1);
-
-        const newDestinationTasks = [...destination.tasks];
-        newDestinationTasks.splice(destinationIndex, 0, task);
-
-        // API Call only happens here because we returned early above if IDs were the same
-        mutateTask(
-          {
-            source_tasklist_id: sourceListId,
-            destination_tasklist_id: destinationListId,
-            source_index: sourceIndex,
-            destination_index: destinationIndex,
-          },
-          {
-            onSuccess: () => {
-              toast.success("Task moved");
-              queryClient.invalidateQueries({ queryKey: ["dndboard"] });
-            },
-            onError: () => {
-              queryClient.invalidateQueries({ queryKey: ["dndboard"] });
-            },
-          }
-        );
-
-        return prev.map((list) => {
-          if (list._id === sourceListId)
-            return { ...list, tasks: newSourceTasks };
-          if (list._id === destinationListId)
-            return { ...list, tasks: newDestinationTasks };
-          return list;
-        });
-      });
-    }
-
-    // Dragging entire list logic remains the same
+    // 1. Handle List Reordering
     if (active.data.current?.type === "container") {
       setLists((prev) =>
         arrayMove(
@@ -342,11 +365,85 @@ export default function VendorBoard() {
           prev.findIndex((l) => l._id === over.id)
         )
       );
+      return;
     }
 
-    setActiveTask(null);
-    setActiveList(null);
+    // 2. Handle Task Moving
+    const sourceListId = findContainer(activeId, "task");
+    const destinationListId = findContainer(
+      overId,
+      over.data.current?.type as any
+    );
+
+    if (!sourceListId || !destinationListId) return;
+
+    // Find the exact indices and the task object
+    const sourceList = lists.find((l) => l._id === sourceListId);
+    const destinationList = lists.find((l) => l._id === destinationListId);
+
+    // CRITICAL: Ensure your property access matches your data structure
+    // Change 't._id' to just '_id' if that's how your data looks
+    const sourceIndex = sourceList?.tasks.findIndex(
+      (t: any) => t._id === activeId
+    );
+    let destinationIndex = destinationList?.tasks.findIndex(
+      (t: any) => t._id === overId
+    );
+
+    if (sourceIndex === -1 || sourceIndex === undefined) return;
+
+    // Default to end of list if dropped over a container or not found
+    if (destinationIndex === -1 || destinationIndex === undefined) {
+      destinationIndex = destinationList?.tasks.length ?? 0;
+    }
+
+    // A. Same List Reorder
+    if (sourceListId === destinationListId) {
+      setLists((prev) =>
+        prev.map((list) => {
+          if (list._id !== sourceListId) return list;
+          return {
+            ...list,
+            tasks: arrayMove(list.tasks, sourceIndex, destinationIndex),
+          };
+        })
+      );
+      return;
+    }
+
+    // B. Cross List Move
+    // Call Mutation FIRST (or alongside)
+    mutateTask(
+      {
+        source_tasklist_id: sourceListId,
+        destination_tasklist_id: destinationListId,
+        source_index: sourceIndex,
+        destination_index: destinationIndex,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Task moved");
+          queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+        },
+        onError: () => {
+          queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+        },
+      }
+    );
+
+    // Update Local State for Optimistic UI
+    setLists((prev) => {
+      const newLists = [...prev];
+      const sList = newLists.find((l) => l._id === sourceListId);
+      const dList = newLists.find((l) => l._id === destinationListId);
+
+      const [movedTask] = sList.tasks.splice(sourceIndex, 1);
+      dList.tasks.splice(destinationIndex, 0, movedTask);
+
+      return newLists;
+    });
   };
+
   const handleAddList = () => {
     if (!addList.trim()) return;
 
