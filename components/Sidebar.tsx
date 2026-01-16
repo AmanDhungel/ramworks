@@ -15,6 +15,7 @@ import {
   SmilePlus,
   TrendingUp,
   ShoppingCart,
+  Calendar1,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -41,6 +42,17 @@ const menuData: NavGroup[] = [
         title: "Domain Workspace",
         icon: LayoutDashboard,
         link: "/domain-workspace",
+        hasDropdown: false,
+      },
+    ],
+  },
+  {
+    groupLabel: "Application",
+    items: [
+      {
+        title: "Calendar",
+        icon: Calendar1,
+        link: "/calender",
         hasDropdown: false,
       },
     ],
