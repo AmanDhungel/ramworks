@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       "images.unsplash.com",
       "logo.clearbit.com",
       "ttg-script.onrender.com",
+      "picsum.photos",
     ],
   },
 };
