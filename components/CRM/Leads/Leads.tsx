@@ -181,7 +181,7 @@ export default function LeadsGridPage() {
       {/* Breadcrumb & Top Actions */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Deals</h1>
+          <h1 className="text-xl font-bold text-slate-900">Leads</h1>
           <nav className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
             <svg
               className="w-3 h-3"
@@ -193,7 +193,7 @@ export default function LeadsGridPage() {
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
             / <span>CRM</span> /{" "}
-            <span className="text-slate-600 font-medium">Deals List</span>
+            <span className="text-slate-600 font-medium">Leads List</span>
           </nav>
         </div>
 
@@ -212,14 +212,14 @@ export default function LeadsGridPage() {
             <Download size={14} /> Export <ChevronDown size={14} />
           </Button>
           <Button className="bg-[#ff6b35] hover:bg-orange-600 text-white font-bold h-9 gap-2 shadow-sm">
-            <PlusCircle size={16} /> Add New Deal
+            <PlusCircle size={16} /> Add New Lead
           </Button>
         </div>
       </div>
 
       {/* Filters Bar */}
       <div className="bg-white p-3 border border-slate-200 rounded-xl mb-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-        <h3 className="font-bold text-slate-800 text-sm ml-2">Deals Grid</h3>
+        <h3 className="font-bold text-slate-800 text-sm ml-2">Leads Grid</h3>
         <div className="flex items-center gap-3">
           <Select defaultValue="7days">
             <SelectTrigger className="w-[160px] h-8 text-[11px] border-slate-200">
