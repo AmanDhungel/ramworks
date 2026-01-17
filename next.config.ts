@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       "logo.clearbit.com",
       "ttg-script.onrender.com",
       "picsum.photos",
+      "i.pravatar.cc",
     ],
   },
 };

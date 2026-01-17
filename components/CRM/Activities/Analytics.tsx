@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Download,
@@ -72,8 +73,6 @@ const RECENT_DEALS = [
   },
 ];
 
-// --- Sub-Components ---
-
 const Card = ({ title, children, extra, footerLink }: any) => (
   <div className="bg-white border border-slate-200 rounded-xl overflow-hidden flex flex-col h-full">
     <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
@@ -91,29 +90,29 @@ const Card = ({ title, children, extra, footerLink }: any) => (
   </div>
 );
 
-const Badge = ({
-  children,
-  variant,
-}: {
-  children: React.ReactNode;
-  variant: string;
-}) => {
-  const styles: any = {
-    Contacted: "bg-slate-100 text-slate-600",
-    Closed: "bg-emerald-100 text-emerald-600",
-    Lost: "bg-red-100 text-red-600",
-    "Not Contacted": "bg-purple-100 text-purple-600",
-  };
-  return (
-    <span
-      className={cn(
-        "px-2 py-1 rounded text-[10px] font-bold uppercase",
-        styles[variant as string]
-      )}>
-      {children}
-    </span>
-  );
-};
+// const Badge = ({
+//   children,
+//   variant,
+// }: {
+//   children: React.ReactNode;
+//   variant: string;
+// }) => {
+//   const styles: any = {
+//     Contacted: "bg-slate-100 text-slate-600",
+//     Closed: "bg-emerald-100 text-emerald-600",
+//     Lost: "bg-red-100 text-red-600",
+//     "Not Contacted": "bg-purple-100 text-purple-600",
+//   };
+//   return (
+//     <span
+//       className={cn(
+//         "px-2 py-1 rounded text-[10px] font-bold uppercase",
+//         styles[variant as string]
+//       )}>
+//       {children}
+//     </span>
+//   );
+// };
 
 // --- Main Dashboard ---
 
@@ -179,10 +178,12 @@ export default function AnalyticsDashboard() {
                   key={i}
                   className="flex items-center justify-between group">
                   <div className="flex items-center gap-3">
-                    <img
+                    <Image
                       src={contact.img}
                       className="w-10 h-10 rounded-full object-cover"
                       alt=""
+                      width={500}
+                      height={500}
                     />
                     <div>
                       <p className="text-sm font-bold text-slate-800 leading-none mb-1">
@@ -343,6 +344,8 @@ export default function AnalyticsDashboard() {
                             alt="name"
                             src="https://i.pravatar.cc/150?u=5"
                             className="w-4 h-4 rounded-full"
+                            width={500}
+                            height={500}
                           />
                           <span className="text-[10px] font-bold">Abraham</span>
                         </div>
@@ -405,6 +408,8 @@ export default function AnalyticsDashboard() {
                             src={deal.avatar}
                             className="w-7 h-7 rounded-full"
                             alt="name"
+                            width={500}
+                            height={500}
                           />
                           <span className="text-sm font-medium text-slate-700">
                             {deal.owner}

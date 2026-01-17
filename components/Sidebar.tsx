@@ -16,6 +16,10 @@ import {
   TrendingUp,
   ShoppingCart,
   Calendar1,
+  Settings2,
+  FileChartLine,
+  UserCheck,
+  HeartHandshake,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -74,6 +78,30 @@ const menuData: NavGroup[] = [
         hasDropdown: false,
       },
 
+      {
+        title: "Deals",
+        icon: HeartHandshake,
+        link: "/crm/deals",
+        hasDropdown: false,
+      },
+      {
+        title: "Leads",
+        icon: UserCheck,
+        link: "/crm/leads",
+        hasDropdown: false,
+      },
+      {
+        title: "Pipeline",
+        icon: Settings2,
+        link: "/crm/pipeline",
+        hasDropdown: false,
+      },
+      {
+        title: "Analytics",
+        icon: FileChartLine,
+        link: "/crm/analytics",
+        hasDropdown: false,
+      },
       {
         title: "Activities",
         icon: TrendingUp,
