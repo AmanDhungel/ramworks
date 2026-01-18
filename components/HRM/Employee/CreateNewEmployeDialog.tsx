@@ -95,7 +95,6 @@ export default function AddProfileDialog() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              {/* Name */}
               <FormField
                 control={form.control}
                 name="name"
@@ -110,7 +109,6 @@ export default function AddProfileDialog() {
                 )}
               />
 
-              {/* Join Date */}
               <FormField
                 control={form.control}
                 name="join_date"
@@ -127,7 +125,6 @@ export default function AddProfileDialog() {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {/* Email */}
               <FormField
                 control={form.control}
                 name="email"
@@ -146,7 +143,6 @@ export default function AddProfileDialog() {
                 )}
               />
 
-              {/* Phone */}
               <FormField
                 control={form.control}
                 name="phone"
@@ -162,7 +158,6 @@ export default function AddProfileDialog() {
               />
             </div>
 
-            {/* Company */}
             <FormField
               control={form.control}
               name="company"
@@ -190,7 +185,6 @@ export default function AddProfileDialog() {
               )}
             />
 
-            {/* About */}
             <FormField
               control={form.control}
               name="about"

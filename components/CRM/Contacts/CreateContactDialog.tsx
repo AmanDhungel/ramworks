@@ -138,7 +138,7 @@ export function ContactFormDialog() {
       },
       onError: (err: any) => {
         toast.error(
-          err?.response?.data?.message || "Failed to create workspace"
+          err?.response?.data?.message || "Failed to create workspace",
         );
       },
     });
@@ -455,7 +455,7 @@ export function ContactFormDialog() {
                                 className={cn(
                                   "rounded-full transition-all",
                                   isSelected &&
-                                    "bg-primary text-primary-foreground"
+                                    "bg-primary text-primary-foreground",
                                 )}
                                 onClick={() => {
                                   const newValue = isSelected
