@@ -17,7 +17,7 @@ import {
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import AddProfileDialog from "./CreateNewEmployeDialog";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 
 // --- Shadcn/UI Style Utilities ---
 function cn(...inputs: ClassValue[]) {
@@ -138,7 +138,7 @@ const SummaryCard = ({ label, value, change, color, icon }: any) => (
       <div
         className={cn(
           "w-10 h-10 rounded-full flex items-center justify-center text-white",
-          color
+          color,
         )}>
         {icon}
       </div>

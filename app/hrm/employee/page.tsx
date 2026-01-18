@@ -1,3 +1,3 @@
-import EmployeeManagement from "@/components/HRM/EmployeeGrid";
+import EmployeeManagement from "@/components/HRM/Employee/EmployeeGrid";
 
 export default EmployeeManagement;

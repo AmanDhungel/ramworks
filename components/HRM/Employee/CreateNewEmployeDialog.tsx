@@ -33,7 +33,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
+} from "../../ui/select";
 
 export const profileSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -74,7 +74,7 @@ export default function AddProfileDialog() {
       },
       onError: (err: any) => {
         toast.error(
-          err?.response?.data?.message || "Failed to create employee"
+          err?.response?.data?.message || "Failed to create employee",
         );
       },
     });
