@@ -9,14 +9,11 @@ import {
   ChevronRight,
   Calendar as CalendarIcon,
   Clock,
-  Laptop,
-  Coffee,
-  Timer,
   FileText,
   ChevronDown,
 } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +34,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// --- Mock Data ---
 const ATTENDANCE_DATA = [
   {
     date: "14/01/2024",
@@ -145,13 +141,8 @@ const ATTENDANCE_DATA = [
 ];
 
 export default function AttendanceDashboard() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const page = Number(searchParams.get("page")) || 1;
-
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
-      {/* Top Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">
@@ -174,9 +165,7 @@ export default function AttendanceDashboard() {
         </div>
       </div>
 
-      {/* Upper Section Grid */}
       <div className="grid grid-cols-12 gap-6 mb-8">
-        {/* Punch In Card */}
         <Card className="col-span-12 lg:col-span-3 border-none shadow-sm text-center p-6">
           <p className="text-slate-400 text-sm font-medium">
             Good Morning, Adrian
@@ -211,9 +200,7 @@ export default function AttendanceDashboard() {
           </Button>
         </Card>
 
-        {/* Stats and Timeline Section */}
         <div className="col-span-12 lg:col-span-9 space-y-6">
-          {/* Stat Mini Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[
               {
@@ -348,7 +335,6 @@ export default function AttendanceDashboard() {
         </div>
       </div>
 
-      {/* Lower Section: Attendance Table */}
       <Card className="border-none shadow-sm overflow-hidden">
         <div className="p-4 border-b bg-white flex justify-between items-center">
           <h2 className="text-lg font-bold text-slate-800">
@@ -463,7 +449,6 @@ export default function AttendanceDashboard() {
           </TableBody>
         </Table>
 
-        {/* Pagination Footer */}
         <div className="p-4 flex items-center justify-between bg-white text-sm text-slate-500 border-t">
           <div>Showing 1 to 10 of 16 entries</div>
           <div className="flex items-center gap-1.5">
