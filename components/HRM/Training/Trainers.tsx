@@ -1,0 +1,255 @@
+"use client";
+
+import React from "react";
+import {
+  Plus,
+  Search,
+  MoreVertical,
+  Pencil,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Filter,
+  Settings,
+  LayoutGrid,
+  List,
+  CheckCircle2,
+  ChevronDown,
+  ExternalLink,
+} from "lucide-react";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// --- Mock Data following image_6f1b63.png ---
+const TRAINING_DATA = [
+  {
+    id: 1,
+    name: "Anthony Lewis",
+    phone: "+91 877 655 443",
+    email: "anthony@example.com",
+    desc: "Version control and code collaboration.",
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Brian Villalobos",
+    phone: "+91 877 655 443",
+    email: "brain@example.com",
+    desc: "Basics of web page structure and markup.",
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "Harvey Smith",
+    phone: "+91 877 655 443",
+    email: "harvey@example.com",
+    desc: "Dynamic web applications with components.",
+    status: "Active",
+  },
+  {
+    id: 4,
+    name: "Stephan Peralt",
+    phone: "+91 877 655 443",
+    email: "stephan@example.com",
+    desc: "Building scalable server-side applications.",
+    status: "Active",
+  },
+  {
+    id: 5,
+    name: "Doglas Martini",
+    email: "doglas@example.com",
+    phone: "+91 877 655 443",
+    desc: "Interactive single-page applications.",
+    status: "Active",
+  },
+];
+
+export default function TrainersList() {
+  return (
+    <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans text-slate-900">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#1F2937]">Training</h1>
+          <p className="text-sm text-slate-500 flex items-center gap-1 mt-1">
+            🏠 / Performance /{" "}
+            <span className="text-slate-900 font-medium">Add Training</span>
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2 rounded-md px-5 h-10 font-bold shadow-sm">
+            <Plus className="h-4 w-4 border rounded-full p-0.5" /> Add Training
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 border-slate-200 bg-white">
+            <Settings className="h-4 w-4 text-slate-500" />
+          </Button>
+        </div>
+      </div>
+
+      <Card className="border-none shadow-sm overflow-hidden">
+        {/* Table Filter Bar */}
+        <div className="p-5 flex flex-wrap justify-between items-center gap-4 border-b bg-white">
+          <CardTitle className="text-base font-bold text-slate-800">
+            Training List
+          </CardTitle>
+          <Select defaultValue="7">
+            <SelectTrigger className="w-[180px] h-10 border-slate-200 text-slate-600 font-medium bg-white">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Sort By : Last 7 Days</SelectItem>
+              <SelectItem value="30">Sort By : Last 30 Days</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="p-6 bg-white">
+          {/* Row Per Page & Search */}
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <div className="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-tight">
+              Row Per Page
+              <Select defaultValue="10">
+                <SelectTrigger className="w-16 h-9 border-slate-200 focus:ring-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                </SelectContent>
+              </Select>
+              Entries
+            </div>
+
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search"
+                className="pl-10 h-10 border-slate-100 bg-[#F9FAFB] focus:bg-white transition-colors border shadow-none"
+              />
+            </div>
+          </div>
+
+          {/* Training Data Table */}
+          <div className="rounded-md border border-slate-100 overflow-hidden">
+            <Table>
+              <TableHeader className="bg-[#E9ECEF]">
+                <TableRow className="hover:bg-transparent border-none">
+                  <TableHead className="w-12 px-4">
+                    <Checkbox className="border-slate-300" />
+                  </TableHead>
+                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
+                    Name
+                  </TableHead>
+                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
+                    Phone
+                  </TableHead>
+                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
+                    Email
+                  </TableHead>
+
+                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
+                    Description
+                  </TableHead>
+
+                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-right"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {TRAINING_DATA.map((item) => (
+                  <TableRow
+                    key={item.id}
+                    className="group hover:bg-slate-50/50 border-slate-100 transition-colors">
+                    <TableCell className="px-4 py-4">
+                      <Checkbox className="border-slate-300" />
+                    </TableCell>
+                    <TableCell className="font-bold text-slate-500">
+                      {item.name}
+                    </TableCell>
+                    <TableCell>{item.phone}</TableCell>
+                    <TableCell>{item.email}</TableCell>
+
+                    <TableCell className="text-slate-500 max-w-[200px] truncate">
+                      {item.desc}
+                    </TableCell>
+
+                    <TableCell>
+                      <Badge
+                        variant="secondary"
+                        className="bg-[#10B981] hover:bg-[#10B981] text-white text-[10px] font-bold px-2 py-0.5 rounded gap-1.5 border-none">
+                        <div className="h-1 w-1 rounded-full bg-white" />{" "}
+                        {item.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50">
+                          <Pencil size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50">
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-between items-center text-[13px] font-bold text-slate-400 px-2">
+            <p>Showing 1 - 5 of 5 entries</p>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hover:bg-slate-100">
+                <ChevronLeft size={16} />
+              </Button>
+              <div className="h-8 w-8 flex items-center justify-center bg-[#FF6B35] text-white rounded-full shadow-sm">
+                1
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full hover:bg-slate-100">
+                <ChevronRight size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
