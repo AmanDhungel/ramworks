@@ -3,7 +3,14 @@ import * as z from "zod";
 import React, { useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CirclePlus, GripVertical, Pencil, Trash2, X } from "lucide-react";
+import {
+  CirclePlus,
+  GripVertical,
+  Pencil,
+  PlusCircle,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import {
   Dialog,

@@ -1,4 +1,4 @@
-import { useFetcher, useMutator } from "@/lib/generic.service";
+import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
 import { WorkSpaceFormValues } from "@/components/DomainWorkspace/CreateDomainWorkspaceDialog";
 import { useMutation } from "@tanstack/react-query";
@@ -35,7 +35,7 @@ export const useGetWorkspace = () => {
   return useFetcher<ApiResponseType<WorkspaceType[]>>(
     "workspace",
     null,
-    "/client_api/workspace"
+    "/client_api/workspace",
   );
 };
 
@@ -45,13 +45,13 @@ export const useGetSingleWorkSpace = () => {
   return useFetcher<ApiResponseType<WorkspaceType>>(
     "singleWorkspace",
     null,
-    `/client_api/workspace/domain/${id}`
+    `/client_api/workspace/domain/${id}`,
   );
 };
 export const useGetSingleWorkSpaceForRAM = (id: string) => {
   return useFetcher<ApiResponseType<WorkspaceType>>(
     "singleWorkspace",
     null,
-    `/client_api/workspace/domain/${id}`
+    `/client_api/workspace/domain/${id}`,
   );
 };

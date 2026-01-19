@@ -1,10 +1,7 @@
-import { useFetcher, useMutator } from "@/lib/generic.service";
+import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
-import { WorkSpaceFormValues } from "@/components/DomainWorkspace/CreateDomainWorkspaceDialog";
 import { useMutation } from "@tanstack/react-query";
 import { Post } from "@/lib/action";
-import { useSearchParams } from "next/navigation";
-import { ContactType } from "@/components/CRM/Contacts/ContactCard";
 import { ContactFormPayload } from "@/components/CRM/Contacts/CreateContactDialog";
 import { ContactFormValues } from "./contact.service";
 export type CompanyType = {
@@ -21,7 +18,7 @@ export type CompanyType = {
       name: string;
       email: string;
       phone: string;
-    }
+    },
   ];
   createdAt: string;
   currency: string;
@@ -66,7 +63,7 @@ export const useGetCompany = () => {
   return useFetcher<ApiResponseType<CompanyType[]>>(
     "company",
     null,
-    "/client_api/company"
+    "/client_api/company",
   );
 };
 
@@ -74,6 +71,6 @@ export const useGetSingleCompany = (id: string) => {
   return useFetcher<ApiResponseType<CompanyType>>(
     "singleContact",
     null,
-    `/client_api/company/${id}`
+    `/client_api/company/${id}`,
   );
 };

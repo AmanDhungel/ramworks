@@ -1,11 +1,8 @@
-import { useFetcher, useMutator } from "@/lib/generic.service";
+import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
-import { WorkSpaceFormValues } from "@/components/DomainWorkspace/CreateDomainWorkspaceDialog";
 import { useMutation } from "@tanstack/react-query";
 import { Post } from "@/lib/action";
-import { useSearchParams } from "next/navigation";
 import { ContactType } from "@/components/CRM/Contacts/ContactCard";
-import { ContactFormPayload } from "@/components/CRM/Contacts/CreateContactDialog";
 import { CompanyFormPayload } from "@/components/CRM/Company/CreateCompanyDialog";
 
 export type RatingEnum = "1" | "2" | "3" | "4" | "5";
@@ -77,7 +74,7 @@ export const useGetContact = () => {
   return useFetcher<ApiResponseType<ContactType[]>>(
     "contact",
     null,
-    "/client_api/contact"
+    "/client_api/contact",
   );
 };
 
@@ -85,6 +82,6 @@ export const useGetSingleContact = (id: string) => {
   return useFetcher<ApiResponseType<ContactType>>(
     ["singleContact", id],
     null,
-    `/client_api/contact/${id}`
+    `/client_api/contact/${id}`,
   );
 };
