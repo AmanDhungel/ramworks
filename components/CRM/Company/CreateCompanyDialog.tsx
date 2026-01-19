@@ -156,7 +156,7 @@ export function CompanyFormDialog() {
       },
       onError: (err: any) => {
         toast.error(
-          err?.response?.data?.message || "Failed to create workspace"
+          err?.response?.data?.message || "Failed to create workspace",
         );
       },
     });
@@ -301,7 +301,7 @@ export function CompanyFormDialog() {
                                 className={cn(
                                   "w-full justify-between font-normal",
                                   !field.value?.length &&
-                                    "text-muted-foreground"
+                                    "text-muted-foreground",
                                 )}>
                                 {field.value?.length > 0
                                   ? `${field.value.length} contacts selected`
@@ -323,10 +323,10 @@ export function CompanyFormDialog() {
                                       onSelect={() => {
                                         const currentValue = field.value || [];
                                         const newValue = currentValue.includes(
-                                          contact._id
+                                          contact._id,
                                         )
                                           ? currentValue.filter(
-                                              (v: string) => v !== contact._id
+                                              (v: string) => v !== contact._id,
                                             )
                                           : [...currentValue, contact._id];
                                         field.onChange(newValue);
@@ -336,7 +336,7 @@ export function CompanyFormDialog() {
                                           "mr-2 h-4 w-4",
                                           field.value?.includes(contact._id)
                                             ? "opacity-100"
-                                            : "opacity-0"
+                                            : "opacity-0",
                                         )}
                                       />
                                       {contact.name}
@@ -543,7 +543,7 @@ export function CompanyFormDialog() {
                                 className={cn(
                                   "rounded-full transition-all",
                                   isSelected &&
-                                    "bg-primary text-primary-foreground"
+                                    "bg-primary text-primary-foreground",
                                 )}
                                 onClick={() => {
                                   const newValue = isSelected

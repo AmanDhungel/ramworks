@@ -294,7 +294,6 @@ const ProjectDashboard = () => {
           />
         </TabsContent>
 
-        {/* 5. EMAIL TAB */}
         <TabsContent value="email" className="mt-6">
           <Card className="border-slate-200">
             <CardContent className="flex justify-between items-center p-6">
@@ -312,8 +311,6 @@ const ProjectDashboard = () => {
     </div>
   );
 };
-
-// --- Helper Components ---
 
 const DateLabel = ({
   date,

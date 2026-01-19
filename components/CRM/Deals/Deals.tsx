@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AddDealDialog } from "./AddDealDialog";
 
 // --- Mock Data Structures ---
 
@@ -211,9 +212,7 @@ export default function DealsGridPage() {
             className="bg-white border-slate-200 h-9 gap-2 text-xs font-bold text-slate-600 shadow-sm">
             <Download size={14} /> Export <ChevronDown size={14} />
           </Button>
-          <Button className="bg-[#ff6b35] hover:bg-orange-600 text-white font-bold h-9 gap-2 shadow-sm">
-            <PlusCircle size={16} /> Add New Deal
-          </Button>
+          <AddDealDialog />
         </div>
       </div>
 
@@ -273,7 +272,7 @@ export default function DealsGridPage() {
               <div
                 className={cn(
                   "h-[3px] w-full rounded-full mt-4 opacity-40",
-                  col.color
+                  col.color,
                 )}
               />
             </div>

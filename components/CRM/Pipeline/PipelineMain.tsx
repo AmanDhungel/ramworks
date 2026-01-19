@@ -40,6 +40,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { AddPipelineDialog } from "./AddNewPipeline";
 
 // --- Types ---
 interface PipelineData {
@@ -165,9 +166,7 @@ const PipelinePage = () => {
             <Download className="mr-2 h-4 w-4" /> Export{" "}
             <ChevronLeft className="ml-2 h-3 w-3 rotate-270" />
           </Button>
-          <Button className="bg-[#FF6D33] hover:bg-[#e65a22] text-white">
-            <PlusCircle className="mr-2 h-4 w-4" /> Add New Pipeline
-          </Button>
+          <AddPipelineDialog />
         </div>
       </div>
 
