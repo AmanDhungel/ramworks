@@ -128,7 +128,7 @@ export default function CreateWorkspaceDialog() {
       },
       onError: (err: any) => {
         toast.error(
-          err?.response?.data?.message || "Failed to create workspace"
+          err?.response?.data?.message || "Failed to create workspace",
         );
       },
     });
@@ -299,7 +299,7 @@ function DropzoneArea({
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) onFileChange(acceptedFiles[0]);
     },
-    [onFileChange]
+    [onFileChange],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({

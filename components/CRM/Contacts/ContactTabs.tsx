@@ -29,6 +29,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
+import { AddNoteDialog } from "./AddNewNote";
+import { CreateCallLogDialog } from "./CreateCallLogDialog";
+import { CreateNewFileDialog } from "./CreateNewFileDialog";
+import { ConnectAccountDialog } from "./ConnectAccountDialog";
 
 const ProjectDashboard = () => {
   return (
@@ -213,12 +217,7 @@ const ProjectDashboard = () => {
                   <SelectItem value="last7">Sort By : Last 7 Days</SelectItem>
                 </SelectContent>
               </Select>
-              <Button
-                variant="ghost"
-                className="text-orange-600 hover:text-orange-700 font-medium">
-                {" "}
-                <PlusCircle className="w-4 h-4 mr-2" /> Add New
-              </Button>
+              <AddNoteDialog />
             </div>
           </div>
 
@@ -251,9 +250,7 @@ const ProjectDashboard = () => {
         <TabsContent value="calls" className="mt-6 space-y-4">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-slate-800">Calls</h2>
-            <Button variant="ghost" className="text-orange-600 font-medium">
-              <PlusCircle className="w-4 h-4 mr-2" /> Add New
-            </Button>
+            <CreateCallLogDialog />
           </div>
           <CallCard
             name="Darlee Robertson"
@@ -280,9 +277,7 @@ const ProjectDashboard = () => {
                   deals faster.
                 </p>
               </div>
-              <Button className="bg-orange-500 hover:bg-orange-600">
-                Create Document
-              </Button>
+              <CreateNewFileDialog />
             </CardContent>
           </Card>
 
@@ -309,9 +304,7 @@ const ProjectDashboard = () => {
                   You can send and reply to emails directly via this section.
                 </p>
               </div>
-              <Button className="bg-orange-500 hover:bg-orange-600 px-6">
-                Connect Account
-              </Button>
+              <ConnectAccountDialog />
             </CardContent>
           </Card>
         </TabsContent>
