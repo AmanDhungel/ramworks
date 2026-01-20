@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Mail,
@@ -27,7 +28,6 @@ import { Separator } from "@/components/ui/separator";
 const EmployeeProfile = () => {
   return (
     <div className="bg-slate-50 min-h-screen p-6 font-sans text-slate-900">
-      {/* Top Header Navigation */}
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center gap-2 text-sm font-medium text-slate-600">
           <span>←</span> Employee Details

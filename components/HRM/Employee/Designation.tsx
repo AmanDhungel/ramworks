@@ -81,7 +81,6 @@ export default function DesignationTable() {
     return matchesStatus && matchesSearch;
   });
 
-  // Pagination Logic (Example: 10 per page)
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(

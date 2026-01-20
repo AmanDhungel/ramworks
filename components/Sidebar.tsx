@@ -25,6 +25,7 @@ import {
   PenBox,
   CircleX,
   SquareArrowOutUpRight,
+  Megaphone,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -194,7 +195,7 @@ const menuData: NavGroup[] = [
       },
       {
         title: "Promotion",
-        icon: GraduationCap,
+        icon: Megaphone,
         hasDropdown: false,
       },
       {
