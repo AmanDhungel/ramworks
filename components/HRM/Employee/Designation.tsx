@@ -49,7 +49,7 @@ const DEPARTMENTS = [
   { id: 11, name: "Human Resources", employees: 4, status: "Active" },
 ];
 
-export default function DepartmentTable() {
+export default function DesignationTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
 

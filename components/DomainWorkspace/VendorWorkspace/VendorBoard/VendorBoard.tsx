@@ -492,19 +492,15 @@ export default function VendorBoard() {
 
     if (sourceIndex === -1 || sourceIndex === undefined) return;
 
-    // If dropped on an empty list or the container itself
     if (destinationIndex === -1 || destinationIndex === undefined) {
       destinationIndex = destinationList?.tasks.length ?? 0;
     }
 
-    // Check if anything actually changed (either list changed OR index changed)
     const isSameList = sourceListId === destinationListId;
     const isSameIndex = sourceIndex === destinationIndex;
 
     if (isSameList && isSameIndex) return;
 
-    // --- TRIGGER MUTATION ---
-    // We trigger this for BOTH cross-list moves AND same-list reordering
     mutateTask(
       {
         source_tasklist_id: sourceListId,

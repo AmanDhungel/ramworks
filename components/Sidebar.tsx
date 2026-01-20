@@ -20,6 +20,11 @@ import {
   FileChartLine,
   UserCheck,
   HeartHandshake,
+  FileClock,
+  GraduationCap,
+  PenBox,
+  CircleX,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -117,7 +122,90 @@ const menuData: NavGroup[] = [
         title: "Employees",
         icon: UserCircle,
         hasDropdown: true,
-        children: [{ title: "Employee", link: "/hrm/employee" }],
+        children: [
+          { title: "Employee", link: "/hrm/employees/employee" },
+          { title: "Departments", link: "/hrm/employees/departments" },
+          { title: "Designations", link: "/hrm/employees/designations" },
+          { title: "Policies", link: "/hrm/employees/policies" },
+        ],
+      },
+      {
+        title: "Tickets",
+        icon: UserCircle,
+        hasDropdown: true,
+        children: [
+          { title: "Tickets", link: "/hrm/tickets" },
+          { title: "Ticket Details", link: "/hrm/ticket-details" },
+        ],
+      },
+      {
+        title: "Holidays",
+        icon: Calendar1,
+        hasDropdown: false,
+      },
+      {
+        title: "Attenadance",
+        icon: FileClock,
+        hasDropdown: true,
+        children: [
+          { title: "Leaves (Admin)", link: "/hrm/leave-admin" },
+          { title: "Leaves (Employee)", link: "/hrm/leave-employee" },
+          { title: "Leaves Settings", link: "/hrm/leave-seeting" },
+          { title: "Attendance (Admin)", link: "/hrm/attendance-admin" },
+          { title: "Attendance (Employee)", link: "/hrm/attendance-employee" },
+          { title: "Timesheets", link: "/hrm/timesheets" },
+          { title: "Shift & Schedule", link: "/hrm/shift-schedule" },
+          { title: "Overtime", link: "/hrm/overtime" },
+        ],
+      },
+      {
+        title: "Performance",
+        icon: GraduationCap,
+        hasDropdown: true,
+        children: [
+          {
+            title: "Performance Indicator",
+            link: "/hrm/performance-indicator",
+          },
+          { title: "Performance Review", link: "/hrm/performance-review" },
+          {
+            title: "Performance Appraisal",
+            link: "/hrm/performance-appraisal",
+          },
+          { title: "Goal List", link: "/hrm/goal-list" },
+          { title: "Goal Type", link: "/hrm/goal-type" },
+        ],
+      },
+      {
+        title: "Training",
+        icon: PenBox,
+        hasDropdown: true,
+        children: [
+          {
+            title: "Training List",
+            link: "/hrm/training-list",
+          },
+          { title: "Trainers", link: "/hrm/trainers" },
+          {
+            title: "Training Type",
+            link: "/hrm/training-type",
+          },
+        ],
+      },
+      {
+        title: "Promotion",
+        icon: GraduationCap,
+        hasDropdown: false,
+      },
+      {
+        title: "Resignation",
+        icon: SquareArrowOutUpRight,
+        hasDropdown: false,
+      },
+      {
+        title: "Termination",
+        icon: CircleX,
+        hasDropdown: false,
       },
     ],
   },
