@@ -156,7 +156,7 @@ const Sidebar = () => {
 
   const toggleDropdown = (title: string) => {
     setOpenDropdowns((prev) =>
-      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
     );
   };
 

@@ -57,7 +57,9 @@ export default function VendorBoard() {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const findContainer = (id: string, type?: "task" | "container") => {
@@ -72,7 +74,7 @@ export default function VendorBoard() {
 
     if (type === "task") {
       setActiveTask(
-        lists.flatMap((l) => l.tasks).find((t) => t._id === active.id)
+        lists.flatMap((l) => l.tasks).find((t) => t._id === active.id),
       );
     } else {
       setActiveList(lists.find((l) => l._id === active.id));
@@ -461,8 +463,8 @@ export default function VendorBoard() {
           arrayMove(
             prev,
             prev.findIndex((l) => l._id === active.id),
-            prev.findIndex((l) => l._id === over.id)
-          )
+            prev.findIndex((l) => l._id === over.id),
+          ),
         );
         // If your API supports list reordering, trigger that mutation here
       }
@@ -473,7 +475,7 @@ export default function VendorBoard() {
     const sourceListId = findContainer(activeId, "task");
     const destinationListId = findContainer(
       overId,
-      over.data.current?.type as any
+      over.data.current?.type as any,
     );
 
     if (!sourceListId || !destinationListId) return;
@@ -482,10 +484,10 @@ export default function VendorBoard() {
     const destinationList = lists.find((l) => l._id === destinationListId);
 
     const sourceIndex = sourceList?.tasks.findIndex(
-      (t: any) => t._id === activeId
+      (t: any) => t._id === activeId,
     );
     let destinationIndex = destinationList?.tasks.findIndex(
-      (t: any) => t._id === overId
+      (t: any) => t._id === overId,
     );
 
     if (sourceIndex === -1 || sourceIndex === undefined) return;
@@ -512,15 +514,15 @@ export default function VendorBoard() {
       },
       {
         onSuccess: () => {
-          toast.success("Position updated");
+          // toast.success("Position updated");
           queryClient.invalidateQueries({ queryKey: ["dndboard"] });
         },
         onError: () => {
           // Revert or refresh on error
           queryClient.invalidateQueries({ queryKey: ["dndboard"] });
-          toast.error("Failed to update position");
+          // toast.error("Failed to update position");
         },
-      }
+      },
     );
 
     // --- OPTIMISTIC UI UPDATE ---
@@ -568,7 +570,7 @@ export default function VendorBoard() {
           queryClient.invalidateQueries({ queryKey: ["dndboard"] });
         },
         onError: () => toast.error("Failed to create list"),
-      }
+      },
     );
 
     setAddList("");
