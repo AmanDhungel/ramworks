@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import Link from "next/link";
 
 // --- Mock Data ---
 const STATS = [
@@ -137,7 +138,6 @@ export default function TicketsDashboard() {
         </div>
       </div>
 
-      {/* Analytics Cards (Upper Section) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {STATS.map((stat, i) => (
           <Card
@@ -147,7 +147,6 @@ export default function TicketsDashboard() {
               <div className="flex justify-between items-start mb-4">
                 <div
                   className={`p-3 rounded-full bg-${stat.color}-50 text-${stat.color}-500 border border-dashed border-${stat.color}-200`}>
-                  {/* Placeholder for Icons in the circles */}
                   <div className="w-5 h-5 border-2 border-current rounded-sm opacity-50" />
                 </div>
                 <Badge
@@ -160,7 +159,6 @@ export default function TicketsDashboard() {
               <h2 className="text-3xl font-bold text-slate-900 mt-1">
                 {stat.count}
               </h2>
-              {/* Simple Chart Simulation with Divs */}
               <div className="absolute bottom-4 right-4 flex items-end gap-1 h-12">
                 {[40, 70, 45, 90, 65, 80, 55].map((h, idx) => (
                   <div
@@ -227,10 +225,12 @@ export default function TicketsDashboard() {
 
               <div className="flex flex-col items-center text-center mt-2">
                 <div className="relative mb-4">
-                  <Avatar className="h-16 w-16 border-2 border-orange-100 p-0.5">
-                    <AvatarImage src={ticket.user} />
-                    <AvatarFallback>EH</AvatarFallback>
-                  </Avatar>
+                  <Link href={`/hrm/tickets/tickets/${ticket.id}`}>
+                    <Avatar className="h-16 w-16 border-2 border-orange-100 p-0.5">
+                      <AvatarImage src={ticket.user} />
+                      <AvatarFallback>EH</AvatarFallback>
+                    </Avatar>
+                  </Link>
                   <div className="absolute bottom-1 right-1 h-3 w-3 bg-green-500 border-2 border-white rounded-full" />
                 </div>
                 <h4 className="font-bold text-slate-900 text-lg leading-tight">

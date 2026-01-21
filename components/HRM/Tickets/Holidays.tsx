@@ -34,7 +34,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// --- Mock Data ---
 const DEPARTMENTS = [
   {
     id: 1,
@@ -109,16 +108,14 @@ const DEPARTMENTS = [
   },
 ];
 
-export default function DepartmentTable() {
+export default function TicketHolidayTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Get current state from URL
   const page = Number(searchParams.get("page")) || 1;
   const statusFilter = searchParams.get("status") || "all";
   const searchQuery = searchParams.get("search") || "";
 
-  // Helper to update URL params
   const updateParams = (newParams: Record<string, string | number | null>) => {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(newParams).forEach(([key, value]) => {
@@ -131,7 +128,6 @@ export default function DepartmentTable() {
     router.push(`?${params.toString()}`);
   };
 
-  // Filter Logic
   const filteredData = DEPARTMENTS.filter((item) => {
     const matchesStatus =
       statusFilter === "all" || item.status.toLowerCase() === statusFilter;
@@ -141,7 +137,6 @@ export default function DepartmentTable() {
     return matchesStatus && matchesSearch;
   });
 
-  // Pagination Logic (Example: 10 per page)
   const itemsPerPage = 10;
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const paginatedData = filteredData.slice(
@@ -151,7 +146,6 @@ export default function DepartmentTable() {
 
   return (
     <div className="w-full p-6 space-y-4 bg-white min-h-screen">
-      {/* Header Section */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Holidays</h1>
@@ -171,7 +165,6 @@ export default function DepartmentTable() {
       </div>
 
       <div className="border rounded-lg shadow-sm bg-white">
-        {/* Filter Bar */}
         <div className="p-4 flex justify-between items-center border-b">
           <div className="flex items-center gap-4">
             <h2 className="font-semibold text-slate-800">Department List</h2>
@@ -227,7 +220,6 @@ export default function DepartmentTable() {
           </div>
         </div>
 
-        {/* Table Section */}
         <Table>
           <TableHeader className="bg-slate-50">
             <TableRow>

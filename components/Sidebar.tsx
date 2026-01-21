@@ -134,10 +134,7 @@ const menuData: NavGroup[] = [
         title: "Tickets",
         icon: UserCircle,
         hasDropdown: true,
-        children: [
-          { title: "Tickets", link: "/hrm/tickets" },
-          { title: "Ticket Details", link: "/hrm/ticket-details" },
-        ],
+        children: [{ title: "Tickets", link: "/hrm/tickets/tickets" }],
       },
       {
         title: "Holidays",
