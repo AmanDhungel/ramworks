@@ -78,7 +78,7 @@ const PROMOTION_DATA = [
   },
 ];
 
-export default function ResignationList() {
+export default function TerminationList() {
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
       {/* Header Section */}

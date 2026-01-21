@@ -176,7 +176,6 @@ export default function TrainingType() {
                     <TableCell className="font-bold text-slate-500">
                       {item.type}
                     </TableCell>
-
                     <TableCell className="text-slate-500 max-w-[200px] truncate">
                       {item.desc}
                     </TableCell>
