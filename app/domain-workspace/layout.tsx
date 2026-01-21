@@ -23,15 +23,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <TanStackProvider>
-            <DashboardLayout>{children}</DashboardLayout>
-          </TanStackProvider>
-        </Suspense>
-      </body>
-    </html>
+    <TanStackProvider>
+      <Suspense fallback={<div>Loading...</div>}>
+        <div
+          className={`${roboto.variable} ${roboto.variable} w-full force-roboto antialiased flex`}>
+          <DashboardLayout>{children}</DashboardLayout>
+        </div>
+      </Suspense>
+    </TanStackProvider>
   );
 }

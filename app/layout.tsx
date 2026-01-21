@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
+        className={`${roboto.variable} ${roboto.variable} force-roboto w-full antialiased flex`}>
         <Suspense fallback={<div>Loading...</div>}>
           <TanStackProvider>{children}</TanStackProvider>
           <ToastContainer />

@@ -22,13 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
-        <TanStackProvider>
-          <DashboardLayout>{children}</DashboardLayout>
-        </TanStackProvider>
-      </body>
-    </html>
+    <TanStackProvider>
+      <div
+        className={`${roboto.variable} ${roboto.variable} antialiased flex w-full`}>
+        <DashboardLayout>{children}</DashboardLayout>
+      </div>
+    </TanStackProvider>
   );
 }
