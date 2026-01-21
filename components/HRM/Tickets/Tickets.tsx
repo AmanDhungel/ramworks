@@ -27,7 +27,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
 
-// --- Mock Data ---
 const STATS = [
   { label: "New Tickets", count: 120, trend: "+19.01%", color: "orange" },
   { label: "Open Tickets", count: 60, trend: "+19.01%", color: "purple" },
@@ -295,7 +294,6 @@ export default function TicketsDashboard() {
         ))}
       </div>
 
-      {/* Load More Button */}
       <div className="flex justify-center mt-10 pb-10">
         <Button className="bg-[#FF6B35] hover:bg-[#E85A20] px-10 h-11 gap-2">
           <ArrowUpRight size={18} className="rotate-90" /> Load More

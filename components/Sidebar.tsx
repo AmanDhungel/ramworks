@@ -140,6 +140,7 @@ const menuData: NavGroup[] = [
         title: "Holidays",
         icon: Calendar1,
         hasDropdown: false,
+        link: "/hrm/holidays",
       },
       {
         title: "Attenadance",
