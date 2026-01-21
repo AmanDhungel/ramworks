@@ -154,21 +154,11 @@ export default function TrainingType() {
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700">
                     Training Type
                   </TableHead>
-                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
-                    Trainer
-                  </TableHead>
-                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
-                    Employee
-                  </TableHead>
-                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
-                    Time Duration
-                  </TableHead>
+
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700">
                     Description
                   </TableHead>
-                  <TableHead className="uppercase text-[11px] font-bold text-slate-700">
-                    Cost
-                  </TableHead>
+
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700">
                     Status
                   </TableHead>

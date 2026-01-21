@@ -185,12 +185,12 @@ const menuData: NavGroup[] = [
         children: [
           {
             title: "Training List",
-            link: "/hrm/training-list",
+            link: "/hrm/training/training-list",
           },
-          { title: "Trainers", link: "/hrm/trainers" },
+          { title: "Trainers", link: "/hrm/training/trainers" },
           {
             title: "Training Type",
-            link: "/hrm/training-type",
+            link: "/hrm/training/training-type",
           },
         ],
       },
