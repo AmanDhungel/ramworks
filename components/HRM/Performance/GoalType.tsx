@@ -92,7 +92,7 @@ const PERFORMANCE_DATA = [
   },
 ];
 
-export default function PerformanceDashboard() {
+export default function GoalTypeDashboard() {
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
       {/* Page Header */}

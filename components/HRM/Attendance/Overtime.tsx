@@ -34,7 +34,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
-// Mock Data based on design
 const initialData = [
   {
     id: 1,

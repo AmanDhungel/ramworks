@@ -164,15 +164,18 @@ const menuData: NavGroup[] = [
         children: [
           {
             title: "Performance Indicator",
-            link: "/hrm/performance-indicator",
+            link: "/hrm/performance/performance-indicator",
           },
-          { title: "Performance Review", link: "/hrm/performance-review" },
+          {
+            title: "Performance Review",
+            link: "/hrm/performance/performance-review",
+          },
           {
             title: "Performance Appraisal",
-            link: "/hrm/performance-appraisal",
+            link: "/hrm/performance/performance-appraisal",
           },
-          { title: "Goal List", link: "/hrm/goal-list" },
-          { title: "Goal Type", link: "/hrm/goal-type" },
+          { title: "Goal List", link: "/hrm/performance/goal-list" },
+          { title: "Goal Type", link: "/hrm/performance/goal-type" },
         ],
       },
       {
