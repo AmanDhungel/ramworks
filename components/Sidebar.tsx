@@ -147,9 +147,9 @@ const menuData: NavGroup[] = [
         icon: FileClock,
         hasDropdown: true,
         children: [
-          { title: "Leaves (Admin)", link: "/hrm/leave-admin" },
-          { title: "Leaves (Employee)", link: "/hrm/leave-employee" },
-          { title: "Leaves Settings", link: "/hrm/leave-seeting" },
+          { title: "Leaves (Admin)", link: "/hrm/leaves/leave-admin" },
+          { title: "Leaves (Employee)", link: "/hrm/leaves/leave-employee" },
+          { title: "Leaves Settings", link: "/hrm/leaves/leave-settings" },
           { title: "Attendance (Admin)", link: "/hrm/attendance-admin" },
           { title: "Attendance (Employee)", link: "/hrm/attendance-employee" },
           { title: "Timesheets", link: "/hrm/timesheets" },

@@ -101,7 +101,7 @@ const LEAVE_DATA = [
   },
 ];
 
-export default function LeavesDashboard() {
+export default function LeavesAdminDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page")) || 1;
