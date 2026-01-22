@@ -3,6 +3,7 @@ import { CheckCircle2, Clock, Circle, Paperclip, Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RAMResponse } from "@/services/RAM.service";
 
 // --- Types ---
 type Attachment = {
@@ -143,7 +144,7 @@ const TimelineItem = ({
   );
 };
 
-export default function TimelineTab() {
+export default function TimelineTab({ data }: { data?: RAMResponse }) {
   return (
     <div className="mx-auto p-6 space-y-6  min-h-screen">
       <Card className="border-none shadow-sm">

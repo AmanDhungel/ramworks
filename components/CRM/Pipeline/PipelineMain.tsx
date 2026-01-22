@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   FileText,
@@ -42,7 +43,6 @@ import {
 } from "@/components/ui/pagination";
 import { AddPipelineDialog } from "./AddNewPipeline";
 
-// --- Types ---
 interface PipelineData {
   name: string;
   value: string;
@@ -53,7 +53,6 @@ interface PipelineData {
   status: "Active" | "Inactive";
 }
 
-// --- Mock Data ---
 const pipelineData: PipelineData[] = [
   {
     name: "Sales",
@@ -150,7 +149,6 @@ const pipelineData: PipelineData[] = [
 const PipelinePage = () => {
   return (
     <div className="p-8 bg-slate-50 min-h-screen font-sans">
-      {/* --- Breadcrumbs & Header --- */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Pipeline</h1>

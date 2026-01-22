@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RAMResponse } from "@/services/RAM.service";
 
 // --- Types ---
 type Attachment = {
@@ -137,7 +138,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default function MessageTab() {
+export default function MessageTab({ data }: { data?: RAMResponse }) {
   return (
     <div className=" mx-auto p-6 space-y-8 min-h-screen">
       <Card className="border border-slate-200 shadow-sm overflow-hidden">

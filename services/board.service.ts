@@ -96,7 +96,7 @@ export type BoardType = {
         field_options: string[];
       }[];
     };
-  };
+  }[];
 };
 
 export type TaskListProps = {
@@ -177,7 +177,7 @@ export const useCreateBoard = () => {
 };
 
 export const useGetBoard = (id: string) => {
-  return useFetcher<ApiResponseType<any[]>>(
+  return useFetcher<ApiResponseType<BoardType[]>>(
     ["board", id],
     null,
     `/client_api/board/vendor_boards/${id}`,

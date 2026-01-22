@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { RAMResponse } from "@/services/RAM.service";
 
-const InvoiceTab = () => {
+const InvoiceTab = ({ data }: { data?: RAMResponse }) => {
   return (
     <div className="mx-auto p-6  min-h-screen space-y-6 font-sans text-slate-900">
       <Card className="border-none shadow-sm overflow-hidden">

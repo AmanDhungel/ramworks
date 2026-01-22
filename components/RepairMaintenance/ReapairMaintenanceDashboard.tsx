@@ -20,8 +20,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { CreateMaintenanceDialog } from "./CreateMaintenanceItemDialog/MaintainanceDialog";
+import { useGetRAM } from "@/services/RAM.service";
 
 const MaintenanceDashboard = () => {
+  const { data } = useGetRAM();
+
+  console.log("Ram Data", data);
   const stats = [
     {
       label: "Pending",
@@ -46,7 +50,10 @@ const MaintenanceDashboard = () => {
     },
     {
       label: "Total Cost",
-      value: "$9,750",
+      value: `Rs ${data?.data?.reduce(
+        (sum, item) => sum + item.total_estimated_cost,
+        0,
+      )}`,
       icon: DollarSign,
       color: "text-blue-500",
       bgColor: "bg-blue-50",
@@ -113,7 +120,9 @@ const MaintenanceDashboard = () => {
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <span className="text-gray-600">←</span> Repair & Maintenance
           </h1>
-          <p className="text-sm text-gray-500 ml-7">8 total items</p>
+          <p className="text-sm text-gray-500 ml-7">
+            {data?.data?.length} total items
+          </p>
         </div>
         <CreateMaintenanceDialog />
       </div>
@@ -157,18 +166,18 @@ const MaintenanceDashboard = () => {
 
       {/* Tickets List */}
       <div className="space-y-4">
-        {tickets.map((ticket) => (
+        {data?.data.map((ticket) => (
           <Card
-            key={ticket.id}
+            key={ticket._id}
             className="border-none shadow-sm overflow-hidden cursor-pointer"
             onClick={() =>
-              router.push(`/tenant/repair-maintenance/${ticket.id}`)
+              router.push(`/support-operation/repair-maintenance/${ticket._id}`)
             }>
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-4">
                   <div className={`p-2 rounded-md `}>
-                    <ticket.icon className={`w-6 h-6 ${ticket.iconColor}`} />
+                    {/* <ticket.icon className={`w-6 h-6 ${ticket.iconColor}`} /> */}
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -178,11 +187,11 @@ const MaintenanceDashboard = () => {
                       <Badge
                         variant="secondary"
                         className={
-                          ticket.priority === "HIGH"
+                          ticket.priority === "high"
                             ? "bg-red-500 text-white"
-                            : ticket.priority === "MEDIUM"
-                            ? "bg-orange-500 text-white"
-                            : "bg-green-500 text-white"
+                            : ticket.priority === "medium"
+                              ? "bg-orange-500 text-white"
+                              : "bg-green-500 text-white"
                         }>
                         {ticket.priority}
                       </Badge>
@@ -205,13 +214,13 @@ const MaintenanceDashboard = () => {
                 </div>
                 <Badge
                   className={
-                    ticket.status === "SCHEDULED"
+                    ticket.type === "scheduled"
                       ? "bg-blue-100 text-blue-600"
-                      : ticket.status === "IN PROGRESS"
-                      ? "bg-purple-100 text-purple-600"
-                      : "bg-orange-100 text-orange-600"
+                      : ticket.type === "emergency"
+                        ? "bg-purple-100 text-purple-600"
+                        : "bg-orange-100 text-orange-600"
                   }>
-                  {ticket.status}
+                  {ticket.type}
                 </Badge>
               </div>
 
@@ -221,7 +230,7 @@ const MaintenanceDashboard = () => {
                     Service Provider
                   </p>
                   <p className="text-sm font-bold text-gray-800">
-                    {ticket.provider}
+                    {ticket.vendor_workspace.name}
                   </p>
                 </div>
                 <div className="text-right md:text-left">
@@ -229,7 +238,7 @@ const MaintenanceDashboard = () => {
                     Assigned To
                   </p>
                   <p className="text-sm font-bold text-gray-800">
-                    {ticket.assigned}
+                    {/* {ticket.assigned} */} Not Assigned
                   </p>
                 </div>
                 <div>
@@ -237,7 +246,7 @@ const MaintenanceDashboard = () => {
                     Next Scheduled
                   </p>
                   <p className="text-sm font-bold text-gray-800">
-                    {ticket.nextScheduled}
+                    {ticket.date}
                   </p>
                 </div>
                 <div className="text-right">
@@ -245,7 +254,7 @@ const MaintenanceDashboard = () => {
                     Cost
                   </p>
                   <p className="text-sm font-bold text-gray-800">
-                    {ticket.cost}
+                    {ticket.total_estimated_cost}
                   </p>
                 </div>
               </div>

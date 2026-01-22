@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
       "ttg-script.onrender.com",
       "picsum.photos",
       "i.pravatar.cc",
+      "images.pexels.com",
     ],
   },
 };

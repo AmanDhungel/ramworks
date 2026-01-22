@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CirclePlus, X, Calendar as CalendarIcon } from "lucide-react";
+import { CirclePlus, X, Calendar as CalendarIcon, Check } from "lucide-react";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +30,21 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { useGetContact } from "@/services/contact.service";
 
 export const dealSchema = z.object({
   dealName: z.string().min(1, "Deal Name is required"),
@@ -54,6 +69,7 @@ export const dealSchema = z.object({
 export type DealFormValues = z.infer<typeof dealSchema>;
 
 export function AddDealDialog() {
+  const { data: contacts } = useGetContact();
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealSchema),
     defaultValues: {
@@ -266,11 +282,69 @@ export function AddDealDialog() {
               </div>
 
               {/* Multi-add Fields */}
-              <MultiTagInput
-                label="Contact"
-                placeholder="Add new"
-                fieldName="contacts"
-                form={form}
+              <FormField
+                control={form.control}
+                name="contacts"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Contacts</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between font-normal",
+                              !field.value?.length && "text-muted-foreground",
+                            )}>
+                            {field.value?.length > 0
+                              ? `${field.value.length} contacts selected`
+                              : "Select contacts..."}
+                            <span className="ml-2 opacity-50">▼</span>
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search contacts..." />
+                          <CommandList>
+                            <CommandEmpty>No contact found.</CommandEmpty>
+                            <CommandGroup>
+                              {contacts?.data.map((contact) => (
+                                <CommandItem
+                                  key={contact._id}
+                                  value={contact.name}
+                                  onSelect={() => {
+                                    const currentValue = field.value || [];
+                                    const newValue = currentValue.includes(
+                                      contact._id,
+                                    )
+                                      ? currentValue.filter(
+                                          (v: string) => v !== contact._id,
+                                        )
+                                      : [...currentValue, contact._id];
+                                    field.onChange(newValue);
+                                  }}>
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      field.value?.includes(contact._id)
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                  {contact.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
 
               <MultiTagInput

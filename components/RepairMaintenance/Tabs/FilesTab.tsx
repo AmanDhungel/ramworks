@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RAMResponse } from "@/services/RAM.service";
 
 // --- Types & Data Models ---
 type MaintenanceLog = {
@@ -153,7 +154,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export default function FilesTab() {
+export default function FilesTab({ data }: { data?: RAMResponse }) {
   return (
     <div className="mx-auto p-6 space-y-8  min-h-screen font-sans">
       <Card className="border-slate-200 shadow-sm">

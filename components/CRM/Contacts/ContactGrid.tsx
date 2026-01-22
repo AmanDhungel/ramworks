@@ -1,5 +1,5 @@
 "use client";
-import { Home, LayoutGrid, List, Plus, RotateCw } from "lucide-react";
+import { Home, LayoutGrid, List, Loader, Plus, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,7 +13,7 @@ import { useGetContact } from "@/services/contact.service";
 import { ContactFormDialog } from "./CreateContactDialog";
 
 export default function ContactsGrid() {
-  const { data } = useGetContact();
+  const { data, isLoading } = useGetContact();
   return (
     <div className="p-8 pl-0 min-h-screen">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -57,11 +57,15 @@ export default function ContactsGrid() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-4 gap-6 p-6 bg-white border rounded-b-lg shadow-sm">
-        {data?.data?.map((contact, index) => (
-          <ContactCard key={index} {...contact} />
-        ))}
-      </div>
+      {isLoading ? (
+        <Loader className="animate-spin m-auto" />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-4 gap-6 p-6 bg-white border rounded-b-lg shadow-sm">
+          {data?.data?.map((contact, index) => (
+            <ContactCard key={index} {...contact} />
+          ))}
+        </div>
+      )}
 
       <div className="mt-8 flex justify-center">
         <Button

@@ -2,13 +2,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  CirclePlus,
-  X,
-  Calendar as CalendarIcon,
-  PlusCircle,
-  Check,
-} from "lucide-react";
+import { CirclePlus, X, PlusCircle } from "lucide-react";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,71 +31,68 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { useCreateDeals } from "@/services/deals.service";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+
 import { useGetContact } from "@/services/contact.service";
-import { cn } from "@/lib/utils";
-import { useGetEmployee } from "@/services/employee.service";
 import { useGetWorkspace } from "@/services/workspace.service";
-import {
-  useGetVendorWorkspace,
-  useGetVendorWorkspaceDeals,
-} from "@/services/vendorworkspace.service";
+import { useGetVendorWorkspaceDeals } from "@/services/vendorworkspace.service";
 import { useGetBoard } from "@/services/board.service";
-import { SelectGroup, SelectLabel } from "@radix-ui/react-select";
+import { SelectGroup } from "@radix-ui/react-select";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import useDialogOpen from "@/context/Dialog";
+import { useGetCompany } from "@/services/company.service";
+import { useCreateLeads } from "@/services/lead.service";
 
-export const dealSchema = z.object({
-  name: z.string().min(1, "Deal Name is required"),
+export const LEAD_CURRENCY = ["USD", "NPR"] as const;
+export const LEAD_INDUSTRY = [
+  "retail_industry",
+  "banking_finance",
+  "it_software",
+  "healthcare",
+  "manufacturing",
+  "education",
+] as const;
+export const LEAD_SOURCE = [
+  "phone_call",
+  "social_media",
+  "referral",
+  "previous_contact",
+  "other",
+] as const;
+export const LEAD_STATUS = ["active", "inactive"] as const;
+
+export const leadSchema = z.object({
+  name: z.string().min(1, "Lead Name is required"),
   pipeline: z.object({
     domain_workspace: z.string().min(1, "Domain Workspace is required"),
     vendor_workspace: z.string().min(1, "Vendor Workspace is required"),
     board: z.string().min(1, "Board is required"),
     tasklist: z.string().min(1, "Tasklist is required"),
   }),
-  status: z.string().min(1, "Status is required"),
-  value: z.number().min(1, "Value is required"),
-  currency: z.string().min(1, "Currency is required"),
-  contacts: z.array(z.string()).min(1, "At least one contact is required"),
-  due_date: z.string().min(1, "Due date is required"),
-  expected_close_date: z.string().min(1, "Closing date is required"),
-  assignees: z.array(z.string()).min(1, "At least one assignee is required"),
+  company: z.string().min(1, "Company is required"),
+  currency: z.enum(LEAD_CURRENCY),
+  phone: z.string().min(1, "Phone is required"),
+  email: z.email().min(1, "Email is required"),
+  industry: z.enum(LEAD_INDUSTRY),
+  source: z.enum(LEAD_SOURCE),
+  owner: z.string().min(1, "Owner is required"),
   tags: z.array(z.string()).min(1, "At least one tag is required"),
-  followup_date: z.string().min(1, "Followup date is required"),
-  source: z.string().min(1, "Source is required"),
-  priority: z.string().min(1, "Priority is required"),
+  status: z.enum(LEAD_STATUS),
   description: z.string().min(1, "Description is required"),
 });
+export type LeadFormValues = z.infer<typeof leadSchema>;
 
-export type DealFormValues = z.infer<typeof dealSchema>;
-
-export function AddDealDialog() {
+export function AddLeadDialog() {
   const queryClient = useQueryClient();
-  const form = useForm<DealFormValues>({
-    resolver: zodResolver(dealSchema),
+  const form = useForm<LeadFormValues>({
+    resolver: zodResolver(leadSchema),
     defaultValues: {
-      contacts: [],
-      assignees: [],
       tags: [],
     },
   });
-  const { mutate } = useCreateDeals();
+  const { mutate } = useCreateLeads();
   const { data: contacts } = useGetContact();
-  const { data: employees } = useGetEmployee();
+  const { data: company } = useGetCompany();
   const { data: domainWorkSpace } = useGetWorkspace();
   const { open, setIsOpen } = useDialogOpen();
 
@@ -115,13 +106,10 @@ export function AddDealDialog() {
 
   console.log("Board Data:", boardData);
 
-  const onSubmit = (data: DealFormValues) => {
+  const onSubmit = (data: LeadFormValues) => {
     const payload = {
       ...data,
-      contacts: JSON.stringify(data.contacts),
-      assignees: JSON.stringify(data.assignees),
       tags: JSON.stringify(data.tags),
-      value: Number(data.value),
       pipeline: JSON.stringify({
         domain_workspace: data.pipeline.domain_workspace,
         vendor_workspace: data.pipeline.vendor_workspace,
@@ -131,9 +119,9 @@ export function AddDealDialog() {
     };
     mutate(payload as any, {
       onSuccess: (response) => {
-        console.log("Deal created successfully:", response);
-        queryClient.invalidateQueries({ queryKey: ["deals"] });
-        toast.success("Deal created successfully!");
+        console.log("Lead created successfully:", response);
+        queryClient.invalidateQueries({ queryKey: ["leads"] });
+        toast.success("Lead created successfully!");
         setIsOpen();
         form.reset();
       },
@@ -149,7 +137,7 @@ export function AddDealDialog() {
   }: {
     label: string;
     placeholder: string;
-    fieldName: keyof DealFormValues;
+    fieldName: keyof LeadFormValues;
     form: any;
   }) => {
     const [inputValue, setInputValue] = React.useState("");
@@ -216,30 +204,29 @@ export function AddDealDialog() {
     <Dialog open={open} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="bg-[#ff6b35] hover:bg-orange-600 text-white font-bold h-9 gap-2 shadow-sm">
-          <PlusCircle size={16} /> Add New Deal
+          <PlusCircle size={16} /> Add New Lead
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[700px] p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-2xl font-bold text-slate-800">
-            Add New Deals
+            Add New Lead
           </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="max-h-[80vh] p-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Deal Name */}
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deal Name *</FormLabel>
+                    <FormLabel>Lead Name *</FormLabel>
                     <Input
                       {...field}
                       className="bg-slate-50/50"
-                      placeholder="Enter Deal Name"
+                      placeholder="Enter Lead Name"
                     />
                   </FormItem>
                 )}
@@ -260,9 +247,8 @@ export function AddDealDialog() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="open">Open</SelectItem>
-                        <SelectItem value="won">Won</SelectItem>
-                        <SelectItem value="lost">Lost</SelectItem>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -416,25 +402,54 @@ export function AddDealDialog() {
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="value"
+                  name="owner"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Deal Value *</FormLabel>
-                      <Input
-                        {...field} // This spreads value, onChange, onBlur, etc.
-                        className="bg-slate-50/50"
-                        type="number"
-                        placeholder="0.00"
-                        value={field.value ?? ""}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          field.onChange(val === "" ? "" : Number(val));
-                        }}
-                      />
-                      <FormMessage />
+                      <FormLabel>Owner *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}>
+                        <SelectTrigger className="bg-slate-50/50 w-full">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {contacts?.data &&
+                            contacts?.data.map((contact) => (
+                              <SelectItem key={contact._id} value={contact._id}>
+                                {contact.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="company"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Company *</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}>
+                        <SelectTrigger className="bg-slate-50/50 w-full">
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {company?.data &&
+                            company?.data.map((company) => (
+                              <SelectItem key={company._id} value={company._id}>
+                                {company.name}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="currency"
@@ -457,151 +472,20 @@ export function AddDealDialog() {
                 />
               </div>
 
-              <FormField
-                control={form.control}
-                name="contacts"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Contacts</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between font-normal",
-                              !field.value?.length && "text-muted-foreground",
-                            )}>
-                            {field.value?.length > 0
-                              ? `${field.value.length} contacts selected`
-                              : "Select contacts..."}
-                            <span className="ml-2 opacity-50">▼</span>
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search contacts..." />
-                          <CommandList>
-                            <CommandEmpty>No contact found.</CommandEmpty>
-                            <CommandGroup>
-                              {contacts?.data.map((contact) => (
-                                <CommandItem
-                                  className="w-full"
-                                  key={contact._id}
-                                  value={contact.name}
-                                  onSelect={() => {
-                                    const currentValue = field.value || [];
-                                    const newValue = currentValue.includes(
-                                      contact._id,
-                                    )
-                                      ? currentValue.filter(
-                                          (v: string) => v !== contact._id,
-                                        )
-                                      : [...currentValue, contact._id];
-                                    field.onChange(newValue);
-                                  }}>
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value?.includes(contact._id)
-                                        ? "opacity-100"
-                                        : "opacity-0",
-                                    )}
-                                  />
-                                  {contact.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="assignees"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Assignees</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between font-normal",
-                              !field.value?.length && "text-muted-foreground",
-                            )}>
-                            {field.value?.length > 0
-                              ? `${field.value.length} assignees selected`
-                              : "Select assignees..."}
-                            <span className="ml-2 opacity-50">▼</span>
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search contacts..." />
-                          <CommandList>
-                            <CommandEmpty>No contact found.</CommandEmpty>
-                            <CommandGroup>
-                              {employees?.data.map((contact) => (
-                                <CommandItem
-                                  className="w-full"
-                                  key={contact._id}
-                                  value={contact.name}
-                                  onSelect={() => {
-                                    const currentValue = field.value || [];
-                                    const newValue = currentValue.includes(
-                                      contact._id,
-                                    )
-                                      ? currentValue.filter(
-                                          (v: string) => v !== contact._id,
-                                        )
-                                      : [...currentValue, contact._id];
-                                    field.onChange(newValue);
-                                  }}>
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      field.value?.includes(contact._id)
-                                        ? "opacity-100"
-                                        : "opacity-0",
-                                    )}
-                                  />
-                                  {contact.name}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               {/* Dates */}
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="due_date"
+                  name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Due Date *</FormLabel>
+                      <FormLabel>Phone Number *</FormLabel>
                       <div className="relative">
                         <Input
-                          type="date"
+                          type="number"
                           {...field}
                           className="bg-slate-50/50"
+                          placeholder="8112345678"
                         />
                       </div>
                     </FormItem>
@@ -609,19 +493,53 @@ export function AddDealDialog() {
                 />
                 <FormField
                   control={form.control}
-                  name="expected_close_date"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Expected Closing Date *</FormLabel>
                       <Input
-                        type="date"
+                        type="text"
                         {...field}
                         className="bg-slate-50/50"
+                        placeholder="john@email.com"
                       />
                     </FormItem>
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="industry"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Industry *</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}>
+                      <SelectTrigger className="bg-slate-50/50 w-full">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="retail_industry">
+                          Retail Industry
+                        </SelectItem>
+                        <SelectItem value="banking_finance">
+                          Banking & Finance
+                        </SelectItem>
+                        <SelectItem value="it_software">
+                          IT & Software
+                        </SelectItem>
+                        <SelectItem value="healthcare">Healthcare</SelectItem>
+                        <SelectItem value="manufacturing">
+                          Manufacturing
+                        </SelectItem>
+                        <SelectItem value="education">Education</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
 
               <MultiTagInput
                 label="Tags"
@@ -632,61 +550,29 @@ export function AddDealDialog() {
 
               <FormField
                 control={form.control}
-                name="followup_date"
+                name="source"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Followup Date *</FormLabel>
-                    <Input type="date" {...field} className="bg-slate-50/50" />
+                    <FormLabel>Source *</FormLabel>
+                    <Select onValueChange={field.onChange}>
+                      <SelectTrigger className="bg-slate-50/50 w-full">
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="phone_call">Phone Call</SelectItem>
+                        <SelectItem value="social_media">
+                          Social Media
+                        </SelectItem>
+                        <SelectItem value="referral">Referral</SelectItem>
+                        <SelectItem value="previous_contact">
+                          Previous Contact
+                        </SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </FormItem>
                 )}
               />
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="source"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Source *</FormLabel>
-                      <Select onValueChange={field.onChange}>
-                        <SelectTrigger className="bg-slate-50/50 w-full">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="phone_call">Phone Call</SelectItem>
-                          <SelectItem value="social_media">
-                            Social Media
-                          </SelectItem>
-                          <SelectItem value="referral">Referral</SelectItem>
-                          <SelectItem value="previous_contact">
-                            Previous Contact
-                          </SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="priority"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Priority *</FormLabel>
-                      <Select onValueChange={field.onChange}>
-                        <SelectTrigger className="bg-slate-50/50 w-full">
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormItem>
-                  )}
-                />
-              </div>
 
               <FormField
                 control={form.control}
@@ -710,7 +596,7 @@ export function AddDealDialog() {
                 <Button
                   type="submit"
                   className="bg-orange-500 hover:bg-orange-600 px-8">
-                  Add Deal
+                  Add Lead
                 </Button>
               </div>
             </form>

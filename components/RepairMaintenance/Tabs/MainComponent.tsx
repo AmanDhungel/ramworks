@@ -14,10 +14,16 @@ import TimelineTab from "./TimelineTab";
 import MessageTab from "./MessageTab";
 import FilesTab from "./FilesTab";
 import InvoiceTab from "./InvoiceTab";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useGetSingleRAM } from "@/services/RAM.service";
 
 const TicketHeader = () => {
   const router = useRouter();
+  const { id } = useParams();
+  const RAMID = Array.isArray(id) ? id[0] : id;
+  const { data } = useGetSingleRAM(RAMID ?? "");
+
+  console.log("Single RAM Data", data);
   return (
     <div className="w-full bg-white border-b border-gray-100 p-6 pb-0 space-y-6">
       <div className="flex flex-col gap-4">
@@ -28,25 +34,25 @@ const TicketHeader = () => {
           />
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              MAINT-2025-042
+              {data?.data.title}
             </h1>
             <Badge className="bg-orange-500 hover:bg-orange-600 text-[10px] h-5 px-1.5 rounded-md font-bold">
-              MEDIUM
+              {data?.data.priority}
             </Badge>
           </div>
         </div>
 
         <p className="text-gray-400 text-sm ml-8 -mt-3">
-          Heating System Not Working
+          {data?.data.internal_notes}
         </p>
 
         <div className="flex items-center gap-2 ml-8">
           <Badge
             variant="secondary"
             className="bg-emerald-50 text-emerald-500 hover:bg-emerald-100 border-none font-semibold px-3 py-1 text-[11px]">
-            COMPLETED
+            {data?.data.type}
           </Badge>
-          <Badge
+          {/* <Badge
             variant="outline"
             className="text-gray-600 font-normal px-4 py-1 border-gray-200">
             Recurring
@@ -55,7 +61,7 @@ const TicketHeader = () => {
             variant="outline"
             className="text-gray-600 font-normal px-4 py-1 border-gray-200">
             Quarterly
-          </Badge>
+          </Badge> */}
         </div>
       </div>
 
@@ -100,19 +106,19 @@ const TicketHeader = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <OverviewTab />
+          <OverviewTab data={data?.data} />
         </TabsContent>
         <TabsContent value="timeline">
-          <TimelineTab />
+          <TimelineTab data={data?.data} />
         </TabsContent>
         <TabsContent value="messages">
-          <MessageTab />
+          <MessageTab data={data?.data} />
         </TabsContent>
         <TabsContent value="files">
-          <FilesTab />
+          <FilesTab data={data?.data} />
         </TabsContent>
         <TabsContent value="invoice">
-          <InvoiceTab />
+          <InvoiceTab data={data?.data} />
         </TabsContent>
       </Tabs>
     </div>

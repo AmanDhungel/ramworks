@@ -5,6 +5,7 @@ import {
   Home,
   LayoutGrid,
   List,
+  Loader,
   Plus,
   RotateCw,
 } from "lucide-react";
@@ -14,49 +15,11 @@ import { CompanyCard } from "./CompanyCard";
 import { CompanyFormDialog } from "./CreateCompanyDialog";
 import { useGetCompany } from "@/services/company.service";
 
-const COMPANIES = [
-  {
-    name: "BrightWave Innovations",
-    email: "darlee@example.com",
-    phone: "(163) 2459 315",
-    country: "Germany",
-    rating: 4.2,
-    members: [
-      "/api/placeholder/32/32",
-      "/api/placeholder/32/32",
-      "/api/placeholder/32/32",
-    ],
-    logo: (
-      <div className="p-3 bg-indigo-50 text-indigo-600">
-        <Globe />
-      </div>
-    ),
-  },
-  {
-    name: "Stellar Dynamics",
-    email: "sharon@example.com",
-    phone: "(146) 1249 296",
-    country: "USA",
-    rating: 5.0,
-    members: [
-      "/api/placeholder/32/32",
-      "/api/placeholder/32/32",
-      "/api/placeholder/32/32",
-    ],
-    logo: (
-      <div className="p-3 bg-green-50 text-green-600">
-        <RotateCw />
-      </div>
-    ),
-  },
-  // Add other companies here...
-];
-
 export default function CompaniesPage() {
-  const { data: companyData } = useGetCompany();
+  const { data: companyData, isLoading } = useGetCompany();
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen font-sans">
-      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-xl font-bold">Companies</h1>
@@ -82,11 +45,17 @@ export default function CompaniesPage() {
             <ChevronDown className="w-3 h-3" />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-white">
-          {companyData?.data.map((company, idx) => (
-            <CompanyCard key={idx} {...company} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="p-6">
+            <Loader className="animate-spin m-auto" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6 bg-white">
+            {companyData?.data.map((company, idx) => (
+              <CompanyCard key={idx} {...company} />
+            ))}
+          </div>
+        )}
       </Card>
 
       <div className="flex justify-center mt-8">

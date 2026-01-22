@@ -18,6 +18,10 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import AddProfileDialog from "./CreateNewEmployeDialog";
 import { Button } from "../../ui/button";
+import Image from "next/image";
+import { EmployeeType, useGetEmployee } from "@/services/employee.service";
+import { AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 // --- Shadcn/UI Style Utilities ---
 function cn(...inputs: ClassValue[]) {
@@ -155,7 +159,7 @@ const SummaryCard = ({ label, value, change, color, icon }: any) => (
   </div>
 );
 
-const EmployeeCard = ({ emp }: { emp: (typeof EMPLOYEES)[0] }) => (
+const EmployeeCard = ({ emp }: { emp: EmployeeType }) => (
   <div className="bg-white border border-slate-200 rounded-xl p-5 relative shadow-sm hover:shadow-md transition-all group">
     <div className="absolute top-4 left-4">
       <input
@@ -169,16 +173,18 @@ const EmployeeCard = ({ emp }: { emp: (typeof EMPLOYEES)[0] }) => (
 
     <div className="flex flex-col items-center mb-4">
       <div className="relative mb-3">
-        <img
-          src={emp.avatar}
-          alt={emp.name}
-          className="w-16 h-16 rounded-full border-2 border-white shadow-sm object-cover"
-        />
-        <div className="absolute bottom-1 right-1 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
+        <Avatar>
+          <AvatarImage
+            src={`https://logo.clearbit.com/${emp.name}.com`}
+            alt={emp.name}
+          />
+          <AvatarFallback>{emp.name.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div className="absolute bottom-0 right-[-3px] w-3 h-3 bg-emerald-500 border-2 border-white rounded-full" />
       </div>
       <h3 className="font-bold text-slate-800 text-sm mb-0.5">{emp.name}</h3>
       <span className="bg-pink-50 text-pink-500 text-[10px] font-bold px-2 py-0.5 rounded-full border border-pink-100 uppercase tracking-tighter">
-        {emp.designation}
+        {emp.about}
       </span>
     </div>
 
@@ -187,21 +193,21 @@ const EmployeeCard = ({ emp }: { emp: (typeof EMPLOYEES)[0] }) => (
         <p className="text-[10px] text-slate-400 uppercase font-medium">
           Projects
         </p>
-        <p className="text-sm font-bold text-slate-700">{emp.projects}</p>
+        {/* <p className="text-sm font-bold text-slate-700">{emp.projects}</p> */}
       </div>
       <div>
         <p className="text-[10px] text-slate-400 uppercase font-medium">Done</p>
-        <p className="text-sm font-bold text-slate-700">{emp.done}</p>
+        {/* <p className="text-sm font-bold text-slate-700">{emp.done}</p> */}
       </div>
       <div>
         <p className="text-[10px] text-slate-400 uppercase font-medium">
           Progress
         </p>
-        <p className="text-sm font-bold text-slate-700">{emp.progress}</p>
+        {/* <p className="text-sm font-bold text-slate-700">{emp.progress}</p> */}
       </div>
     </div>
 
-    <div className="space-y-2">
+    {/* <div className="space-y-2">
       <div className="flex justify-center gap-1 text-[11px]">
         <span className="text-slate-400">Productivity :</span>
         <span className={cn("font-bold", emp.prodColor)}>
@@ -214,19 +220,22 @@ const EmployeeCard = ({ emp }: { emp: (typeof EMPLOYEES)[0] }) => (
           style={{ width: `${emp.productivity}%` }}
         />
       </div>
-    </div>
+    </div> */}
   </div>
 );
 
-// --- Main Page ---
+const ninetyDaysAgo = new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).getTime();
 
 export default function EmployeeManagement() {
   const [designationFilter, setDesignationFilter] = useState("All");
+  const { data } = useGetEmployee();
+
+  console.log("Employee Data:", data);
 
   const filteredEmployees = useMemo(() => {
-    if (designationFilter === "All") return EMPLOYEES;
-    return EMPLOYEES.filter((emp) => emp.designation === designationFilter);
-  }, [designationFilter]);
+    if (designationFilter === "All") return data?.data;
+    return data?.data.filter((emp) => emp.about === designationFilter);
+  }, [designationFilter, data]);
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-4 md:p-8 font-sans">
@@ -260,39 +269,47 @@ export default function EmployeeManagement() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <SummaryCard
           label="Total Employee"
-          value="1007"
+          value={data?.data.length || "0"}
           change="+19.01%"
           color="bg-orange-500"
           icon={<Users size={18} />}
         />
         <SummaryCard
           label="Active"
-          value="1007"
+          value={
+            data?.data.filter((emp) => emp.company.status === "active")
+              .length || "0"
+          }
           change="+19.01%"
           color="bg-emerald-500"
           icon={<UserCheck size={18} />}
         />
         <SummaryCard
           label="InActive"
-          value="1007"
+          value={
+            data?.data.filter((emp) => emp.company.status != "active").length ||
+            "0"
+          }
           change="+19.01%"
           color="bg-red-500"
           icon={<UserMinus size={18} />}
         />
         <SummaryCard
           label="New Joiners"
-          value="67"
+          value={
+            data?.data.filter(
+              (emp) => new Date(emp.join_date).getTime() >= ninetyDaysAgo,
+            ).length || "0"
+          }
           change="+19.01%"
           color="bg-blue-500"
           icon={<UserPlus size={18} />}
         />
       </div>
 
-      {/* Grid Filter Bar */}
       <div className="bg-white p-4 border border-slate-200 rounded-xl mb-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
         <h3 className="font-bold text-slate-800 text-[15px]">Employees Grid</h3>
         <div className="flex flex-wrap items-center gap-3">
-          {/* Custom Select Mockup */}
           <div className="relative">
             <select
               className="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-1.5 pr-8 text-xs font-medium text-slate-600 focus:outline-none focus:ring-1 focus:ring-orange-500 cursor-pointer shadow-sm min-w-[160px]"
@@ -326,8 +343,8 @@ export default function EmployeeManagement() {
 
       {/* Employee Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
-        {filteredEmployees.map((emp) => (
-          <EmployeeCard key={emp.id} emp={emp} />
+        {filteredEmployees?.map((emp) => (
+          <EmployeeCard key={emp._id} emp={emp} />
         ))}
       </div>
 

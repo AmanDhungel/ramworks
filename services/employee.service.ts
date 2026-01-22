@@ -2,6 +2,20 @@ import { useMutation } from "@tanstack/react-query";
 import { ApiResponseType } from "./apitypes";
 import { Post } from "@/lib/action";
 import { useFetcher } from "@/lib/generic.service";
+import { CompanyType } from "./company.service";
+
+export type EmployeeType = {
+  _id: string;
+  employee_id: string;
+  name: string;
+  join_date: string;
+  email: string;
+  phone: string;
+  company: CompanyType;
+  about: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 export const useCreateEmployee = () => {
   return useMutation<ApiResponseType<any>, any, any>({
@@ -14,8 +28,8 @@ export const useCreateEmployee = () => {
   });
 };
 
-export const useGetInvoices = () => {
-  return useFetcher<ApiResponseType<any[]>>(
+export const useGetEmployee = () => {
+  return useFetcher<ApiResponseType<EmployeeType[]>>(
     "employee",
     null,
     "/client_api/employee",

@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import Image from "next/image";
+import { RAMResponse } from "@/services/RAM.service";
 
 type MaintenanceTask = {
   id: string;
@@ -77,7 +78,8 @@ const maintenanceData: MaintenanceTask = {
   },
 };
 
-const OverviewTab = () => {
+const OverviewTab = ({ data }: { data?: RAMResponse }) => {
+  console.log("OverviewTab data:", data);
   return (
     <div className="mx-auto p-6 space-y-6 min-h-screen">
       {/* SECTION 1: Maintenance Details */}
@@ -86,49 +88,50 @@ const OverviewTab = () => {
           <CardTitle className="text-slate-600 text-sm font-semibold uppercase tracking-wider">
             Maintenance Details
           </CardTitle>
-          <h1 className="text-xl font-bold pt-2">{maintenanceData.title}</h1>
+          <h1 className="text-xl font-bold pt-2">{data?.title}</h1>
           <p className="text-slate-500 text-sm leading-relaxed max-w-4xl">
-            {maintenanceData.description}
+            {data?.internal_notes}
           </p>
-          <div className="flex gap-2 mt-4">
-            {maintenanceData.tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="bg-slate-100 text-slate-500 font-normal px-3 py-1">
-                {tag}
-              </Badge>
-            ))}
+          <div className={`flex gap-2 ${data?.tags && "mt-4"}`}>
+            {data?.tags &&
+              data?.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="secondary"
+                  className="bg-slate-100 text-slate-500 font-normal px-3 py-1">
+                  {tag}
+                </Badge>
+              ))}
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
             <div>
               <p className="text-xs text-slate-400 uppercase">Category</p>
-              <p className="font-semibold">{maintenanceData.category}</p>
+              <p className="font-semibold">{data?.domain_workspace?.title}</p>
             </div>
             <div className="text-right md:text-left">
               <p className="text-xs text-slate-400 uppercase">Type</p>
-              <p className="font-semibold">{maintenanceData.assignee}</p>
+              <p className="font-semibold">{data?.type}</p>
             </div>
-            <div>
+            {/* <div>
               <p className="text-xs text-slate-400 uppercase">Frequency</p>
-              <p className="font-semibold">{maintenanceData.frequency}</p>
-            </div>
+              <p className="font-semibold">{data.frequency}</p>
+            </div> */}
             <div className="text-right md:text-left">
               <p className="text-xs text-slate-400 uppercase">Duration</p>
-              <p className="font-semibold">{maintenanceData.duration}</p>
+              <p className="font-semibold">{data?.estimated_duration}</p>
             </div>
-            <div>
+            {/* <div>
               <p className="text-xs text-slate-400 uppercase">Last Completed</p>
               <p className="font-semibold text-sm">
                 {maintenanceData.lastCompleted}
               </p>
-            </div>
+            </div> */}
             <div className="text-right md:text-left">
               <p className="text-xs text-slate-400 uppercase">Next Scheduled</p>
               <p className="font-semibold text-sm">
-                {maintenanceData.nextScheduled}
+                {data?.date?.split("T")[0]} At {data?.time}
               </p>
             </div>
           </div>
@@ -136,7 +139,7 @@ const OverviewTab = () => {
       </Card>
 
       {/* SECTION 2: Recurring Schedule */}
-      <Card className="border-none shadow-sm">
+      {/* <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
           <h2 className="text-lg font-bold mb-4">Recurring Schedule</h2>
           <p className="text-xs text-slate-400 uppercase mb-1">Frequency</p>
@@ -156,7 +159,7 @@ const OverviewTab = () => {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* SECTION 3: Photos Grid */}
       <Card className="border-none shadow-sm">
@@ -224,24 +227,24 @@ const OverviewTab = () => {
           <h2 className="text-lg font-bold">Property Information</h2>
           <div>
             <p className="text-xs text-slate-400 uppercase">Property</p>
-            <p className="font-bold text-sm">{maintenanceData.property.name}</p>
-            <div className="flex items-center gap-1 text-slate-400 text-xs mt-1">
-              <MapPin className="h-3 w-3" /> {maintenanceData.property.address}
-            </div>
+            <p className="font-bold text-sm">{data?.location}</p>
+            {/* <div className="flex items-center gap-1 text-slate-400 text-xs mt-1">
+              <MapPin className="h-3 w-3" /> {data.}
+            </div> */}
           </div>
-          <div>
+          {/* <div>
             <p className="text-xs text-slate-400 uppercase">Location</p>
             <p className="font-bold text-sm">
-              {maintenanceData.property.location}
+              {data.}
             </p>
             <div className="flex items-center gap-1 text-slate-400 text-xs mt-1">
               <MapPin className="h-3 w-3" /> {maintenanceData.property.address}
             </div>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
-      <Card className="border-none shadow-sm">
+      {/* <Card className="border-none shadow-sm">
         <CardContent className="pt-6">
           <div className="flex justify-between items-start mb-4">
             <h2 className="text-lg font-bold">Service Provider</h2>
@@ -312,7 +315,7 @@ const OverviewTab = () => {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* FOOTER: Completion Status */}
       <div className="flex flex-col items-center py-8 space-y-3">
