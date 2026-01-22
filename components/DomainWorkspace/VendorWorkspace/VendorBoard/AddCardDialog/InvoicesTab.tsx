@@ -35,7 +35,7 @@ export default function InvoicesTab() {
   const items = watch("invoices") || [];
   const total = items.reduce(
     (acc: number, item: any) => acc + (Number(item.amount) || 0),
-    0
+    0,
   );
 
   return (
@@ -61,7 +61,7 @@ export default function InvoicesTab() {
                       role="combobox"
                       className={cn(
                         "w-full justify-between font-normal",
-                        !field.value?.length && "text-muted-foreground"
+                        !field.value?.length && "text-muted-foreground",
                       )}>
                       {field?.value?.length > 0
                         ? `${field?.value.length} members selected`
@@ -79,14 +79,14 @@ export default function InvoicesTab() {
                         {invoices?.data.map((invoice) => (
                           <CommandItem
                             key={invoice._id}
-                            value={invoice.name}
+                            value={invoice._id}
                             onSelect={() => {
                               const currentValue = field.value || [];
                               const newValue = currentValue.includes(
-                                invoice._id
+                                invoice._id,
                               )
                                 ? currentValue.filter(
-                                    (v: string) => v !== invoice._id
+                                    (v: string) => v !== invoice._id,
                                   )
                                 : [...currentValue, invoice._id];
                               field.onChange(newValue);
@@ -96,7 +96,7 @@ export default function InvoicesTab() {
                                 "mr-2 h-4 w-4",
                                 field.value?.includes(invoice._id)
                                   ? "opacity-100"
-                                  : "opacity-0"
+                                  : "opacity-0",
                               )}
                             />
                             {invoice.invoice_number}
