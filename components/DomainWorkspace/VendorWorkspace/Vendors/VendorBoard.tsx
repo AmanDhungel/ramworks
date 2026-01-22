@@ -55,7 +55,7 @@ const BoardCard = ({ board }: { board: Board }) => {
             className="h-full w-full object-cover"
             onClick={() =>
               router.push(
-                `/domain-workspace/${params.id}/${params.vendors}/${board._id}`
+                `/domain-workspace/${params.id}/${params.vendors}/${board._id}`,
               )
             }
           />
@@ -130,9 +130,17 @@ export default function VendorDashboard() {
   const { data, isFetching } = useGetBoard(vendor ?? "");
 
   const filteredBoards = useMemo(() => {
-    return (data?.data ?? []).filter((board: Board) =>
-      board.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return (data?.data ?? [])
+      .map((board: any) => ({
+        _id: board._id,
+        title: board.title,
+        image: board.image ?? "/placeholder-image.png",
+        urlId: board.urlId ?? "",
+        urlVendor: board.urlVendor ?? "",
+      }))
+      .filter((board: Board) =>
+        board.title.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
   }, [searchQuery, data?.data]);
 
   return (
