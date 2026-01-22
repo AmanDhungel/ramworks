@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { useGetInvoices } from "@/services/invoices.service";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // --- Mock Data ---
 const INVOICES = [
@@ -121,6 +122,7 @@ const getStatusBadge = (status: string) => {
 
 export default function InvoicesListPage() {
   const { data: invoices } = useGetInvoices();
+  const router = useRouter();
 
   return (
     <div className="min-h-screen  p-4 md:p-6 font-sans text-slate-700">
@@ -275,7 +277,11 @@ export default function InvoicesListPage() {
                 <TableCell className="text-[11px] font-bold text-sky-500 cursor-pointer">
                   {invoice.invoice_number}
                 </TableCell>
-                <TableCell>
+                <TableCell
+                  onClick={() =>
+                    router.push(`/finance/invoices/${invoice._id}`)
+                  }
+                  className="cursor-pointer">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={"https://github.com/shadc12312n.png"} />

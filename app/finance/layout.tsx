@@ -22,7 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className={`${roboto.variable} ${roboto.variable} antialiased flex`}>
+    <div
+      className={`${roboto.variable} ${roboto.variable} antialiased flex w-full`}>
       <TanStackProvider>
         <DashboardLayout>{children}</DashboardLayout>
       </TanStackProvider>

@@ -75,6 +75,7 @@ export const leadSchema = z.object({
   email: z.email().min(1, "Email is required"),
   industry: z.enum(LEAD_INDUSTRY),
   source: z.enum(LEAD_SOURCE),
+  value: z.number().min(0, "Value must be at least 0"),
   owner: z.string().min(1, "Owner is required"),
   tags: z.array(z.string()).min(1, "At least one tag is required"),
   status: z.enum(LEAD_STATUS),
@@ -110,6 +111,7 @@ export function AddLeadDialog() {
     const payload = {
       ...data,
       tags: JSON.stringify(data.tags),
+      value: Number(data.value),
       pipeline: JSON.stringify({
         domain_workspace: data.pipeline.domain_workspace,
         vendor_workspace: data.pipeline.vendor_workspace,
@@ -450,6 +452,27 @@ export function AddLeadDialog() {
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="value"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lead Value *</FormLabel>
+                      <Input
+                        {...field} // This spreads value, onChange, onBlur, etc.
+                        className="bg-slate-50/50"
+                        type="number"
+                        placeholder="0.00"
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? "" : Number(val));
+                        }}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="currency"
