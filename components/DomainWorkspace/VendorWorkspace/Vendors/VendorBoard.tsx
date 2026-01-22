@@ -204,7 +204,7 @@ export default function VendorDashboard() {
           <>
             {filteredBoards &&
               filteredBoards.map((board, index) => (
-                <BoardCard key={`${board.id}-${index}`} board={board} />
+                <BoardCard key={`${board._id}-${index}`} board={board} />
               ))}
             <CreateNewBoard />
           </>
