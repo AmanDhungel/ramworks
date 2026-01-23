@@ -64,9 +64,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { AddActivityDialog } from "./NewActivityDialog";
-import { useGetActivity } from "@/services/activity.service";
+import { useDeleteActivity, useGetActivity } from "@/services/activity.service";
 import useDialogOpen from "@/context/Dialog";
 import { useUpdateParams } from "@/helper/removeparam";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
 
 // --- Utility ---
 function cn(...inputs: ClassValue[]) {
@@ -117,6 +120,26 @@ const ActivityTable = () => {
   const { setIsOpen } = useDialogOpen();
   const { data: activity } = useGetActivity();
   const { setParam } = useUpdateParams();
+  const { mutate } = useDeleteActivity();
+
+  const queryClient = useQueryClient();
+  const handleDelete = (id: string) => {
+    mutate(
+      { id: id },
+      {
+        onSuccess: () => {
+          console.log("Activity deleted successfully");
+          toast.success("Activity deleted successfully");
+          queryClient.invalidateQueries({ queryKey: ["activity"] });
+        },
+        onError: (error) => {
+          console.error("Error deleting Activity:", error);
+        },
+      },
+    );
+  };
+
+  console.log("Activity Data:", activity);
 
   return (
     <div className="w-full bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -130,7 +153,7 @@ const ActivityTable = () => {
                   variant="outline"
                   className={cn(
                     "justify-start text-left font-normal text-xs h-9 border-slate-200",
-                    !date && "text-muted-foreground"
+                    !date && "text-muted-foreground",
                   )}>
                   <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {date?.from ? (
@@ -257,10 +280,10 @@ const ActivityTable = () => {
                     act.activity_type === "call"
                       ? "bg-purple-600/10 text-purple-600"
                       : act.activity_type === "meeting"
-                      ? "bg-pink-600/10 text-pink-600"
-                      : act.activity_type === "tasks"
-                      ? "bg-blue-600/10 text-blue-600"
-                      : "bg-yellow-600/10 text-yellow-600"
+                        ? "bg-pink-600/10 text-pink-600"
+                        : act.activity_type === "tasks"
+                          ? "bg-blue-600/10 text-blue-600"
+                          : "bg-yellow-600/10 text-yellow-600",
                   )}>
                   {act.activity_type === "call" ? (
                     <PhoneCall size={15} />
@@ -281,7 +304,9 @@ const ActivityTable = () => {
                   day: "2-digit",
                 }).format(new Date(act.due_date))}
               </td>
-              <td className="px-4 py-4">{act.owner.name}</td>
+              <td className="px-4 py-4">
+                {act?.owner?.name ? act.owner.name : "No Owner"}
+              </td>
               <td className="px-4 py-4">
                 {" "}
                 {new Intl.DateTimeFormat("en-GB", {
@@ -300,9 +325,9 @@ const ActivityTable = () => {
                       setParam("activity_id", act._id);
                     }}
                   />
-                  <Trash2
-                    size={16}
-                    className="cursor-pointer hover:text-red-500"
+                  <DeleteConfirmDialog
+                    text={act.title}
+                    onConfirm={() => handleDelete(act._id)}
                   />
                 </div>
               </td>
@@ -340,7 +365,7 @@ const ActivityTable = () => {
                 isActive
                 className={cn(
                   "h-7 w-7 border rounded shadow-md hover:shadow-lg transition-all",
-                  "bg-[#ff6b35] text-white border-[#ff6b35] hover:bg-orange-600 hover:text-white"
+                  "bg-[#ff6b35] text-white border-[#ff6b35] hover:bg-orange-600 hover:text-white",
                 )}>
                 4
               </PaginationLink>

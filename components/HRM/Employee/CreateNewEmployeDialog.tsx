@@ -38,7 +38,7 @@ import {
 export const profileSchema = z.object({
   name: z.string().min(2, "Name is required"),
   join_date: z.string().min(1, "Join date is required"),
-  email: z.string().email("Invalid email address"),
+  email: z.email(),
   phone: z.string().min(1, "Phone number is required"),
   company: z.string().min(2, "Company name is required"),
   about: z.string().optional(),
@@ -62,7 +62,7 @@ export default function AddProfileDialog() {
     },
   });
 
-  const { mutate } = useCreateEmployee();
+  const { mutate, isPending } = useCreateEmployee();
   const { data: company } = useGetCompany();
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -71,6 +71,7 @@ export default function AddProfileDialog() {
         toast.success(msg.message);
         queryClient.invalidateQueries({ queryKey: ["employee"] });
         form.reset();
+        setOpen(false);
       },
       onError: (err: any) => {
         toast.error(
@@ -204,8 +205,8 @@ export default function AddProfileDialog() {
             />
 
             <div className="flex justify-end pt-4">
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving..." : "Save Profile"}
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Saving..." : "Save Profile"}
               </Button>
             </div>
           </form>

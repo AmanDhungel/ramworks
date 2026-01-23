@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   LayoutGrid,
@@ -17,7 +18,16 @@ import {
   Trash2,
   ChevronDown,
   Search,
+  Building2,
 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,7 +40,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AddLeadDialog } from "./AddLeadlDialog";
+import { AddLeadDialog, LeadFormValues } from "./AddLeadlDialog";
+import { LeadType, useDeleteLead, useGetLeads } from "@/services/lead.service";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
+import { toast } from "react-toastify";
+import { useQueryClient } from "@tanstack/react-query";
 
 // --- Mock Data Structures ---
 
@@ -96,87 +110,168 @@ const DEALS = [
   },
 ];
 
-const DealCard = ({ deal }: { deal: (typeof DEALS)[0] }) => (
-  <Card className="mb-4 border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
-    <CardContent className="p-4 space-y-4">
-      {/* Header */}
-      <div className="flex gap-3">
-        <div className="h-10 w-10 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
-          {deal.initials}
-        </div>
-        <div className="flex-1 min-w-0">
-          <h4 className="text-xs font-bold text-slate-800 truncate leading-tight hover:text-orange-500 cursor-pointer">
-            {deal.company}
-          </h4>
-        </div>
-      </div>
+const LeadTable = ({ leads }: { leads: LeadType[] }) => {
+  const { mutate } = useDeleteLead();
+  const queryClient = useQueryClient();
+  const handleDelete = (id: string) => {
+    mutate(
+      { id: id },
+      {
+        onSuccess: () => {
+          console.log("Lead deleted successfully");
+          toast.success("Lead deleted successfully");
+          queryClient.invalidateQueries({ queryKey: ["leads"] });
+        },
+        onError: (error) => {
+          console.error("Error deleting Lead:", error);
+        },
+      },
+    );
+  };
+  return (
+    <div className="rounded-md border bg-white overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-slate-50/50">
+            <TableHead className="w-[250px] font-bold text-slate-600 text-xs">
+              Lead / Company
+            </TableHead>
+            <TableHead className="font-bold text-slate-600 text-xs">
+              Value
+            </TableHead>
+            <TableHead className="font-bold text-slate-600 text-xs">
+              Owner
+            </TableHead>
+            <TableHead className="font-bold text-slate-600 text-xs">
+              Status
+            </TableHead>
+            <TableHead className="font-bold text-slate-600 text-xs">
+              Location
+            </TableHead>
+            <TableHead className="font-bold text-slate-600 text-xs">
+              Socials
+            </TableHead>
+            <TableHead className="text-right font-bold text-slate-600 text-xs">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {leads?.map((lead) => (
+            <TableRow
+              key={lead._id}
+              className="group hover:bg-slate-50/50 transition-colors">
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 shrink-0 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-600 uppercase">
+                    {lead.name.slice(0, 2)}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-slate-800 truncate leading-none mb-1">
+                      {lead.name}
+                    </span>
+                    <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate">
+                      <Building2 size={10} className="shrink-0" />
+                      <span className="truncate">{lead.company.name}</span>
+                    </div>
+                  </div>
+                </div>
+              </TableCell>
 
-      {/* Details List */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <span className="font-bold text-slate-400">$</span>
-          <span className="font-bold text-slate-700">${deal.value}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <Mail size={12} className="text-slate-400" />
-          <span className="truncate">{deal.email}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <Phone size={12} className="text-slate-400" />
-          <span>{deal.phone}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <MapPin size={12} className="text-slate-400" />
-          <span className="truncate">{deal.location}</span>
-        </div>
-      </div>
+              {/* Value */}
+              <TableCell>
+                <div className="flex flex-col">
+                  <span className="text-xs font-bold text-slate-700">
+                    {lead.currency} {lead.value.toLocaleString()}
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    {lead.source}
+                  </span>
+                </div>
+              </TableCell>
 
-      {/* Owner Section */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={deal.ownerImg} />
-            <AvatarFallback>{deal.owner[0]}</AvatarFallback>
-          </Avatar>
-          <span className="text-[11px] font-bold text-slate-700">
-            {deal.owner}
-          </span>
-        </div>
-        <Badge
-          variant="secondary"
-          className="bg-sky-50 text-sky-500 text-[9px] font-bold h-5 border-none px-1.5 flex gap-1">
-          <svg viewBox="0 0 24 24" className="w-2 h-2 fill-current">
-            <circle cx="12" cy="12" r="10" />
-          </svg>
-          {deal.productivity}%
-        </Badge>
-      </div>
+              {/* Owner (Assignee) */}
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${lead.owner.name}`}
+                    />
+                    <AvatarFallback className="text-[9px]">
+                      {lead.owner.name.slice(0, 1).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                    {lead.owner.name}
+                  </span>
+                </div>
+              </TableCell>
 
-      {/* Footer Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
-          <Calendar size={12} />
-          {deal.date}
-        </div>
-        <div className="flex items-center gap-2 text-slate-400">
-          <PhoneCall
-            size={14}
-            className="cursor-pointer hover:text-slate-600"
-          />
-          <MessageSquare
-            size={14}
-            className="cursor-pointer hover:text-slate-600"
-          />
-          <FileText size={14} className="cursor-pointer hover:text-slate-600" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+              {/* Status / Pipeline Step */}
+              <TableCell>
+                <div className="flex flex-col gap-1">
+                  <Badge
+                    variant={"default"}
+                    className={`${
+                      lead.status === "active"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-slate-100 text-slate-700"
+                    }`}>
+                    {lead.status}
+                  </Badge>
+                </div>
+              </TableCell>
+
+              {/* Location (from Company) */}
+              <TableCell>
+                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 max-w-[140px]">
+                  <MapPin size={12} className="text-slate-400 shrink-0" />
+                  <span className="truncate">
+                    {lead.company.address.city}, {lead.company.address.country}
+                  </span>
+                </div>
+              </TableCell>
+
+              {/* Socials Column */}
+              <TableCell>
+                <div className="flex items-center gap-2 text-slate-400">
+                  <PhoneCall
+                    size={14}
+                    className="cursor-pointer hover:text-blue-500 transition-colors"
+                  />
+                  <MessageSquare
+                    size={14}
+                    className="cursor-pointer hover:text-green-500 transition-colors"
+                  />
+                  <FileText
+                    size={14}
+                    className="cursor-pointer hover:text-orange-500 transition-colors"
+                  />
+                </div>
+              </TableCell>
+
+              {/* Actions */}
+              <TableCell className="text-right">
+                <div className="flex justify-end items-center gap-2">
+                  <DeleteConfirmDialog
+                    text={lead.name}
+                    onConfirm={() => handleDelete(lead._id)}
+                  />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
 
 // --- Main Page ---
 
 export default function LeadsGridPage() {
+  const { data: leadData, isLoading } = useGetLeads();
+  console.log("Leads Data:", leadData);
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-4 md:p-6 font-sans">
       {/* Breadcrumb & Top Actions */}
@@ -235,72 +330,7 @@ export default function LeadsGridPage() {
         </div>
       </div>
 
-      {/* Kanban Board */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {COLUMNS.map((col) => (
-          <div key={col.id} className="space-y-4">
-            {/* Column Header */}
-            <div
-              className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-t-4 border-t-transparent"
-              style={{ borderTopColor: "transparent" }}>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center gap-2">
-                  <div className={cn("h-2.5 w-2.5 rounded-full", col.color)} />
-                  <h3 className="font-bold text-slate-800 text-sm">
-                    {col.title}
-                  </h3>
-                </div>
-                <div className="flex gap-2 text-slate-300">
-                  <Plus
-                    size={14}
-                    className="cursor-pointer hover:text-slate-500"
-                  />
-                  <Edit2
-                    size={14}
-                    className="cursor-pointer hover:text-slate-500"
-                  />
-                  <Trash2
-                    size={14}
-                    className="cursor-pointer hover:text-slate-500"
-                  />
-                </div>
-              </div>
-              <p className="text-[11px] text-slate-400 font-bold ml-4.5">
-                {col.count} Leads - {col.value}
-              </p>
-              {/* Underline for branding */}
-              <div
-                className={cn(
-                  "h-[3px] w-full rounded-full mt-4 opacity-40",
-                  col.color,
-                )}
-              />
-            </div>
-
-            {/* Column Deals */}
-            <div className="space-y-4">
-              {DEALS.filter((d) => d.stage === "new" || col.id !== "new")
-                .slice(0, col.id === "new" ? 2 : 1)
-                .map((deal) => (
-                  <DealCard key={`${col.id}-${deal.id}`} deal={deal} />
-                ))}
-
-              {/* If no data, show placeholder or similar mockup items */}
-              {col.id !== "new" && (
-                <DealCard
-                  deal={{
-                    ...DEALS[0],
-                    initials: "BR",
-                    company: "Byron, Roman and Bailey",
-                    value: "2,45,000",
-                    stage: col.id,
-                  }}
-                />
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+      <LeadTable leads={leadData?.data || []} />
     </div>
   );
 }

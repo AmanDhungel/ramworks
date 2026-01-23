@@ -178,7 +178,7 @@ export default function CompanyProfileSidebar() {
                         className="bg-emerald-50 text-emerald-500 border-none hover:bg-emerald-100">
                         {tag}
                       </Badge>
-                    )
+                    ),
                   )
                 : "No Tags Added"}
             </div>
@@ -195,8 +195,8 @@ export default function CompanyProfileSidebar() {
             </div>
             {singleCompany?.data?.contacts &&
             singleCompany?.data?.contacts?.length > 0
-              ? singleCompany?.data?.contacts?.map((contact) => (
-                  <>
+              ? singleCompany?.data?.contacts?.map((contact, index) => (
+                  <div key={`contact-${index}`} className="mb-3">
                     <div className="flex items-center gap-3">
                       <div className="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
                         <Avatar className="w-5 h-5 border-4 border-white shadow-md">
@@ -218,7 +218,7 @@ export default function CompanyProfileSidebar() {
                         </p>
                       </div>
                     </div>
-                  </>
+                  </div>
                 ))
               : "No Contacts Added"}
           </section>

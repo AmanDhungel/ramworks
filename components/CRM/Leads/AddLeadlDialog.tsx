@@ -62,6 +62,7 @@ export const LEAD_SOURCE = [
 export const LEAD_STATUS = ["active", "inactive"] as const;
 
 export const leadSchema = z.object({
+  _id: z.string().optional(),
   name: z.string().min(1, "Lead Name is required"),
   pipeline: z.object({
     domain_workspace: z.string().min(1, "Domain Workspace is required"),
@@ -104,8 +105,6 @@ export function AddLeadDialog() {
   const { data: boardData } = useGetBoard(
     form.watch("pipeline.vendor_workspace"),
   );
-
-  console.log("Board Data:", boardData);
 
   const onSubmit = (data: LeadFormValues) => {
     const payload = {

@@ -65,3 +65,14 @@ export const useCreateDeals = () => {
 //     "/client_api/activity"
 //   );
 // };
+
+export const useDeleteDeal = () => {
+  return useMutation<ApiResponseType<{ id: string }>, any, { id: string }>({
+    mutationKey: ["deleteDeal"],
+    mutationFn: (data: { id: string }) =>
+      Post<{ id: string }, ApiResponseType<{ id: string }>>({
+        url: `/client_api/deal/delete/${data.id}`,
+        data: { id: data.id },
+      }),
+  });
+};

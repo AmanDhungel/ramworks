@@ -90,16 +90,13 @@ export async function Post<PayloadType, ResponseType>({
  */
 export async function Delete<ResponseType>({
   url,
-  id,
 }: {
   url?: string;
-  id: number | string;
 }): Promise<ResponseType> {
   try {
     const res = await fetch(`${apiUrl}${url}`, {
-      method: "POST",
+      method: "DELETE",
       headers: await getHeaders(),
-      body: JSON.stringify({ id }),
     });
     // if (res.status === 401) {
     //   await logout();

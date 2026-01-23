@@ -3,12 +3,7 @@ import {
   LayoutDashboard,
   Users,
   Building2,
-  Briefcase,
-  Target,
-  Rocket,
   UserCircle,
-  Calendar,
-  ClipboardCheck,
   ChevronDown,
   LucideIcon,
   WrenchIcon,
@@ -28,15 +23,17 @@ import {
   Megaphone,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 export type NavItem = {
   title: string;
   icon: LucideIcon;
   link?: string;
   hasDropdown: boolean;
-  children?: { title: string; link: string }[];
+  children?: { title: string; link: string; active?: boolean }[];
+  active?: boolean;
 };
 
 export type NavGroup = {
@@ -44,208 +41,314 @@ export type NavGroup = {
   items: NavItem[];
 };
 
-const menuData: NavGroup[] = [
-  {
-    groupLabel: "Workspace",
-    items: [
-      {
-        title: "Domain Workspace",
-        icon: LayoutDashboard,
-        link: "/domain-workspace",
-        hasDropdown: false,
-      },
-    ],
-  },
-  {
-    groupLabel: "Application",
-    items: [
-      {
-        title: "Calendar",
-        icon: Calendar1,
-        link: "/calender",
-        hasDropdown: false,
-      },
-    ],
-  },
-
-  {
-    groupLabel: "CRM",
-    items: [
-      {
-        title: "Contacts",
-        icon: Users,
-        link: "/crm/contacts",
-        hasDropdown: false,
-      },
-      {
-        title: "Companies",
-        icon: Building2,
-        link: "/crm/companies",
-        hasDropdown: false,
-      },
-
-      {
-        title: "Deals",
-        icon: HeartHandshake,
-        link: "/crm/deals",
-        hasDropdown: false,
-      },
-      {
-        title: "Leads",
-        icon: UserCheck,
-        link: "/crm/leads",
-        hasDropdown: false,
-      },
-      {
-        title: "Pipeline",
-        icon: Settings2,
-        link: "/crm/pipeline",
-        hasDropdown: false,
-      },
-      {
-        title: "Analytics",
-        icon: FileChartLine,
-        link: "/crm/analytics",
-        hasDropdown: false,
-      },
-      {
-        title: "Activities",
-        icon: TrendingUp,
-        link: "/crm/activity",
-        hasDropdown: false,
-      },
-    ],
-  },
-  {
-    groupLabel: "HRM",
-    items: [
-      {
-        title: "Employees",
-        icon: UserCircle,
-        hasDropdown: true,
-        children: [
-          { title: "Employee", link: "/hrm/employees/employee" },
-          { title: "Departments", link: "/hrm/employees/departments" },
-          { title: "Designations", link: "/hrm/employees/designations" },
-          { title: "Policies", link: "/hrm/employees/policies" },
-        ],
-      },
-      {
-        title: "Tickets",
-        icon: UserCircle,
-        hasDropdown: true,
-        children: [{ title: "Tickets", link: "/hrm/tickets/tickets" }],
-      },
-      {
-        title: "Holidays",
-        icon: Calendar1,
-        hasDropdown: false,
-        link: "/hrm/holidays",
-      },
-      {
-        title: "Attenadance",
-        icon: FileClock,
-        hasDropdown: true,
-        children: [
-          { title: "Leaves (Admin)", link: "/hrm/leaves/leave-admin" },
-          { title: "Leaves (Employee)", link: "/hrm/leaves/leave-employee" },
-          { title: "Leaves Settings", link: "/hrm/leaves/leave-settings" },
-          { title: "Attendance (Admin)", link: "/hrm/attendance-admin" },
-          { title: "Attendance (Employee)", link: "/hrm/attendance-employee" },
-          { title: "Timesheets", link: "/hrm/timesheets" },
-          { title: "Shift & Schedule", link: "/hrm/shift-schedule" },
-          { title: "Overtime", link: "/hrm/overtime" },
-        ],
-      },
-      {
-        title: "Performance",
-        icon: GraduationCap,
-        hasDropdown: true,
-        children: [
-          {
-            title: "Performance Indicator",
-            link: "/hrm/performance/performance-indicator",
-          },
-          {
-            title: "Performance Review",
-            link: "/hrm/performance/performance-review",
-          },
-          {
-            title: "Performance Appraisal",
-            link: "/hrm/performance/performance-appraisal",
-          },
-          { title: "Goal List", link: "/hrm/performance/goal-list" },
-          { title: "Goal Type", link: "/hrm/performance/goal-type" },
-        ],
-      },
-      {
-        title: "Training",
-        icon: PenBox,
-        hasDropdown: true,
-        children: [
-          {
-            title: "Training List",
-            link: "/hrm/training/training-list",
-          },
-          { title: "Trainers", link: "/hrm/training/trainers" },
-          {
-            title: "Training Type",
-            link: "/hrm/training/training-type",
-          },
-        ],
-      },
-      {
-        title: "Promotion",
-        icon: Megaphone,
-        hasDropdown: false,
-        link: "/hrm/promotion",
-      },
-      {
-        title: "Resignation",
-        icon: SquareArrowOutUpRight,
-        hasDropdown: false,
-        link: "/hrm/resignation",
-      },
-      {
-        title: "Termination",
-        icon: CircleX,
-        hasDropdown: false,
-        link: "/hrm/termination",
-      },
-    ],
-  },
-  {
-    groupLabel: "Support / operations",
-    items: [
-      {
-        title: "Repair & Maintenance",
-        icon: WrenchIcon,
-        hasDropdown: false,
-        link: "/support-operation/repair-maintenance",
-      },
-      {
-        title: "Complaints",
-        icon: SmilePlus,
-        link: "/support-operation/complaints",
-        hasDropdown: false,
-      },
-    ],
-  },
-  {
-    groupLabel: "Finance & Accounts",
-    items: [
-      {
-        title: "Sales",
-        icon: ShoppingCart,
-        hasDropdown: true,
-        children: [{ title: "Invoices", link: "/finance/invoices" }],
-      },
-    ],
-  },
-];
-
 const Sidebar = () => {
   const [openDropdowns, setOpenDropdowns] = useState<string[]>([]);
+  const pathname = usePathname();
+
+  const menuData: NavGroup[] = [
+    {
+      groupLabel: "Workspace",
+      items: [
+        {
+          title: "Domain Workspace",
+          icon: LayoutDashboard,
+          link: "/domain-workspace",
+          hasDropdown: false,
+          active: pathname.startsWith("/domain-workspace"),
+        },
+      ],
+    },
+    {
+      groupLabel: "Application",
+      items: [
+        {
+          title: "Calendar",
+          icon: Calendar1,
+          link: "/calender",
+          hasDropdown: false,
+          active: pathname.startsWith("/calender"),
+        },
+      ],
+    },
+
+    {
+      groupLabel: "CRM",
+      items: [
+        {
+          title: "Contacts",
+          icon: Users,
+          link: "/crm/contacts",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/contacts"),
+        },
+        {
+          title: "Companies",
+          icon: Building2,
+          link: "/crm/companies",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/companies"),
+        },
+
+        {
+          title: "Deals",
+          icon: HeartHandshake,
+          link: "/crm/deals",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/deals"),
+        },
+        {
+          title: "Leads",
+          icon: UserCheck,
+          link: "/crm/leads",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/leads"),
+        },
+        {
+          title: "Pipeline",
+          icon: Settings2,
+          link: "/crm/pipeline",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/pipeline"),
+        },
+        {
+          title: "Analytics",
+          icon: FileChartLine,
+          link: "/crm/analytics",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/analytics"),
+        },
+        {
+          title: "Activities",
+          icon: TrendingUp,
+          link: "/crm/activity",
+          hasDropdown: false,
+          active: pathname.startsWith("/crm/activity"),
+        },
+      ],
+    },
+    {
+      groupLabel: "HRM",
+      items: [
+        {
+          title: "Employees",
+          icon: UserCircle,
+          hasDropdown: true,
+          active: pathname.startsWith("/hrm/employees"),
+          children: [
+            {
+              title: "Employee",
+              link: "/hrm/employees/employee",
+              active: pathname.startsWith("/hrm/employees/employee"),
+            },
+            {
+              title: "Departments",
+              link: "/hrm/employees/departments",
+              active: pathname.startsWith("/hrm/employees/departments"),
+            },
+            {
+              title: "Designations",
+              link: "/hrm/employees/designations",
+              active: pathname.startsWith("/hrm/employees/designations"),
+            },
+            {
+              title: "Policies",
+              link: "/hrm/employees/policies",
+              active: pathname.startsWith("/hrm/employees/policies"),
+            },
+          ],
+        },
+        {
+          title: "Tickets",
+          icon: UserCircle,
+          hasDropdown: true,
+          children: [
+            {
+              title: "Tickets",
+              link: "/hrm/tickets/tickets",
+              active: pathname.startsWith("/hrm/tickets/tickets"),
+            },
+          ],
+          active: pathname.startsWith("/hrm/tickets"),
+        },
+        {
+          title: "Holidays",
+          icon: Calendar1,
+          hasDropdown: false,
+          link: "/hrm/holidays",
+          active: pathname.startsWith("/hrm/holidays"),
+        },
+        {
+          title: "Attenadance",
+          icon: FileClock,
+          hasDropdown: true,
+          active: pathname.startsWith("/hrm/attendance"),
+          children: [
+            {
+              title: "Leaves (Admin)",
+              link: "/hrm/leaves/leave-admin",
+              active: pathname.startsWith("/hrm/leaves/leave-admin"),
+            },
+            {
+              title: "Leaves (Employee)",
+              link: "/hrm/leaves/leave-employee",
+              active: pathname.startsWith("/hrm/leaves/leave-employee"),
+            },
+            {
+              title: "Leaves Settings",
+              link: "/hrm/leaves/leave-settings",
+              active: pathname.startsWith("/hrm/leaves/leave-settings"),
+            },
+            {
+              title: "Attendance (Admin)",
+              link: "/hrm/attendance-admin",
+              active: pathname.startsWith("/hrm/attendance-admin"),
+            },
+            {
+              title: "Attendance (Employee)",
+              link: "/hrm/attendance-employee",
+              active: pathname.startsWith("/hrm/attendance-employee"),
+            },
+            {
+              title: "Timesheets",
+              link: "/hrm/timesheets",
+              active: pathname.startsWith("/hrm/timesheets"),
+            },
+            {
+              title: "Shift & Schedule",
+              link: "/hrm/shift-schedule",
+              active: pathname.startsWith("/hrm/shift-schedule"),
+            },
+            {
+              title: "Overtime",
+              link: "/hrm/overtime",
+              active: pathname.startsWith("/hrm/overtime"),
+            },
+          ],
+        },
+        {
+          title: "Performance",
+          icon: GraduationCap,
+          hasDropdown: true,
+          active: pathname.startsWith("/hrm/performance"),
+          children: [
+            {
+              title: "Performance Indicator",
+              link: "/hrm/performance/performance-indicator",
+              active: pathname.startsWith(
+                "/hrm/performance/performance-indicator",
+              ),
+            },
+            {
+              title: "Performance Review",
+              link: "/hrm/performance/performance-review",
+              active: pathname.startsWith(
+                "/hrm/performance/performance-review",
+              ),
+            },
+            {
+              title: "Performance Appraisal",
+              link: "/hrm/performance/performance-appraisal",
+              active: pathname.startsWith(
+                "/hrm/performance/performance-appraisal",
+              ),
+            },
+            {
+              title: "Goal List",
+              link: "/hrm/performance/goal-list",
+              active: pathname.startsWith("/hrm/performance/goal-list"),
+            },
+            {
+              title: "Goal Type",
+              link: "/hrm/performance/goal-type",
+              active: pathname.startsWith("/hrm/performance/goal-type"),
+            },
+          ],
+        },
+        {
+          title: "Training",
+          icon: PenBox,
+          hasDropdown: true,
+          active: pathname.startsWith("/hrm/training"),
+          children: [
+            {
+              title: "Training List",
+              link: "/hrm/training/training-list",
+              active: pathname.startsWith("/hrm/training/training-list"),
+            },
+            {
+              title: "Trainers",
+              link: "/hrm/training/trainers",
+              active: pathname.startsWith("/hrm/training/trainers"),
+            },
+
+            {
+              title: "Training Type",
+              link: "/hrm/training/training-type",
+              active: pathname.startsWith("/hrm/training/training-type"),
+            },
+          ],
+        },
+        {
+          title: "Promotion",
+          icon: Megaphone,
+          hasDropdown: false,
+          link: "/hrm/promotion",
+          active: pathname.startsWith("/hrm/promotion"),
+        },
+        {
+          title: "Resignation",
+          icon: SquareArrowOutUpRight,
+          hasDropdown: false,
+          link: "/hrm/resignation",
+          active: pathname.startsWith("/hrm/resignation"),
+        },
+        {
+          title: "Termination",
+          icon: CircleX,
+          hasDropdown: false,
+          link: "/hrm/termination",
+          active: pathname.startsWith("/hrm/termination"),
+        },
+      ],
+    },
+    {
+      groupLabel: "Support / operations",
+      items: [
+        {
+          title: "Repair & Maintenance",
+          icon: WrenchIcon,
+          hasDropdown: false,
+          link: "/support-operation/repair-maintenance",
+          active: pathname.startsWith("/support-operation/repair-maintenance"),
+        },
+        {
+          title: "Complaints",
+          icon: SmilePlus,
+          link: "/support-operation/complaints",
+          hasDropdown: false,
+          active: pathname.startsWith("/support-operation/complaints"),
+        },
+      ],
+    },
+    {
+      groupLabel: "Finance & Accounts",
+      items: [
+        {
+          title: "Sales",
+          icon: ShoppingCart,
+          hasDropdown: true,
+          active: pathname.startsWith("/finance/sales"),
+          children: [
+            {
+              title: "Invoices",
+              link: "/finance/invoices",
+              active: pathname.startsWith("/finance/invoices"),
+            },
+          ],
+        },
+      ],
+    },
+  ];
 
   const toggleDropdown = (title: string) => {
     setOpenDropdowns((prev) =>
@@ -271,14 +374,14 @@ const Sidebar = () => {
                     onClick={() =>
                       item.hasDropdown && toggleDropdown(item.title)
                     }
-                    className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors hover:bg-slate-100 ${
+                    className={`w-full flex items-center justify-between p-2 rounded-lg transition-colors ${item.active && "bg-slate-100"} hover:bg-slate-100 ${
                       !item.hasDropdown ? "cursor-pointer" : "cursor-default"
                     }`}>
                     <div className="flex items-center gap-3">
                       <item.icon size={18} strokeWidth={1.5} />
                       <Link
                         href={item.link ? item.link : ""}
-                        className="font-medium">
+                        className="font-medium ">
                         {item.title}
                       </Link>
                       {item.title === "Dashboard" && (
@@ -303,7 +406,7 @@ const Sidebar = () => {
                         <Link
                           key={child.title}
                           href={child.link}
-                          className="block p-2 text-slate-500 hover:text-blue-600 rounded-md transition-colors">
+                          className={`block p-2  border-l-2 ${child.active ? "border-l-orange-500 text-orange-500" : "text-slate-500"} hover:text-blue-600 transition-colors`}>
                           {child.title}
                         </Link>
                       ))}

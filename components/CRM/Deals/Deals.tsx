@@ -20,10 +20,16 @@ import {
   Search,
   Loader,
 } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
@@ -33,7 +39,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AddDealDialog } from "./AddDealDialog";
-import { DealType, useGetDeals } from "@/services/deals.service";
+import { DealType, useDeleteDeal, useGetDeals } from "@/services/deals.service";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const DEALS = [
   {
@@ -66,126 +75,162 @@ const DEALS = [
   },
 ];
 
-const DealCard = ({ deal }: { deal: DealType }) => (
-  <Card className="mb-4 border-slate-200 shadow-sm hover:shadow-md transition-shadow group">
-    <CardContent className="p-4 space-y-4">
-      <div className="flex gap-3">
-        <div className="h-10 w-10 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
-          {deal.name.slice(0, 2).toUpperCase()}
-        </div>
-        <div className="flex-1 items-center mt-3">
-          <h4 className="text-xs font-bold text-slate-800 truncate leading-tight hover:text-orange-500 cursor-pointer">
-            {deal.name}
-          </h4>
-        </div>
-      </div>
+export const DealTable = ({ deals }: { deals: DealType[] }) => {
+  const { mutate } = useDeleteDeal();
+  const queryClient = useQueryClient();
+  const handleDelete = (id: string) => {
+    mutate(
+      { id: id },
+      {
+        onSuccess: () => {
+          console.log("Deal deleted successfully");
+          toast.success("Deal deleted successfully");
+          queryClient.invalidateQueries({ queryKey: ["deals"] });
+        },
+        onError: (error) => {
+          console.error("Error deleting deal:", error);
+        },
+      },
+    );
+  };
+  return (
+    <div className="rounded-md border bg-white">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-slate-50/50">
+            <TableHead className="w-[250px] font-bold text-slate-600">
+              Deal Name
+            </TableHead>
+            <TableHead className="font-bold text-slate-600">Value</TableHead>
+            <TableHead className="font-bold text-slate-600">Assignee</TableHead>
+            <TableHead className="font-bold text-slate-600">Location</TableHead>
+            <TableHead className="font-bold text-slate-600">Due Date</TableHead>
+            <TableHead className="font-bold text-slate-600">
+              Probability
+            </TableHead>
+            <TableHead className="text-right font-bold text-slate-600">
+              Socials
+            </TableHead>
+            <TableHead className="text-right font-bold text-slate-600">
+              Actions
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {deals.map((deal) => (
+            <TableRow
+              key={deal._id}
+              className="group hover:bg-slate-50/50 transition-colors">
+              {/* Deal Name & Initial Box */}
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 shrink-0 rounded bg-slate-50 border border-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600 uppercase">
+                    {deal.name.slice(0, 2)}
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold text-slate-800 truncate hover:text-orange-500 cursor-pointer">
+                      {deal.name}
+                    </span>
+                    <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                      <Mail size={10} /> {deal.assignees[0].email}
+                    </div>
+                  </div>
+                </div>
+              </TableCell>
 
-      {/* Details List */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <span className="font-bold text-slate-400">$</span>
-          <span className="font-bold text-slate-700">${deal.value}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <Mail size={12} className="text-slate-400" />
-          <span className="truncate">{deal.assignees[0].email}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <Phone size={12} className="text-slate-400" />
-          <span>{deal.assignees[0].phone}</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <MapPin size={12} className="text-slate-400" />
-          <span className="truncate">
-            {deal.contacts[0]?.address.address}{" "}
-            {deal.contacts[0]?.address.country}
-          </span>
-        </div>
-      </div>
+              {/* Deal Value */}
+              <TableCell>
+                <span className="text-xs font-bold text-slate-700">
+                  ${deal.value}
+                </span>
+              </TableCell>
 
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6">
-            <AvatarImage src={`https//i.pravatar.cc/150?u=${deal.name}`} />
-            <AvatarFallback>
-              {deal.assignees[0].name.slice(0, 1).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[11px] font-bold text-slate-700">
-            {deal.assignees[0].name}
-          </span>
-        </div>
-        <Badge
-          variant="secondary"
-          className="bg-sky-50 text-sky-500 text-[9px] font-bold h-5 border-none px-1.5 flex gap-1">
-          <svg viewBox="0 0 24 24" className="w-2 h-2 fill-current">
-            <circle cx="12" cy="12" r="10" />
-          </svg>
-          85%
-        </Badge>
-      </div>
+              {/* Assignee */}
+              <TableCell>
+                <div className="flex items-center gap-2">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage
+                      src={`https://i.pravatar.cc/150?u=${deal.name}`}
+                    />
+                    <AvatarFallback className="text-[10px]">
+                      {deal.assignees[0].name.slice(0, 1).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-xs font-bold text-slate-700 whitespace-nowrap">
+                    {deal.assignees[0].name}
+                  </span>
+                </div>
+              </TableCell>
 
-      {/* Footer Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-bold">
-          <Calendar size={12} />
-          {deal.due_date.split("T")[0]}
-        </div>
-        <div className="flex items-center gap-2 text-slate-400">
-          <PhoneCall
-            size={14}
-            className="cursor-pointer hover:text-slate-600"
-          />
-          <MessageSquare
-            size={14}
-            className="cursor-pointer hover:text-slate-600"
-          />
-          <FileText size={14} className="cursor-pointer hover:text-slate-600" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
+              {/* Location */}
+              <TableCell>
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 max-w-[150px]">
+                  <MapPin size={12} className="text-slate-400 shrink-0" />
+                  <span className="truncate">
+                    {deal.contacts[0]?.address.address},{" "}
+                    {deal.contacts[0]?.address.country}
+                  </span>
+                </div>
+              </TableCell>
+
+              {/* Due Date */}
+              <TableCell>
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                  <Calendar size={12} className="text-slate-400" />
+                  {deal.due_date.split("T")[0]}
+                </div>
+              </TableCell>
+
+              {/* Probability */}
+              <TableCell>
+                <Badge
+                  variant="secondary"
+                  className="bg-sky-50 text-sky-500 text-[10px] font-bold h-5 border-none px-2 flex items-center gap-1 w-fit">
+                  <div className="w-1.5 h-1.5 rounded-full bg-sky-500" />
+                  85%
+                </Badge>
+              </TableCell>
+
+              {/* Footer Actions */}
+              <TableCell className="text-right">
+                <div className="flex justify-end items-center gap-3 text-slate-400">
+                  <PhoneCall
+                    size={14}
+                    className="cursor-pointer hover:text-slate-600 transition-colors"
+                  />
+                  <MessageSquare
+                    size={14}
+                    className="cursor-pointer hover:text-slate-600 transition-colors"
+                  />
+                  <FileText
+                    size={14}
+                    className="cursor-pointer hover:text-slate-600 transition-colors"
+                  />
+                </div>
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end items-center gap-3 text-slate-400">
+                  <DeleteConfirmDialog
+                    text={deal.name}
+                    onConfirm={() => handleDelete(deal._id)}
+                  />
+                  <MessageSquare
+                    size={14}
+                    className="cursor-pointer hover:text-slate-600 transition-colors"
+                  />
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+};
 
 export default function DealsGridPage() {
   const { data: dealData, isLoading } = useGetDeals();
-  const COLUMNS = [
-    {
-      id: "open",
-      title: "Open",
-      count:
-        dealData?.data?.filter((deal) => deal.status === "new").length || 0,
-      value:
-        dealData?.data
-          ?.filter((deal) => deal.status === "new")
-          .reduce((acc, deal) => acc + deal.value, 0) || "$0",
-      color: "bg-emerald-500",
-    },
-    {
-      id: "won",
-      title: "Won",
-      count:
-        dealData?.data?.filter((deal) => deal.status === "won").length || 0,
-      value:
-        dealData?.data
-          ?.filter((deal) => deal.status === "won")
-          .reduce((acc, deal) => acc + deal.value, 0) || "$0",
-      color: "bg-purple-500",
-    },
 
-    {
-      id: "lost",
-      title: "Lost",
-      count:
-        dealData?.data?.filter((deal) => deal.status === "proposal").length ||
-        0,
-      value:
-        dealData?.data
-          ?.filter((deal) => deal.status === "proposal")
-          .reduce((acc, deal) => acc + deal.value, 0) || "$0",
-      color: "bg-orange-400",
-    },
-  ];
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-4 md:p-6 font-sans">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
@@ -246,59 +291,7 @@ export default function DealsGridPage() {
       {isLoading ? (
         <Loader className="m-auto flex w-full animate-spin" />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-          {COLUMNS.map((col) => (
-            <div key={col.id} className="space-y-4">
-              <div
-                className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm border-t-4 border-t-transparent"
-                style={{ borderTopColor: "transparent" }}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn("h-2.5 w-2.5 rounded-full", col.color)}
-                    />
-                    <h3 className="font-bold text-slate-800 text-sm">
-                      {col.title}
-                    </h3>
-                  </div>
-                  <div className="flex gap-2 text-slate-300">
-                    <Plus
-                      size={14}
-                      className="cursor-pointer hover:text-slate-500"
-                    />
-                    <Edit2
-                      size={14}
-                      className="cursor-pointer hover:text-slate-500"
-                    />
-                    <Trash2
-                      size={14}
-                      className="cursor-pointer hover:text-slate-500"
-                    />
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-400 font-bold ml-4.5">
-                  {col.count} Leads - {col.value}
-                </p>
-                <div
-                  className={cn(
-                    "h-[3px] w-full rounded-full mt-4 opacity-40",
-                    col.color,
-                  )}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-4">
-                  {dealData?.data
-                    ?.filter((deal) => deal.status === col.id)
-                    .map((deal) => (
-                      <DealCard key={`${col.id}-${deal._id}`} deal={deal} />
-                    ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        <DealTable deals={dealData?.data || []} />
       )}
     </div>
   );

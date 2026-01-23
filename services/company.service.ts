@@ -1,7 +1,7 @@
 import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
 import { useMutation } from "@tanstack/react-query";
-import { Post } from "@/lib/action";
+import { Delete, Post } from "@/lib/action";
 import { ContactFormPayload } from "@/components/CRM/Contacts/CreateContactDialog";
 import { ContactFormValues } from "./contact.service";
 export type CompanyType = {
@@ -73,4 +73,15 @@ export const useGetSingleCompany = (id: string) => {
     null,
     `/client_api/company/${id}`,
   );
+};
+
+export const useDeleteCompany = () => {
+  return useMutation<ApiResponseType<{ id: string }>, any, { id: string }>({
+    mutationKey: ["deleteCompany"],
+    mutationFn: (data: { id: string }) =>
+      Post<{ id: string }, ApiResponseType<{ id: string }>>({
+        url: `/client_api/company/delete/${data.id}`,
+        data: { id: data.id },
+      }),
+  });
 };

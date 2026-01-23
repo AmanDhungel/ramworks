@@ -1,7 +1,7 @@
 import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
 import { useMutation } from "@tanstack/react-query";
-import { Post } from "@/lib/action";
+import { Delete, Post } from "@/lib/action";
 import { ContactType } from "@/components/CRM/Contacts/ContactCard";
 import { CompanyFormPayload } from "@/components/CRM/Company/CreateCompanyDialog";
 
@@ -84,4 +84,25 @@ export const useGetSingleContact = (id: string) => {
     null,
     `/client_api/contact/${id}`,
   );
+};
+
+// export const useDeleteContact = () => {
+//   return useMutation<ApiResponseType<any>, any, { id: string }>({
+//     mutationKey: ["deleteContact"],
+//     mutationFn: ({ id }) =>
+//       Delete<ApiResponseType<any>>({
+//         url: `/client_api/contact/delete/${id}`,
+//       }),
+//   });
+// };
+
+export const useDeleteContact = () => {
+  return useMutation<ApiResponseType<{ id: string }>, any, { id: string }>({
+    mutationKey: ["deleteContact"],
+    mutationFn: (data: { id: string }) =>
+      Post<{ id: string }, ApiResponseType<{ id: string }>>({
+        url: `/client_api/contact/delete/${data.id}`,
+        data: { id: data.id },
+      }),
+  });
 };

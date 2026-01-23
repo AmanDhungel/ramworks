@@ -43,7 +43,7 @@ export const useGetActivity = () => {
   return useFetcher<ApiResponseType<ActivityType[]>>(
     "activity",
     null,
-    "/client_api/activity"
+    "/client_api/activity",
   );
 };
 
@@ -51,6 +51,17 @@ export const useGetSingleActivity = (id: string) => {
   return useFetcher<ApiResponseType<ActivityType>>(
     ["singleActivity", id],
     null,
-    `/client_api/activity/${id}`
+    `/client_api/activity/${id}`,
   );
+};
+
+export const useDeleteActivity = () => {
+  return useMutation<ApiResponseType<{ id: string }>, any, { id: string }>({
+    mutationKey: ["deleteActivity"],
+    mutationFn: (data: { id: string }) =>
+      Post<{ id: string }, ApiResponseType<{ id: string }>>({
+        url: `/client_api/activity/delete/${data.id}`,
+        data: { id: data.id },
+      }),
+  });
 };
