@@ -33,6 +33,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  useDeleteDepartment,
+  useGetDepartment,
+} from "@/services/departments.service";
+import DepartmentFormDialog from "./AddDepartmentDailog";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
+import { useQueryClient } from "@tanstack/react-query";
 
 // --- Mock Data ---
 const DEPARTMENTS = [
@@ -52,8 +59,10 @@ const DEPARTMENTS = [
 export default function DepartmentTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: departments } = useGetDepartment();
+  console.log("Departments Data:", departments);
+  const queryClient = useQueryClient();
 
-  // Get current state from URL
   const page = Number(searchParams.get("page")) || 1;
   const statusFilter = searchParams.get("status") || "all";
   const searchQuery = searchParams.get("search") || "";
@@ -71,8 +80,7 @@ export default function DepartmentTable() {
     router.push(`?${params.toString()}`);
   };
 
-  // Filter Logic
-  const filteredData = DEPARTMENTS.filter((item) => {
+  const filteredData = departments?.data.filter((item) => {
     const matchesStatus =
       statusFilter === "all" || item.status.toLowerCase() === statusFilter;
     const matchesSearch = item.name
@@ -81,13 +89,26 @@ export default function DepartmentTable() {
     return matchesStatus && matchesSearch;
   });
 
-  // Pagination Logic (Example: 10 per page)
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
+  const totalPages = Math.ceil(filteredData?.length ?? 0 / itemsPerPage);
+  const paginatedData = filteredData?.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
+
+  const { mutate, isPending } = useDeleteDepartment();
+
+  const onDeleteConfirm = ({ id }: { id: string }) => {
+    mutate(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["department"] });
+        },
+      },
+    );
+    // Implement delete logic here
+  };
 
   return (
     <div className="w-full p-6 space-y-4 bg-white min-h-screen">
@@ -104,9 +125,8 @@ export default function DepartmentTable() {
             <Download className="h-4 w-4" /> Export{" "}
             <span className="text-xs">▼</span>
           </Button>
-          <Button className="bg-orange-500 hover:bg-orange-600 gap-2">
-            <Plus className="h-4 w-4" /> Add New Department
-          </Button>
+
+          <DepartmentFormDialog />
         </div>
       </div>
 
@@ -185,21 +205,22 @@ export default function DepartmentTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.map((item) => (
-              <TableRow key={item.id} className="hover:bg-slate-50/50">
+            {paginatedData?.map((item) => (
+              <TableRow key={item._id} className="hover:bg-slate-50/50">
                 <TableCell>
                   <Checkbox />
                 </TableCell>
                 <TableCell className="font-bold text-slate-800">
                   {item.name}
                 </TableCell>
-                <TableCell className="text-slate-500">
-                  {String(item.employees).padStart(2, "0")}
-                </TableCell>
+                <TableCell className="text-slate-500">_</TableCell>
+                {/* <TableCell className="text-slate-500">
+                  {String(item?.employees ?? 0).padStart(2, "")}
+                </TableCell> */}
                 <TableCell>
                   <Badge
                     className={
-                      item.status === "Active"
+                      item.status === "active"
                         ? "bg-emerald-500 hover:bg-emerald-500 rounded-md px-3 font-normal"
                         : "bg-red-600 hover:bg-red-600 rounded-md px-3 font-normal"
                     }>
@@ -214,12 +235,16 @@ export default function DepartmentTable() {
                       className="h-8 w-8 text-slate-400">
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+
+                    <div className="mt-2">
+                      <DeleteConfirmDialog
+                        onConfirm={() =>
+                          onDeleteConfirm({ id: item._id ?? "" })
+                        }
+                        text={item.name}
+                        isPending={isPending}
+                      />
+                    </div>
                   </div>
                 </TableCell>
               </TableRow>
@@ -227,12 +252,11 @@ export default function DepartmentTable() {
           </TableBody>
         </Table>
 
-        {/* Pagination Section */}
         <div className="p-4 flex items-center justify-between border-t text-sm text-slate-500">
           <div>
             Showing {(page - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(page * itemsPerPage, filteredData.length)} of{" "}
-            {filteredData.length} entries
+            {Math.min(page * itemsPerPage, filteredData?.length ?? 0)} of{" "}
+            {filteredData?.length} entries
           </div>
           <div className="flex items-center gap-1">
             <Button

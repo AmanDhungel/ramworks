@@ -170,7 +170,7 @@ export default function AddProfileDialog() {
                     defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a Owner..." />
+                        <SelectValue placeholder="Select Company..." />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   format,
   addMonths,
@@ -14,9 +14,6 @@ import {
   eachDayOfInterval,
   parseISO,
   subDays,
-  differenceInMinutes,
-  setHours,
-  setMinutes,
 } from "date-fns";
 import {
   ChevronLeft,
@@ -30,31 +27,39 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EventDialog } from "./EventDialog";
 import { EventFormValues } from "./schema";
+import {
+  EventType,
+  useCreateEvent,
+  useGetEvents,
+} from "@/services/event.service";
+import { useQueryClient } from "@tanstack/react-query";
 
+// 1. Updated Category Map to match your backend "type" values
 const CATEGORY_MAP = {
-  activity: {
+  meeting_schedule: {
+    label: "Meeting Schedule",
+    bg: "bg-[#FEF3C7]",
+    border: "border-[#FDE68A]",
+    text: "text-[#92400E]",
+    dot: "bg-[#F59E0B]",
+  },
+  activity_schedule: {
     label: "Activity Schedule",
     bg: "bg-[#DCFCE7]",
     border: "border-[#BBF7D0]",
     text: "text-[#166534]",
     dot: "bg-[#22C55E]",
   },
-  meeting: {
-    label: "Meeting Schedules",
-    bg: "bg-[#FEF3C7]",
-    border: "border-[#FDE68A]",
-    text: "text-[#92400E]",
-    dot: "bg-[#F59E0B]",
-  },
   holiday: {
-    label: "Holidays",
+    label: "Holiday",
     bg: "bg-[#FEE2E2]",
     border: "border-[#FECACA]",
     text: "text-[#991B1B]",
     dot: "bg-[#EF4444]",
   },
-  lorem: {
-    label: "Lorem",
+  others: {
+    // Changed from "other" to "others" to match backend/dialog
+    label: "Others",
     bg: "bg-[#DBEAFE]",
     border: "border-[#BFDBFE]",
     text: "text-[#1E40AF]",
@@ -63,18 +68,19 @@ const CATEGORY_MAP = {
 };
 
 const GRID_START_HOUR = 1;
-const HOUR_HEIGHT = 80; // pixels
+const HOUR_HEIGHT = 80;
 
 export default function CalendarMain() {
-  const [currentDate, setCurrentDate] = useState(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  });
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const { data: events } = useGetEvents();
   const [view, setView] = useState<"month" | "week" | "day">("month");
-  const [tasks, setTasks] = useState<EventFormValues[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<EventFormValues | null>(null);
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useCreateEvent();
+
+  const tasks = useMemo(() => events?.data ?? [], [events]);
 
   const miniCalDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentDate));
@@ -83,30 +89,24 @@ export default function CalendarMain() {
   }, [currentDate]);
 
   const handleTaskSubmit = (data: EventFormValues) => {
-    if (editingTask) {
-      setTasks(
-        tasks.map((t) => (t.id === editingTask.id ? { ...data, id: t.id } : t))
-      );
-    } else {
-      setTasks([
-        ...tasks,
-        { ...data, id: Math.random().toString(36).substr(2, 9) },
-      ]);
-    }
-    setIsDialogOpen(false);
-    setEditingTask(null);
+    mutate(data, {
+      onSuccess: () => {
+        setIsDialogOpen(false);
+        setEditingTask(null);
+        queryClient.invalidateQueries({ queryKey: ["events"] });
+      },
+    });
   };
 
   return (
     <div className="flex h-screen w-full bg-[#F8FAFC] text-[#1E293B] overflow-hidden">
-      {/* SIDEBAR */}
+      {/* Sidebar */}
       <aside className="w-[280px] bg-white border-r p-5 flex flex-col gap-6">
         <div className="flex items-center gap-2 text-slate-400 text-[10px] uppercase font-bold tracking-wider">
           <CalendarIcon size={14} /> Application /{" "}
           <span className="text-slate-900">Calendar</span>
         </div>
 
-        {/* Mini Calendar */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-sm">
@@ -145,19 +145,14 @@ export default function CalendarMain() {
                   isSameDay(day, currentDate)
                     ? "bg-[#f97316] text-white font-bold"
                     : "hover:bg-slate-100",
-                  !isSameMonth(day, currentDate) && "text-slate-300"
+                  !isSameMonth(day, currentDate) && "text-slate-300",
                 )}>
                 {format(day, "d")}
-                {/* Visual marker for today's actual date vs selected date */}
-                {isSameDay(day, new Date()) && !isSameDay(day, currentDate) && (
-                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full" />
-                )}
               </div>
             ))}
           </div>
         </section>
 
-        {/* Categories Section */}
         <section className="space-y-3">
           <div className="flex justify-between items-center text-sm font-bold">
             Event{" "}
@@ -177,7 +172,7 @@ export default function CalendarMain() {
                 "flex items-center gap-3 p-2 rounded-lg border text-[11px] font-semibold",
                 val.bg,
                 val.border,
-                val.text
+                val.text,
               )}>
               <div className={cn("w-2.5 h-2.5 rounded-sm", val.dot)} />{" "}
               {val.label}
@@ -186,12 +181,11 @@ export default function CalendarMain() {
         </section>
       </aside>
 
-      {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col">
         <header className="h-[72px] bg-white border-b px-8 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Calendar</h1>
           <div className="flex items-center gap-3">
-            <Button variant="outline" className="text-slate-600">
+            <Button variant="outline">
               <FileOutput size={16} className="mr-2" /> Export
             </Button>
             <Button
@@ -205,13 +199,12 @@ export default function CalendarMain() {
           </div>
         </header>
 
-        {/* Toolbar */}
+        {/* View Controls */}
         <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Button
               variant="secondary"
               size="sm"
-              className="bg-white border"
               onClick={() => setCurrentDate(new Date())}>
               Today
             </Button>
@@ -224,7 +217,7 @@ export default function CalendarMain() {
                   setCurrentDate(
                     view === "month"
                       ? subMonths(currentDate, 1)
-                      : subDays(currentDate, 7)
+                      : subDays(currentDate, 7),
                   )
                 }>
                 <ChevronLeft size={16} />
@@ -237,7 +230,7 @@ export default function CalendarMain() {
                   setCurrentDate(
                     view === "month"
                       ? addMonths(currentDate, 1)
-                      : addDays(currentDate, 7)
+                      : addDays(currentDate, 7),
                   )
                 }>
                 <ChevronRight size={16} />
@@ -247,7 +240,6 @@ export default function CalendarMain() {
               {format(currentDate, "MMMM yyyy")}
             </h2>
           </div>
-
           <div className="flex bg-slate-100 p-1 rounded-lg">
             {(["month", "week", "day"] as const).map((v) => (
               <Button
@@ -256,7 +248,7 @@ export default function CalendarMain() {
                 variant={view === v ? "default" : "ghost"}
                 className={cn(
                   "capitalize h-8 px-5 rounded-md",
-                  view === v ? "bg-[#f97316] text-white" : "text-slate-500"
+                  view === v ? "bg-[#f97316] text-white" : "text-slate-500",
                 )}
                 onClick={() => setView(v)}>
                 {v}
@@ -265,6 +257,7 @@ export default function CalendarMain() {
           </div>
         </div>
 
+        {/* Grid Display */}
         <div className="flex-1 px-6 pb-6 overflow-hidden">
           <div className="h-full bg-white border rounded-xl shadow-sm overflow-hidden">
             {view === "month" && (
@@ -298,6 +291,7 @@ export default function CalendarMain() {
       </main>
 
       <EventDialog
+        isPending={isPending}
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSubmit={handleTaskSubmit}
@@ -307,7 +301,6 @@ export default function CalendarMain() {
   );
 }
 
-// --- Precise Time Grid View ---
 function TimeGrid({ currentDate, tasks, onEdit, onOpenDialog, days }: any) {
   const weekDays =
     days === 7
@@ -316,20 +309,19 @@ function TimeGrid({ currentDate, tasks, onEdit, onOpenDialog, days }: any) {
           end: endOfWeek(currentDate),
         })
       : [currentDate];
-
   const hours = Array.from({ length: 24 }, (_, i) => i + GRID_START_HOUR);
 
   const calculatePosition = (timeStr: string) => {
+    if (!timeStr) return 0;
     const [hrs, mins] = timeStr.split(":").map(Number);
-    const totalMinutesSinceGridStart = (hrs - GRID_START_HOUR) * 60 + mins;
-    return (totalMinutesSinceGridStart / 60) * HOUR_HEIGHT;
+    return (((hrs - GRID_START_HOUR) * 60 + mins) / 60) * HOUR_HEIGHT;
   };
 
   const calculateHeight = (start: string, end: string) => {
+    if (!start || !end) return HOUR_HEIGHT;
     const [sHrs, sMins] = start.split(":").map(Number);
     const [eHrs, eMins] = end.split(":").map(Number);
-    const durationMinutes = eHrs * 60 + eMins - (sHrs * 60 + sMins);
-    return (durationMinutes / 60) * HOUR_HEIGHT;
+    return ((eHrs * 60 + eMins - (sHrs * 60 + sMins)) / 60) * HOUR_HEIGHT;
   };
 
   return (
@@ -337,7 +329,7 @@ function TimeGrid({ currentDate, tasks, onEdit, onOpenDialog, days }: any) {
       <div
         className={cn(
           "grid border-b bg-slate-50/30",
-          days === 7 ? "grid-cols-[80px_1fr]" : "grid-cols-1"
+          days === 7 ? "grid-cols-[80px_1fr]" : "grid-cols-1",
         )}>
         {days === 7 && (
           <div className="p-4 border-r text-[10px] font-bold text-slate-400">
@@ -350,16 +342,11 @@ function TimeGrid({ currentDate, tasks, onEdit, onOpenDialog, days }: any) {
               key={d.toString()}
               className={cn(
                 "p-3 text-center border-r last:border-r-0",
-                isSameDay(d, currentDate) && "bg-orange-50/50"
+                isSameDay(d, currentDate) && "bg-orange-50/50",
               )}>
               <div className="text-[10px] font-bold text-slate-400 uppercase">
                 {format(d, "eee dd")}
               </div>
-              {days === 1 && (
-                <div className="text-orange-600 font-bold mt-1">
-                  {format(d, "EEEE d")}
-                </div>
-              )}
             </div>
           ))}
         </div>
@@ -367,69 +354,54 @@ function TimeGrid({ currentDate, tasks, onEdit, onOpenDialog, days }: any) {
 
       <div className="flex-1 overflow-y-auto relative">
         <div className="grid grid-cols-[80px_1fr] min-h-full">
-          {/* Hour Labels */}
           <div className="border-r bg-white sticky left-0 z-20">
             {hours.map((h) => (
               <div
                 key={h}
                 className="h-20 border-b p-3 text-right text-[10px] font-bold text-slate-400">
-                {h > 12 ? h - 12 : h}
-                {h >= 12 ? "pm" : "am"}
+                {h > 12 ? h - 12 : h} {h >= 12 ? "pm" : "am"}
               </div>
             ))}
           </div>
 
-          {/* Time Columns */}
           <div
             className={cn(
               "grid relative divide-x",
-              days === 7 ? "grid-cols-7" : "grid-cols-1"
+              days === 7 ? "grid-cols-7" : "grid-cols-1",
             )}>
             {weekDays.map((d) => (
               <div key={d.toString()} className="relative h-full">
-                {/* 30-min Grid Lines */}
-                {hours.map((h) => (
-                  <div
-                    key={h}
-                    className="absolute w-full border-b border-slate-100/50"
-                    style={{
-                      top: `${(h - GRID_START_HOUR) * HOUR_HEIGHT + 40}px`,
-                      height: "40px",
-                    }}
-                  />
-                ))}
-
                 {tasks
                   .filter((t: any) => isSameDay(parseISO(t.date), d))
-                  .map((task: any) => (
-                    <div
-                      key={task.id}
-                      onClick={() => {
-                        onEdit(task);
-                        onOpenDialog(true);
-                      }}
-                      className={cn(
-                        "absolute left-1 right-1 p-3 rounded-xl border text-[11px] font-bold shadow-sm z-10 cursor-pointer transition-transform hover:scale-[1.02]",
-                        CATEGORY_MAP[task.category as keyof typeof CATEGORY_MAP]
-                          .bg,
-                        CATEGORY_MAP[task.category as keyof typeof CATEGORY_MAP]
-                          .border,
-                        CATEGORY_MAP[task.category as keyof typeof CATEGORY_MAP]
-                          .text
-                      )}
-                      style={{
-                        top: `${calculatePosition(task.startTime)}px`,
-                        height: `${calculateHeight(
-                          task.startTime,
-                          task.endTime
-                        )}px`,
-                      }}>
-                      <div className="flex items-center gap-1.5 mb-1 opacity-80">
-                        <Clock size={12} /> {task.startTime}
+                  .map((task: any) => {
+                    const config =
+                      CATEGORY_MAP[task.type as keyof typeof CATEGORY_MAP] ||
+                      CATEGORY_MAP.others;
+                    return (
+                      <div
+                        key={task._id}
+                        onClick={() => {
+                          onEdit(task);
+                          onOpenDialog(true);
+                        }}
+                        className={cn(
+                          "absolute left-1 right-1 p-3 rounded-xl border text-[11px] font-bold shadow-sm z-10 cursor-pointer transition-transform hover:scale-[1.02]",
+                          config.bg,
+                          config.border,
+                          config.text,
+                        )}
+                        style={{
+                          top: `${calculatePosition(task.start_time)}px`,
+                          height: `${calculateHeight(task.start_time, task.end_time)}px`,
+                        }}>
+                        <div className="flex items-center gap-1.5 mb-1 opacity-80">
+                          <Clock size={12} /> {task.start_time} -{" "}
+                          {task.end_time}
+                        </div>
+                        {task.name}
                       </div>
-                      {task.title}
-                    </div>
-                  ))}
+                    );
+                  })}
               </div>
             ))}
           </div>
@@ -439,7 +411,6 @@ function TimeGrid({ currentDate, tasks, onEdit, onOpenDialog, days }: any) {
   );
 }
 
-// MonthGrid remains largely the same but with the UI update for selected date
 function MonthGrid({ currentDate, tasks, onEdit, onOpenDialog }: any) {
   const days = eachDayOfInterval({
     start: startOfWeek(startOfMonth(currentDate)),
@@ -451,7 +422,7 @@ function MonthGrid({ currentDate, tasks, onEdit, onOpenDialog }: any) {
       {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
         <div
           key={d}
-          className="p-4 text-center text-[10px] font-bold text-slate-400 border-b border-r uppercase tracking-widest bg-slate-50/30">
+          className="p-4 text-center text-[10px] font-bold text-slate-400 border-b border-r uppercase bg-slate-50/30">
           {d}
         </div>
       ))}
@@ -462,15 +433,15 @@ function MonthGrid({ currentDate, tasks, onEdit, onOpenDialog }: any) {
             "min-h-[130px] p-2 border-b border-r relative group transition-colors",
             !isSameMonth(day, currentDate)
               ? "bg-slate-50/50 text-slate-300"
-              : "hover:bg-slate-50/30"
+              : "hover:bg-slate-50/30",
           )}>
           <div className="flex justify-between items-start mb-2">
             <span
               className={cn(
-                "text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full transition-colors",
+                "text-xs font-bold w-7 h-7 flex items-center justify-center rounded-full",
                 isSameDay(day, currentDate)
                   ? "bg-[#f97316] text-white"
-                  : "text-slate-600"
+                  : "text-slate-600",
               )}>
               {format(day, "d")}
             </span>
@@ -478,22 +449,26 @@ function MonthGrid({ currentDate, tasks, onEdit, onOpenDialog }: any) {
           <div className="space-y-1">
             {tasks
               .filter((t: any) => isSameDay(parseISO(t.date), day))
-              .map((task: any) => (
-                <div
-                  key={task.id}
-                  onClick={() => {
-                    onEdit(task);
-                    onOpenDialog(true);
-                  }}
-                  className={cn(
-                    "text-[10px] px-2 py-1.5 rounded-lg border font-bold truncate cursor-pointer shadow-sm",
-                    CATEGORY_MAP[task.category as keyof typeof CATEGORY_MAP].bg,
-                    CATEGORY_MAP[task.category as keyof typeof CATEGORY_MAP]
-                      .text
-                  )}>
-                  {task.title}
-                </div>
-              ))}
+              .map((task: any) => {
+                const config =
+                  CATEGORY_MAP[task.type as keyof typeof CATEGORY_MAP] ||
+                  CATEGORY_MAP.others;
+                return (
+                  <div
+                    key={task._id}
+                    onClick={() => {
+                      onEdit(task);
+                      onOpenDialog(true);
+                    }}
+                    className={cn(
+                      "text-[10px] px-2 py-1.5 rounded-lg border font-bold truncate cursor-pointer shadow-sm",
+                      config.bg,
+                      config.text,
+                    )}>
+                    {task.name}
+                  </div>
+                );
+              })}
           </div>
         </div>
       ))}
