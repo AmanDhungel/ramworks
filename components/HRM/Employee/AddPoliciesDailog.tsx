@@ -117,7 +117,7 @@ export default function PoliciesFormDialog() {
     mutate(formData as any, {
       onSuccess: () => {
         setIsOpen();
-        queryClient.invalidateQueries({ queryKey: ["department"] });
+        queryClient.invalidateQueries({ queryKey: ["policy"] });
         form.reset();
       },
     });
