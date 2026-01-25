@@ -19,6 +19,7 @@ import {
   ChevronDown,
   Search,
   Building2,
+  Loader,
 } from "lucide-react";
 import {
   Table,
@@ -110,8 +111,14 @@ const DEALS = [
   },
 ];
 
-const LeadTable = ({ leads }: { leads: LeadType[] }) => {
-  const { mutate } = useDeleteLead();
+const LeadTable = ({
+  leads,
+  isFetching,
+}: {
+  leads: LeadType[];
+  isFetching: boolean;
+}) => {
+  const { mutate, isPending } = useDeleteLead();
   const queryClient = useQueryClient();
   const handleDelete = (id: string) => {
     mutate(
@@ -130,139 +137,145 @@ const LeadTable = ({ leads }: { leads: LeadType[] }) => {
   };
   return (
     <div className="rounded-md border bg-white overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-50/50">
-            <TableHead className="w-[250px] font-bold text-slate-600 text-xs">
-              Lead / Company
-            </TableHead>
-            <TableHead className="font-bold text-slate-600 text-xs">
-              Value
-            </TableHead>
-            <TableHead className="font-bold text-slate-600 text-xs">
-              Owner
-            </TableHead>
-            <TableHead className="font-bold text-slate-600 text-xs">
-              Status
-            </TableHead>
-            <TableHead className="font-bold text-slate-600 text-xs">
-              Location
-            </TableHead>
-            <TableHead className="font-bold text-slate-600 text-xs">
-              Socials
-            </TableHead>
-            <TableHead className="text-right font-bold text-slate-600 text-xs">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {leads?.map((lead) => (
-            <TableRow
-              key={lead._id}
-              className="group hover:bg-slate-50/50 transition-colors">
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 shrink-0 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-600 uppercase">
-                    {lead.name.slice(0, 2)}
-                  </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold text-slate-800 truncate leading-none mb-1">
-                      {lead.name}
-                    </span>
-                    <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate">
-                      <Building2 size={10} className="shrink-0" />
-                      <span className="truncate">{lead.company.name}</span>
+      {isFetching ? (
+        <Loader className="animate-spin ml-2 w-full m-auto  my-2" />
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-50/50">
+              <TableHead className="w-[250px] font-bold text-slate-600 text-xs">
+                Lead / Company
+              </TableHead>
+              <TableHead className="font-bold text-slate-600 text-xs">
+                Value
+              </TableHead>
+              <TableHead className="font-bold text-slate-600 text-xs">
+                Owner
+              </TableHead>
+              <TableHead className="font-bold text-slate-600 text-xs">
+                Status
+              </TableHead>
+              <TableHead className="font-bold text-slate-600 text-xs">
+                Location
+              </TableHead>
+              <TableHead className="font-bold text-slate-600 text-xs">
+                Socials
+              </TableHead>
+              <TableHead className="text-right font-bold text-slate-600 text-xs">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {leads?.map((lead) => (
+              <TableRow
+                key={lead._id}
+                className="group hover:bg-slate-50/50 transition-colors">
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 shrink-0 rounded bg-indigo-50 border border-indigo-100 flex items-center justify-center text-[10px] font-bold text-indigo-600 uppercase">
+                      {lead.name.slice(0, 2)}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-slate-800 truncate leading-none mb-1">
+                        {lead.name}
+                      </span>
+                      <div className="flex items-center gap-1 text-[10px] text-slate-500 truncate">
+                        <Building2 size={10} className="shrink-0" />
+                        <span className="truncate">{lead.company.name}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </TableCell>
+                </TableCell>
 
-              {/* Value */}
-              <TableCell>
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-slate-700">
-                    {lead.currency} {lead.value.toLocaleString()}
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    {lead.source}
-                  </span>
-                </div>
-              </TableCell>
+                {/* Value */}
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold text-slate-700">
+                      {lead.currency} {lead.value.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {lead.source}
+                    </span>
+                  </div>
+                </TableCell>
 
-              {/* Owner (Assignee) */}
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${lead.owner.name}`}
+                {/* Owner (Assignee) */}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${lead.owner.name}`}
+                      />
+                      <AvatarFallback className="text-[9px]">
+                        {lead.owner.name.slice(0, 1).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs font-medium text-slate-700 whitespace-nowrap">
+                      {lead.owner.name}
+                    </span>
+                  </div>
+                </TableCell>
+
+                {/* Status / Pipeline Step */}
+                <TableCell>
+                  <div className="flex flex-col gap-1">
+                    <Badge
+                      variant={"default"}
+                      className={`${
+                        lead.status === "active"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-slate-100 text-slate-700"
+                      }`}>
+                      {lead.status}
+                    </Badge>
+                  </div>
+                </TableCell>
+
+                {/* Location (from Company) */}
+                <TableCell>
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 max-w-[140px]">
+                    <MapPin size={12} className="text-slate-400 shrink-0" />
+                    <span className="truncate">
+                      {lead.company.address.city},{" "}
+                      {lead.company.address.country}
+                    </span>
+                  </div>
+                </TableCell>
+
+                {/* Socials Column */}
+                <TableCell>
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <PhoneCall
+                      size={14}
+                      className="cursor-pointer hover:text-blue-500 transition-colors"
                     />
-                    <AvatarFallback className="text-[9px]">
-                      {lead.owner.name.slice(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs font-medium text-slate-700 whitespace-nowrap">
-                    {lead.owner.name}
-                  </span>
-                </div>
-              </TableCell>
+                    <MessageSquare
+                      size={14}
+                      className="cursor-pointer hover:text-green-500 transition-colors"
+                    />
+                    <FileText
+                      size={14}
+                      className="cursor-pointer hover:text-orange-500 transition-colors"
+                    />
+                  </div>
+                </TableCell>
 
-              {/* Status / Pipeline Step */}
-              <TableCell>
-                <div className="flex flex-col gap-1">
-                  <Badge
-                    variant={"default"}
-                    className={`${
-                      lead.status === "active"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-slate-100 text-slate-700"
-                    }`}>
-                    {lead.status}
-                  </Badge>
-                </div>
-              </TableCell>
-
-              {/* Location (from Company) */}
-              <TableCell>
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-500 max-w-[140px]">
-                  <MapPin size={12} className="text-slate-400 shrink-0" />
-                  <span className="truncate">
-                    {lead.company.address.city}, {lead.company.address.country}
-                  </span>
-                </div>
-              </TableCell>
-
-              {/* Socials Column */}
-              <TableCell>
-                <div className="flex items-center gap-2 text-slate-400">
-                  <PhoneCall
-                    size={14}
-                    className="cursor-pointer hover:text-blue-500 transition-colors"
-                  />
-                  <MessageSquare
-                    size={14}
-                    className="cursor-pointer hover:text-green-500 transition-colors"
-                  />
-                  <FileText
-                    size={14}
-                    className="cursor-pointer hover:text-orange-500 transition-colors"
-                  />
-                </div>
-              </TableCell>
-
-              {/* Actions */}
-              <TableCell className="text-right">
-                <div className="flex justify-end items-center gap-2">
-                  <DeleteConfirmDialog
-                    text={lead.name}
-                    onConfirm={() => handleDelete(lead._id)}
-                  />
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                {/* Actions */}
+                <TableCell className="text-right">
+                  <div className="flex justify-end items-center gap-2">
+                    <DeleteConfirmDialog
+                      text={lead.name}
+                      onConfirm={() => handleDelete(lead._id)}
+                      isPending={isPending}
+                    />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </div>
   );
 };
@@ -270,7 +283,7 @@ const LeadTable = ({ leads }: { leads: LeadType[] }) => {
 // --- Main Page ---
 
 export default function LeadsGridPage() {
-  const { data: leadData, isLoading } = useGetLeads();
+  const { data: leadData, isFetching } = useGetLeads();
   console.log("Leads Data:", leadData);
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-4 md:p-6 font-sans">
@@ -330,7 +343,7 @@ export default function LeadsGridPage() {
         </div>
       </div>
 
-      <LeadTable leads={leadData?.data || []} />
+      <LeadTable leads={leadData?.data || []} isFetching={isFetching} />
     </div>
   );
 }

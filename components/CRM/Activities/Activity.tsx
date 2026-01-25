@@ -23,6 +23,7 @@ import {
   Webcam,
   ClipboardList,
   SquarePen,
+  Loader,
 } from "lucide-react";
 import {
   BarChart,
@@ -118,7 +119,7 @@ const ActivityTable = () => {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activityType, setActivityType] = React.useState("all");
   const { setIsOpen } = useDialogOpen();
-  const { data: activity } = useGetActivity();
+  const { data: activity, isFetching } = useGetActivity();
   const { setParam } = useUpdateParams();
   const { mutate } = useDeleteActivity();
 
@@ -138,8 +139,6 @@ const ActivityTable = () => {
       },
     );
   };
-
-  console.log("Activity Data:", activity);
 
   return (
     <div className="w-full bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -245,101 +244,104 @@ const ActivityTable = () => {
           </div>
         </div>
       </div>
-
-      <table className="w-full text-left border-collapse">
-        <thead className="bg-[#f8f9fa] border-b border-slate-200">
-          <tr className="text-[11px] font-bold text-slate-500 uppercase">
-            <th className="px-6 py-4">
-              <input type="checkbox" className="rounded border-slate-300" />
-            </th>
-            <th className="px-4 py-4">Title</th>
-            <th className="px-4 py-4 text-center">Activity Type</th>
-            <th className="px-4 py-4">
-              Due Date <ChevronDown size={12} className="inline ml-1" />
-            </th>
-            <th className="px-4 py-4">Owner</th>
-            <th className="px-4 py-4">
-              Created Date <ChevronDown size={12} className="inline ml-1" />
-            </th>
-            <th className="px-4 py-4 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody className="text-sm divide-y divide-slate-100 text-slate-600">
-          {activity?.data.map((act, i) => (
-            <tr key={i} className="hover:bg-slate-50/50">
-              <td className="px-6 py-4">
+      {isFetching ? (
+        <div className="flex items-center justify-center h-96">
+          <Loader className="animate-spin" />
+        </div>
+      ) : (
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-[#f8f9fa] border-b border-slate-200">
+            <tr className="text-[11px] font-bold text-slate-500 uppercase">
+              <th className="px-6 py-4">
                 <input type="checkbox" className="rounded border-slate-300" />
-              </td>
-              <td className="px-4 py-4 font-semibold text-slate-700">
-                {act.title}
-              </td>
-              <td className="px-4 py-4 text-center ">
-                <span
-                  className={cn(
-                    "px-2 flex items-center w-fit m-auto gap-2 py-1 rounded text-[10px] font-bold uppercase",
-                    act.activity_type === "call"
-                      ? "bg-purple-600/10 text-purple-600"
-                      : act.activity_type === "meeting"
-                        ? "bg-pink-600/10 text-pink-600"
-                        : act.activity_type === "tasks"
-                          ? "bg-blue-600/10 text-blue-600"
-                          : "bg-yellow-600/10 text-yellow-600",
-                  )}>
-                  {act.activity_type === "call" ? (
-                    <PhoneCall size={15} />
-                  ) : act.activity_type === "meeting" ? (
-                    <Webcam size={15} />
-                  ) : act.activity_type === "tasks" ? (
-                    <ClipboardList size={15} />
-                  ) : (
-                    <Mail size={15} />
-                  )}{" "}
-                  {act.activity_type}
-                </span>
-              </td>
-              <td className="px-4 py-4">
-                {new Intl.DateTimeFormat("en-GB", {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                }).format(new Date(act.due_date))}
-              </td>
-              <td className="px-4 py-4">
-                {act?.owner?.name ? act.owner.name : "No Owner"}
-              </td>
-              <td className="px-4 py-4">
-                {" "}
-                {new Intl.DateTimeFormat("en-GB", {
-                  year: "numeric",
-                  month: "2-digit",
-                  day: "2-digit",
-                }).format(new Date(act.createdAt))}
-              </td>
-              <td className="px-4 py-4 text-right">
-                <div className="flex justify-end gap-3 text-slate-400">
-                  <SquarePen
-                    size={16}
-                    className="cursor-pointer hover:text-blue-500"
-                    onClick={() => {
-                      setIsOpen();
-                      setParam("activity_id", act._id);
-                    }}
-                  />
-                  <DeleteConfirmDialog
-                    text={act.title}
-                    onConfirm={() => handleDelete(act._id)}
-                  />
-                </div>
-              </td>
+              </th>
+              <th className="px-4 py-4">Title</th>
+              <th className="px-4 py-4 text-center">Activity Type</th>
+              <th className="px-4 py-4">
+                Due Date <ChevronDown size={12} className="inline ml-1" />
+              </th>
+              <th className="px-4 py-4">Owner</th>
+              <th className="px-4 py-4">
+                Created Date <ChevronDown size={12} className="inline ml-1" />
+              </th>
+              <th className="px-4 py-4 text-right">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="text-sm divide-y divide-slate-100 text-slate-600">
+            {activity?.data.map((act, i) => (
+              <tr key={i} className="hover:bg-slate-50/50">
+                <td className="px-6 py-4">
+                  <input type="checkbox" className="rounded border-slate-300" />
+                </td>
+                <td className="px-4 py-4 font-semibold text-slate-700">
+                  {act.title}
+                </td>
+                <td className="px-4 py-4 text-center ">
+                  <span
+                    className={cn(
+                      "px-2 flex items-center w-fit m-auto gap-2 py-1 rounded text-[10px] font-bold uppercase",
+                      act.activity_type === "call"
+                        ? "bg-purple-600/10 text-purple-600"
+                        : act.activity_type === "meeting"
+                          ? "bg-pink-600/10 text-pink-600"
+                          : act.activity_type === "tasks"
+                            ? "bg-blue-600/10 text-blue-600"
+                            : "bg-yellow-600/10 text-yellow-600",
+                    )}>
+                    {act.activity_type === "call" ? (
+                      <PhoneCall size={15} />
+                    ) : act.activity_type === "meeting" ? (
+                      <Webcam size={15} />
+                    ) : act.activity_type === "tasks" ? (
+                      <ClipboardList size={15} />
+                    ) : (
+                      <Mail size={15} />
+                    )}{" "}
+                    {act.activity_type}
+                  </span>
+                </td>
+                <td className="px-4 py-4">
+                  {new Intl.DateTimeFormat("en-GB", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  }).format(new Date(act.due_date))}
+                </td>
+                <td className="px-4 py-4">
+                  {act?.owner?.name ? act.owner.name : "No Owner"}
+                </td>
+                <td className="px-4 py-4">
+                  {" "}
+                  {new Intl.DateTimeFormat("en-GB", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                  }).format(new Date(act.createdAt))}
+                </td>
+                <td className="px-4 py-4 text-right">
+                  <div className="flex justify-end gap-3 text-slate-400">
+                    <SquarePen
+                      size={16}
+                      className="cursor-pointer hover:text-blue-500"
+                      onClick={() => {
+                        setIsOpen();
+                        setParam("activity_id", act._id);
+                      }}
+                    />
+                    <DeleteConfirmDialog
+                      text={act.title}
+                      onConfirm={() => handleDelete(act._id)}
+                    />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
 
       <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
-        {/* Entry Count Text */}
         <span>Showing 1 to 10 of 16 entries</span>
-
         <Pagination className="justify-end w-auto mx-0">
           <PaginationContent className="gap-1">
             <PaginationItem>
