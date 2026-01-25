@@ -40,6 +40,8 @@ import {
 import DepartmentFormDialog from "./AddDepartmentDailog";
 import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
 import { useQueryClient } from "@tanstack/react-query";
+import useDialogOpen from "@/context/Dialog";
+import { useUpdateParams } from "@/helper/removeparam";
 
 // --- Mock Data ---
 const DEPARTMENTS = [
@@ -62,6 +64,8 @@ export default function DepartmentTable() {
   const { data: departments } = useGetDepartment();
   console.log("Departments Data:", departments);
   const queryClient = useQueryClient();
+  // const { setIsOpen } = useDialogOpen();
+  // const { setParam } = useUpdateParams();
 
   const page = Number(searchParams.get("page")) || 1;
   const statusFilter = searchParams.get("status") || "all";
@@ -213,10 +217,10 @@ export default function DepartmentTable() {
                 <TableCell className="font-bold text-slate-800">
                   {item.name}
                 </TableCell>
-                <TableCell className="text-slate-500">_</TableCell>
-                {/* <TableCell className="text-slate-500">
-                  {String(item?.employees ?? 0).padStart(2, "")}
-                </TableCell> */}
+                {/* <TableCell className="text-slate-500">_</TableCell> */}
+                <TableCell className="text-slate-500">
+                  {String(item?.no_of_employees ?? 0).padStart(2, "")}
+                </TableCell>
                 <TableCell>
                   <Badge
                     className={
@@ -232,8 +236,13 @@ export default function DepartmentTable() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-slate-400">
-                      <Pencil className="h-4 w-4" />
+                      className="h-8 w-8 text-slate-400"
+                      // onClick={() => {
+                      //   setIsOpen();
+                      //   setParam("id", item._id ?? "");
+                      // }}
+                    >
+                      <Pencil className="h-4 w-4 cursor-pointer" />
                     </Button>
 
                     <div className="mt-2">

@@ -2,39 +2,43 @@ import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
 import { useMutation } from "@tanstack/react-query";
 import { Post } from "@/lib/action";
+import { useParams } from "next/navigation";
 
-export type DepartmentType = {
+export type DesignationType = {
   _id?: string;
   name: string;
   status: "active" | "inactive";
+  department: string;
   no_of_employees: number;
 };
 
-export const useGetDepartment = () => {
-  return useFetcher<ApiResponseType<DepartmentType[]>>(
-    "department",
+export const useGetDesignation = () => {
+  return useFetcher<ApiResponseType<DesignationType[]>>(
+    "designation",
     null,
-    "/client_api/department",
+    "/client_api/designation",
   );
 };
 
-export const useCreateDepartment = () => {
-  return useMutation<ApiResponseType<DepartmentType>, any, DepartmentType>({
-    mutationKey: ["createDepartment"],
-    mutationFn: (data: DepartmentType) =>
-      Post<DepartmentType, ApiResponseType<DepartmentType>>({
-        url: "/client_api/department/add",
+export const useCreateDesignation = () => {
+  return useMutation<ApiResponseType<DesignationType>, any, DesignationType>({
+    mutationKey: ["createDesignation"],
+    mutationFn: (data: DesignationType) =>
+      Post<DesignationType, ApiResponseType<DesignationType>>({
+        url: data._id
+          ? `/client_api/designation/edit/${data._id}`
+          : "/client_api/designation/add",
         data: data,
       }),
   });
 };
 
-export const useDeleteDepartment = () => {
+export const useDeleteDesignation = () => {
   return useMutation<ApiResponseType<{ id: string }>, any, { id: string }>({
-    mutationKey: ["deleteDepartment"],
+    mutationKey: ["deleteDesignation"],
     mutationFn: (data: { id: string }) =>
       Post<{ id: string }, ApiResponseType<{ id: string }>>({
-        url: `/client_api/department/delete/${data.id}`,
+        url: `/client_api/designation/delete/${data.id}`,
         data: { id: data.id },
       }),
   });

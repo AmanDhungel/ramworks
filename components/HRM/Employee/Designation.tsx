@@ -33,6 +33,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useGetDesignation } from "@/services/designation.service";
+import DesignationFormDialog from "./AddDesignationDailog";
 
 // --- Mock Data ---
 const DEPARTMENTS = [
@@ -52,6 +54,7 @@ const DEPARTMENTS = [
 export default function DesignationTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: designations } = useGetDesignation();
 
   // Get current state from URL
   const page = Number(searchParams.get("page")) || 1;
@@ -72,7 +75,7 @@ export default function DesignationTable() {
   };
 
   // Filter Logic
-  const filteredData = DEPARTMENTS.filter((item) => {
+  const filteredData = designations?.data?.filter((item) => {
     const matchesStatus =
       statusFilter === "all" || item.status.toLowerCase() === statusFilter;
     const matchesSearch = item.name
@@ -82,8 +85,8 @@ export default function DesignationTable() {
   });
 
   const itemsPerPage = 10;
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
+  const totalPages = Math.ceil(designations?.data?.length ?? 0 / itemsPerPage);
+  const paginatedData = designations?.data.slice(
     (page - 1) * itemsPerPage,
     page * itemsPerPage,
   );
@@ -103,14 +106,11 @@ export default function DesignationTable() {
             <Download className="h-4 w-4" /> Export{" "}
             <span className="text-xs">▼</span>
           </Button>
-          <Button className="bg-orange-500 hover:bg-orange-600 gap-2">
-            <Plus className="h-4 w-4" /> Add New Designation
-          </Button>
+          <DesignationFormDialog />
         </div>
       </div>
 
       <div className="border rounded-lg shadow-sm bg-white">
-        {/* Filter Bar */}
         <div className="p-4 flex justify-between items-center border-b">
           <div className="flex items-center gap-4">
             <h2 className="font-semibold text-slate-800">Department List</h2>
@@ -184,8 +184,8 @@ export default function DesignationTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.map((item) => (
-              <TableRow key={item.id} className="hover:bg-slate-50/50">
+            {paginatedData?.map((item) => (
+              <TableRow key={item._id} className="hover:bg-slate-50/50">
                 <TableCell>
                   <Checkbox />
                 </TableCell>
@@ -193,12 +193,13 @@ export default function DesignationTable() {
                   {item.name}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {String(item.employees).padStart(2, "0")}
+                  {String(item.no_of_employees).padStart(2, "0")}
                 </TableCell>
+
                 <TableCell>
                   <Badge
                     className={
-                      item.status === "Active"
+                      item.status === "active"
                         ? "bg-emerald-500 hover:bg-emerald-500 rounded-md px-3 font-normal"
                         : "bg-red-600 hover:bg-red-600 rounded-md px-3 font-normal"
                     }>
@@ -230,8 +231,8 @@ export default function DesignationTable() {
         <div className="p-4 flex items-center justify-between border-t text-sm text-slate-500">
           <div>
             Showing {(page - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(page * itemsPerPage, filteredData.length)} of{" "}
-            {filteredData.length} entries
+            {Math.min(page * itemsPerPage, filteredData?.length ?? 0)} of{" "}
+            {filteredData?.length} entries
           </div>
           <div className="flex items-center gap-1">
             <Button

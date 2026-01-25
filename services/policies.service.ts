@@ -2,39 +2,44 @@ import { useFetcher } from "@/lib/generic.service";
 import { ApiResponseType } from "./apitypes";
 import { useMutation } from "@tanstack/react-query";
 import { Post } from "@/lib/action";
+import { DepartmentType } from "./departments.service";
 
-export type DepartmentType = {
+export type PolicyType = {
   _id?: string;
+  appraisal_date: string;
+  department: DepartmentType;
+  files: File[];
   name: string;
-  status: "active" | "inactive";
-  no_of_employees: number;
+  createdAt?: string;
 };
 
-export const useGetDepartment = () => {
-  return useFetcher<ApiResponseType<DepartmentType[]>>(
-    "department",
+export const useGetPolicy = () => {
+  return useFetcher<ApiResponseType<PolicyType[]>>(
+    "policy",
     null,
-    "/client_api/department",
+    "/client_api/policy",
   );
 };
 
-export const useCreateDepartment = () => {
-  return useMutation<ApiResponseType<DepartmentType>, any, DepartmentType>({
-    mutationKey: ["createDepartment"],
-    mutationFn: (data: DepartmentType) =>
-      Post<DepartmentType, ApiResponseType<DepartmentType>>({
-        url: "/client_api/department/add",
+export const useCreatePolicy = () => {
+  return useMutation<ApiResponseType<PolicyType>, any, PolicyType>({
+    mutationKey: ["createpolicy"],
+    mutationFn: (data: PolicyType) =>
+      Post<PolicyType, ApiResponseType<PolicyType>>({
+        url: data._id
+          ? `/client_api/policy/edit/${data._id}`
+          : "/client_api/policy/add",
         data: data,
       }),
   });
 };
 
-export const useDeleteDepartment = () => {
+export const useDeletePolicy = () => {
   return useMutation<ApiResponseType<{ id: string }>, any, { id: string }>({
-    mutationKey: ["deleteDepartment"],
+    mutationKey: ["deleteDesignation"],
     mutationFn: (data: { id: string }) =>
       Post<{ id: string }, ApiResponseType<{ id: string }>>({
-        url: `/client_api/department/delete/${data.id}`,
+        url: `/client_api/policy/delete/${data.id}`,
         data: { id: data.id },
       }),
   });

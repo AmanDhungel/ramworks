@@ -29,27 +29,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateDepartment } from "@/services/departments.service";
+import {
+  useCreateDepartment,
+  useGetDepartment,
+} from "@/services/departments.service";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import useDialogOpen from "@/context/Dialog";
+import { useCreatePolicy } from "@/services/policies.service";
+import { MultipleFileUploadField } from "@/components/ui/MultipleFileUpload";
 
-// 1. Define the Schema
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
   }),
-  status: z.enum(["active", "inactive"], {
+  appraisal_date: z.string().min(1, {
     message: "Status must be either 'active' or 'inactive'.",
   }),
-  no_of_employees: z.number().min(1, {
+  department: z.string().min(1, {
     message: "Number of employees must be at least 1.",
   }),
+  files: z
+    .array(z.file())
+    .refine((files) => files.every((file) => file.size <= 1024 * 1024), {
+      message: "Each file must be under 1MB.",
+    }),
 });
 
-export default function DepartmentFormDialog() {
-  const { mutate } = useCreateDepartment();
+export default function PoliciesFormDialog() {
+  const { mutate } = useCreatePolicy();
   const queryClient = useQueryClient();
+  const { data: departments } = useGetDepartment();
   const { open, setIsOpen } = useDialogOpen();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,8 +68,53 @@ export default function DepartmentFormDialog() {
     },
   });
 
+  // const onSubmit = (values: WorkSpaceFormValues) => {
+  //   const formData = new FormData();
+
+  //   formData.append("title", values.title);
+
+  //   if (values.icon_file) {
+  //     formData.append("icon_file", values.icon_file);
+  //   }
+
+  //   if (values.image_file) {
+  //     formData.append("image_file", values.image_file);
+  //   }
+  //   if (params.get("id")) {
+  //     formData.append("_id", params.get("id")!);
+  //   }
+
+  //   mutate(formData, {
+  //     onSuccess: (msg) => {
+  //       setIsOpen();
+  //       toast.success(msg.message);
+  //       queryClient.invalidateQueries({ queryKey: ["workspace"] });
+  //       form.reset();
+  //     },
+  //     onError: (err: any) => {
+  //       toast.error(
+  //         err?.response?.data?.message || "Failed to create workspace",
+  //       );
+  //     },
+  //   });
+  // };
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    mutate(values, {
+    const formData = new FormData();
+
+    formData.append("name", values.name);
+    formData.append("appraisal_date", values.appraisal_date);
+    formData.append("department", values.department);
+
+    if (values.files) {
+      values.files.forEach((file) => {
+        formData.append("files", file);
+      });
+    }
+
+    console.log(formData);
+
+    mutate(formData as any, {
       onSuccess: () => {
         setIsOpen();
         queryClient.invalidateQueries({ queryKey: ["department"] });
@@ -77,7 +132,7 @@ export default function DepartmentFormDialog() {
       }}>
       <DialogTrigger asChild>
         <Button className="bg-orange-500 hover:bg-orange-600 gap-2">
-          <Plus className="h-4 w-4" /> Add New Department
+          <Plus className="h-4 w-4" /> Add Policy
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -106,17 +161,12 @@ export default function DepartmentFormDialog() {
 
             <FormField
               control={form.control}
-              name="no_of_employees"
+              name="appraisal_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Number of Employees</FormLabel>
+                  <FormLabel>Appraisal Date</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.valueAsNumber)}
-                    />
+                    <Input type="date" placeholder="0" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -125,26 +175,37 @@ export default function DepartmentFormDialog() {
 
             <FormField
               control={form.control}
-              name="status"
+              name="department"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Department</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a status" />
+                        <SelectValue placeholder="Select Department" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
+                      {departments?.data.map((department) => (
+                        <SelectItem
+                          key={department._id}
+                          value={department._id ?? ""}>
+                          {department.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            <MultipleFileUploadField
+              control={form.control}
+              label="Policy Files"
+              name="files"
             />
 
             <div className="flex justify-end pt-4">

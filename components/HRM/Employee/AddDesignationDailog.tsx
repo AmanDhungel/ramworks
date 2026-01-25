@@ -29,15 +29,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateDepartment } from "@/services/departments.service";
+import {
+  useCreateDepartment,
+  useGetDepartment,
+} from "@/services/departments.service";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
+import { useCreateDesignation } from "@/services/designation.service";
 import useDialogOpen from "@/context/Dialog";
 
-// 1. Define the Schema
 const formSchema = z.object({
   name: z.string().min(2, {
     message: "Name must be at least 2 characters.",
+  }),
+  department: z.string().min(1, {
+    message: "Department is required.",
   }),
   status: z.enum(["active", "inactive"], {
     message: "Status must be either 'active' or 'inactive'.",
@@ -47,10 +53,11 @@ const formSchema = z.object({
   }),
 });
 
-export default function DepartmentFormDialog() {
-  const { mutate } = useCreateDepartment();
-  const queryClient = useQueryClient();
+export default function DesignationFormDialog() {
+  const { mutate } = useCreateDesignation();
   const { open, setIsOpen } = useDialogOpen();
+  const { data: department } = useGetDepartment();
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,12 +68,14 @@ export default function DepartmentFormDialog() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     mutate(values, {
       onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["designation"] });
         setIsOpen();
-        queryClient.invalidateQueries({ queryKey: ["department"] });
         form.reset();
       },
     });
   }
+
+  console.log("departments", form.formState.errors);
 
   return (
     <Dialog
@@ -77,12 +86,12 @@ export default function DepartmentFormDialog() {
       }}>
       <DialogTrigger asChild>
         <Button className="bg-orange-500 hover:bg-orange-600 gap-2">
-          <Plus className="h-4 w-4" /> Add New Department
+          <Plus className="h-4 w-4" /> Add New Designation
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit Profile</DialogTitle>
+          <DialogTitle>Add Designation</DialogTitle>
           <DialogDescription>
             Fill in the details below. Click save when you`re done.
           </DialogDescription>
@@ -103,7 +112,6 @@ export default function DepartmentFormDialog() {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="no_of_employees"
@@ -140,6 +148,32 @@ export default function DepartmentFormDialog() {
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="inactive">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="department"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Department</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a Department" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {department?.data.map((dept) => (
+                        <SelectItem key={dept._id} value={dept._id!}>
+                          {dept.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -31,6 +31,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
+import PoliciesFormDialog from "./AddPoliciesDailog";
+import { useDeletePolicy, useGetPolicy } from "@/services/policies.service";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Mock Data based on the provided image
 const POLICIES_DATA = [
@@ -60,8 +64,9 @@ const POLICIES_DATA = [
 export default function PoliciesTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: policy } = useGetPolicy();
+  const queryClient = useQueryClient();
 
-  // URL State Management
   const page = Number(searchParams.get("page")) || 1;
   const searchQuery = searchParams.get("search") || "";
   const deptFilter = searchParams.get("dept") || "all";
@@ -79,13 +84,29 @@ export default function PoliciesTable() {
   };
 
   // Filter Logic
-  const filteredData = POLICIES_DATA.filter((item) => {
+  const filteredData = policy?.data.filter((item) => {
     const matchesSearch = item.name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
-    const matchesDept = deptFilter === "all" || item.department === deptFilter;
+    const matchesDept = deptFilter === "all" || item.name === deptFilter;
     return matchesSearch && matchesDept;
   });
+
+  const { mutate, isPending } = useDeletePolicy();
+
+  const handleDelete = (id: string) => {
+    mutate(
+      { id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["policy"] });
+        },
+        onError: (error) => {
+          console.error("Error deleting policy:", error);
+        },
+      },
+    );
+  };
 
   return (
     <div className="w-full p-6 space-y-4 bg-[#f8f9fa] min-h-screen font-sans">
@@ -105,9 +126,7 @@ export default function PoliciesTable() {
             <Download className="h-4 w-4" /> Export{" "}
             <span className="text-[10px]">▼</span>
           </Button>
-          <Button className="bg-[#ff6b35] hover:bg-[#e85a20] text-white gap-2 px-6">
-            <Plus className="h-4 w-4" /> Add Policy
-          </Button>
+          <PoliciesFormDialog />
         </div>
       </div>
 
@@ -195,7 +214,7 @@ export default function PoliciesTable() {
                 Department
               </TableHead>
               <TableHead className="font-bold text-[#475569] uppercase text-xs tracking-wider">
-                Description
+                Appraisal Date
               </TableHead>
               <TableHead className="font-bold text-[#475569] uppercase text-xs tracking-wider">
                 Created Date
@@ -204,9 +223,9 @@ export default function PoliciesTable() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.map((item) => (
+            {filteredData?.map((item) => (
               <TableRow
-                key={item.id}
+                key={item._id}
                 className="border-b border-slate-100 hover:bg-slate-50/50">
                 <TableCell className="pl-6">
                   <Checkbox />
@@ -215,13 +234,13 @@ export default function PoliciesTable() {
                   {item.name}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {item.department}
+                  {item.department.name}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {item.description}
+                  {item.appraisal_date?.split("T")[0]}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {item.createdDate}
+                  {item.createdAt?.split("T")[0]}
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3 justify-end pr-4">
@@ -231,12 +250,11 @@ export default function PoliciesTable() {
                       className="h-8 w-8 text-slate-400 hover:text-blue-600">
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-red-600">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <DeleteConfirmDialog
+                      onConfirm={() => handleDelete(item._id ?? "")}
+                      text={item.name}
+                      isPending={isPending}
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -244,10 +262,9 @@ export default function PoliciesTable() {
           </TableBody>
         </Table>
 
-        {/* Pagination Footer */}
         <div className="p-4 flex items-center justify-between bg-white text-sm text-slate-500">
           <div>
-            Showing 1 - {filteredData.length} of {filteredData.length} entries
+            Showing 1 - {filteredData?.length} of {filteredData?.length} entries
           </div>
           <div className="flex items-center gap-2">
             <Button
