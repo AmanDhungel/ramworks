@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CirclePlus, X, Image as ImageIcon, Plus } from "lucide-react";
+import { CirclePlus, X, Image as ImageIcon, Plus, Check } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,6 +35,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSearchParams } from "next/navigation";
 import { useCreateBoard } from "@/services/board.service";
 import { toast } from "react-toastify";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
+import { useGetContact } from "@/services/contact.service";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -50,8 +65,12 @@ export const vendorSchema = z.object({
     .refine((file) => file?.size <= MAX_FILE_SIZE, `Max file size is 10MB.`)
     .refine(
       (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
-      ".jpg, .jpeg and .png files are accepted."
+      ".jpg, .jpeg and .png files are accepted.",
     )
+    .optional(),
+  contacts: z
+    .array(z.string())
+    .min(1, "Please select a contact type")
     .optional(),
   backgroundColor: z
     .string()
@@ -70,6 +89,7 @@ export function CreateNewBoard() {
   const vendor = searchParams.get("vendor");
   const workspace = searchParams.get("workspace");
   const { mutate, isPending } = useCreateBoard();
+  const { data: contacts } = useGetContact();
 
   const form = useForm<VendorFormValues>({
     resolver: zodResolver(vendorSchema),
@@ -146,6 +166,71 @@ export function CreateNewBoard() {
                   <FormControl>
                     <Input placeholder="Enter company name" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="contacts"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Visibility</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between font-normal",
+                            !field.value?.length && "text-muted-foreground",
+                          )}>
+                          {field?.value && field?.value?.length > 0
+                            ? `${field.value.length} contacts selected`
+                            : "Select contacts..."}
+                          <span className="ml-2 opacity-50">▼</span>
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Search contacts..." />
+                        <CommandList>
+                          <CommandEmpty>No contact found.</CommandEmpty>
+                          <CommandGroup>
+                            {contacts?.data.map((contact) => (
+                              <CommandItem
+                                key={contact._id}
+                                value={contact.name}
+                                onSelect={() => {
+                                  const currentValue = field.value || [];
+                                  const newValue = currentValue.includes(
+                                    contact._id,
+                                  )
+                                    ? currentValue.filter(
+                                        (v: string) => v !== contact._id,
+                                      )
+                                    : [...currentValue, contact._id];
+                                  field.onChange(newValue);
+                                }}>
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    field.value?.includes(contact._id)
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                {contact.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}

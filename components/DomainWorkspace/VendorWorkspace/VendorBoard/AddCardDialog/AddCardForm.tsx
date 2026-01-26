@@ -42,6 +42,7 @@ import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import { FormField } from "@/components/ui/form";
 import useDialogOpen from "@/context/Dialog";
+import MainRightSection from "./DialogRightSection/MainComponent";
 
 export default function TaskManagerForm({ id }: { id: string }) {
   const form = useForm<TaskFormValues>({
@@ -123,7 +124,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
           <LayoutPanelTop className="h-4 w-4 ml-auto text-slate-400" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] h-full overflow-y-auto">
+      <DialogContent className="sm:max-w-[425px] md:min-w-7xl  h-full overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit profile</DialogTitle>
           <DialogDescription>
@@ -304,8 +305,8 @@ export default function TaskManagerForm({ id }: { id: string }) {
             </div>
 
             {/* RIGHT SECTION */}
-            <div className="md:col-span-5 border-l pl-8">
-              <CommentsSection />
+            <div className="md:col-span-5 sm:col-span-7 border-l ">
+              <MainRightSection />
             </div>
           </form>
         </FormProvider>
