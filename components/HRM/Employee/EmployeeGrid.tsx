@@ -230,8 +230,6 @@ export default function EmployeeManagement() {
   const [designationFilter, setDesignationFilter] = useState("All");
   const { data } = useGetEmployee();
 
-  console.log("Employee Data:", data);
-
   const filteredEmployees = useMemo(() => {
     if (designationFilter === "All") return data?.data;
     return data?.data.filter((emp) => emp.about === designationFilter);

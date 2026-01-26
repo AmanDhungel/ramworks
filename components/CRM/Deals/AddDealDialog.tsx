@@ -113,8 +113,6 @@ export function AddDealDialog() {
     form.watch("pipeline.vendor_workspace"),
   );
 
-  console.log("Board Data:", boardData);
-
   const onSubmit = (data: DealFormValues) => {
     const payload = {
       ...data,
@@ -130,15 +128,13 @@ export function AddDealDialog() {
       }),
     };
     mutate(payload as any, {
-      onSuccess: (response) => {
-        console.log("Deal created successfully:", response);
+      onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["deals"] });
         toast.success("Deal created successfully!");
         setIsOpen();
         form.reset();
       },
     });
-    console.log("Form Data:", data);
   };
 
   const MultiTagInput = ({

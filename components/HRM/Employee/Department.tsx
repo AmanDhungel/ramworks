@@ -62,7 +62,6 @@ export default function DepartmentTable() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: departments } = useGetDepartment();
-  console.log("Departments Data:", departments);
   const queryClient = useQueryClient();
   // const { setIsOpen } = useDialogOpen();
   // const { setParam } = useUpdateParams();

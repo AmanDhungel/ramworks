@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from "next/link";
+import { useGetTicket } from "@/services/ticket.service";
+import TicketDialog from "./AddTicketDialog";
 
 const STATS = [
   { label: "New Tickets", count: 120, trend: "+19.01%", color: "orange" },
@@ -102,6 +104,7 @@ const TICKETS = [
 ];
 
 export default function TicketsDashboard() {
+  const { data } = useGetTicket();
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
       {/* Header Section */}
@@ -130,10 +133,7 @@ export default function TicketsDashboard() {
           <Button variant="outline" className="gap-2 bg-white border-slate-200">
             <Download size={16} /> Export <span>▼</span>
           </Button>
-          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2">
-            <Plus size={16} className="border rounded-full p-0.5" /> Add New
-            Ticket
-          </Button>
+          <TicketDialog />
         </div>
       </div>
 

@@ -75,8 +75,6 @@ export default function DesignationFormDialog() {
     });
   }
 
-  console.log("departments", form.formState.errors);
-
   return (
     <Dialog
       open={open}

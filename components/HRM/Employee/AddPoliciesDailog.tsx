@@ -112,8 +112,6 @@ export default function PoliciesFormDialog() {
       });
     }
 
-    console.log(formData);
-
     mutate(formData as any, {
       onSuccess: () => {
         setIsOpen();

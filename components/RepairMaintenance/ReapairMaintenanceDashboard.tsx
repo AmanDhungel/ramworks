@@ -25,7 +25,6 @@ import { useGetRAM } from "@/services/RAM.service";
 const MaintenanceDashboard = () => {
   const { data } = useGetRAM();
 
-  console.log("Ram Data", data);
   const stats = [
     {
       label: "Pending",

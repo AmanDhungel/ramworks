@@ -79,7 +79,6 @@ const maintenanceData: MaintenanceTask = {
 };
 
 const OverviewTab = ({ data }: { data?: RAMResponse }) => {
-  console.log("OverviewTab data:", data);
   return (
     <div className="mx-auto p-6 space-y-6 min-h-screen">
       {/* SECTION 1: Maintenance Details */}

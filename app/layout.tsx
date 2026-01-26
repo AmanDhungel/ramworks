@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${roboto.variable} ${roboto.variable} force-roboto w-full antialiased flex`}>
         <Suspense fallback={<div>Loading...</div>}>

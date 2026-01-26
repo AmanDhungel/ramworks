@@ -119,15 +119,13 @@ export function AddLeadDialog() {
       }),
     };
     mutate(payload as any, {
-      onSuccess: (response) => {
-        console.log("Lead created successfully:", response);
+      onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["leads"] });
         toast.success("Lead created successfully!");
         setIsOpen();
         form.reset();
       },
     });
-    console.log("Form Data:", data);
   };
 
   const MultiTagInput = ({

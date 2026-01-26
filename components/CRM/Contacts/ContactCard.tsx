@@ -60,12 +60,10 @@ export const ContactCard = (contact: ContactType) => {
   const { mutate } = useDeleteContact();
   const queryClient = useQueryClient();
   const handleDelete = (id: string) => {
-    console.log("Deleting contact:", contact._id);
     mutate(
       { id: id },
       {
         onSuccess: () => {
-          console.log("Contact deleted successfully");
           toast.success("Contact deleted successfully");
           queryClient.invalidateQueries({ queryKey: ["contact"] });
         },
@@ -100,7 +98,7 @@ export const ContactCard = (contact: ContactType) => {
                   />
                   <EditIcon
                     size={15}
-                    onClick={() => console.log("edit")}
+                    // onClick={() => console.log("edit")}
                     className="cursor-pointer"
                   />
                 </div>

@@ -83,7 +83,6 @@ export const DealTable = ({ deals }: { deals: DealType[] }) => {
       { id: id },
       {
         onSuccess: () => {
-          console.log("Deal deleted successfully");
           toast.success("Deal deleted successfully");
           queryClient.invalidateQueries({ queryKey: ["deals"] });
         },

@@ -17,9 +17,12 @@ export const AddTaskPayloadSchema = z.object({
         z.object({
           text: z.string(),
           completed: z.boolean(),
-        })
+          attachments: z.array(z.instanceof(Blob)).optional(),
+          deadline: z.string().optional(),
+          contacts: z.array(z.string()),
+        }),
       ),
-    })
+    }),
   ),
   contacts: z.array(z.string()),
   deadline: z.string().optional(),
@@ -35,10 +38,10 @@ export const AddTaskPayloadSchema = z.object({
             z.object({
               label: z.string(),
               value: z.string(),
-            })
-          )
+            }),
+          ),
         ),
-      })
+      }),
     )
     .optional(),
   location: z

@@ -27,7 +27,6 @@ const MaintenanceInvoice = () => {
   const idString = Array.isArray(id) ? id[0] : id || "";
   const { data } = useGetSingleInvoice(idString);
 
-  console.log("Invoice Data:", data);
   return (
     <div className="mx-auto p-6 min-h-screen space-y-6 font-sans">
       <Card className="border-none shadow-sm overflow-hidden">

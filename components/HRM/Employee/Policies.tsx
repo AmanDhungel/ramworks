@@ -67,8 +67,6 @@ export default function PoliciesTable() {
   const { data: policy } = useGetPolicy();
   const queryClient = useQueryClient();
 
-  console.log("policy", policy);
-
   const page = Number(searchParams.get("page")) || 1;
   const searchQuery = searchParams.get("search") || "";
   const deptFilter = searchParams.get("dept") || "all";

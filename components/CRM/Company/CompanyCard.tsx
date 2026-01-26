@@ -63,7 +63,7 @@ export const CompanyCard = (company: CompanyType) => {
                     />
                     <EditIcon
                       size={15}
-                      onClick={() => console.log("edit")}
+                      // onClick={() => console.log("edit")}
                       className="cursor-pointer"
                     />
                   </div>

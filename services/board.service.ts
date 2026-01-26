@@ -234,6 +234,8 @@ type TaskListType = {
   destination_index: number;
 };
 
+type TaskType = { source_index: number; destination_index: number };
+
 export const useDragDropTask = (id: string) => {
   return useMutation<
     ApiResponseType<VendorFormValues>,
@@ -249,6 +251,26 @@ export const useDragDropTask = (id: string) => {
     mutationFn: (data: TaskListType) =>
       Post<TaskListType, ApiResponseType<VendorFormValues>>({
         url: `/client_api/board/move_task/${id}`,
+        data: data,
+      }),
+  });
+};
+export const useDragDropTaskList = (id: string) => {
+  return useMutation<
+    ApiResponseType<{
+      source_index: number;
+      destination_index: number;
+    }>,
+    any,
+    {
+      source_index: number;
+      destination_index: number;
+    }
+  >({
+    mutationKey: ["dragNDropTask"],
+    mutationFn: (data: TaskType) =>
+      Post<TaskType, ApiResponseType<TaskType>>({
+        url: `/client_api/board/move_tasklist/${id}`,
         data: data,
       }),
   });

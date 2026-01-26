@@ -23,7 +23,6 @@ const TicketHeader = () => {
   const RAMID = Array.isArray(id) ? id[0] : id;
   const { data } = useGetSingleRAM(RAMID ?? "");
 
-  console.log("Single RAM Data", data);
   return (
     <div className="w-full bg-white border-b border-gray-100 p-6 pb-0 space-y-6">
       <div className="flex flex-col gap-4">

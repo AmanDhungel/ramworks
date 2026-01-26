@@ -129,7 +129,6 @@ const ActivityTable = () => {
       { id: id },
       {
         onSuccess: () => {
-          console.log("Activity deleted successfully");
           toast.success("Activity deleted successfully");
           queryClient.invalidateQueries({ queryKey: ["activity"] });
         },
@@ -401,7 +400,6 @@ const ActivityTable = () => {
 export default function ComprehensiveCRM() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-8 font-sans">
-      {/* Page Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Activity</h1>

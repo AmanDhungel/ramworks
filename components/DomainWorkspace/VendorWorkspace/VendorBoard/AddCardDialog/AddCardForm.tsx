@@ -59,7 +59,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
   const params = useParams();
   const boardId = Array.isArray(params?.board)
     ? params.board[0]
-    : params?.board ?? "";
+    : (params?.board ?? "");
   const toggleMember = (id: string) => {
     const next = selectedMembers.includes(id)
       ? selectedMembers.filter((m: string) => m !== id)
@@ -86,7 +86,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
 
     if (data.attachments && data.attachments.length > 0) {
       data.attachments.forEach((file) => {
-        formData.append("attachments", file); // append each file
+        formData.append("attachments", file);
       });
     }
 
@@ -182,7 +182,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
                       Remove
                     </Button>
                   </div>
-                )
+                ),
               )}
 
               {checklists?.map((checklist, checklistIndex) => (
@@ -329,18 +329,18 @@ function SelectedFieldsPreview() {
               priority === "Emergency"
                 ? "bg-red-500"
                 : priority === "Alert"
-                ? "bg-pink-300"
-                : priority === "Critical"
-                ? "bg-orange-500"
-                : priority === "Error"
-                ? "bg-purple-500"
-                : priority === "Warning"
-                ? "bg-stone-800"
-                : priority === "Notification"
-                ? "bg-blue-500"
-                : priority === "Informational"
-                ? "bg-emerald-500"
-                : "bg-green-500"
+                  ? "bg-pink-300"
+                  : priority === "Critical"
+                    ? "bg-orange-500"
+                    : priority === "Error"
+                      ? "bg-purple-500"
+                      : priority === "Warning"
+                        ? "bg-stone-800"
+                        : priority === "Notification"
+                          ? "bg-blue-500"
+                          : priority === "Informational"
+                            ? "bg-emerald-500"
+                            : "bg-green-500"
             } rounded flex items-center px-4 text-white font-bold uppercase text-sm`}>
             {priority}
             <Button

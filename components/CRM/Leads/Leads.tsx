@@ -125,7 +125,6 @@ const LeadTable = ({
       { id: id },
       {
         onSuccess: () => {
-          console.log("Lead deleted successfully");
           toast.success("Lead deleted successfully");
           queryClient.invalidateQueries({ queryKey: ["leads"] });
         },
