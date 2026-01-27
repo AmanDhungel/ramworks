@@ -9,6 +9,7 @@ import {
   FormLabel,
   FormMessage,
 } from "./form";
+import Image from "next/image";
 
 export function MultipleFileUploadField({
   name,
@@ -148,19 +149,38 @@ function DropzoneArea({
   );
 }
 
-function FilePreview({ file, onRemove }: { file: File; onRemove: () => void }) {
+function FilePreview({
+  file,
+  onRemove,
+}: {
+  file: File | string;
+  onRemove: () => void;
+}) {
+  const fileName = typeof file === "string" ? file : file.name;
+  const fileSize = typeof file === "string" ? 0 : file.size;
+
   return (
     <div className="flex items-center justify-between p-2 border rounded-md bg-white shadow-sm">
       <div className="flex items-center gap-2 overflow-hidden">
         <div className="p-1 bg-slate-100 border rounded">
-          <ImageIcon className="w-4 h-4 text-slate-500" />
+          {typeof file === "string" ? (
+            <Image
+              src={`${process.env.NEXT_PUBLIC_API_URL}${file}`}
+              alt="file"
+              width={20}
+              height={20}
+              className="w-4 h-4"
+            />
+          ) : (
+            <ImageIcon className="w-4 h-4 text-slate-500" />
+          )}
         </div>
         <div className="flex flex-col">
           <p className="text-[11px] font-medium truncate max-w-[120px]">
-            {file.name}
+            {fileName}
           </p>
           <p className="text-[9px] text-muted-foreground">
-            {(file.size / 1024).toFixed(0)} KB
+            {(fileSize / 1024).toFixed(0)} KB
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   MoreVertical,
   ArrowRight,
   Calendar,
+  Edit,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Avatar } from "@/components/ui/avatar";
+import useDialogOpen from "@/context/Dialog";
+import { useUpdateParams } from "@/helper/removeparam";
 
 export const SortableTaskCard = ({
   _id,
@@ -45,6 +48,8 @@ export const SortableTaskCard = ({
   updatedAt,
 }: any) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const { setIsOpen } = useDialogOpen();
+  const { setParam } = useUpdateParams();
 
   const {
     attributes,
@@ -64,8 +69,6 @@ export const SortableTaskCard = ({
     opacity: isDragging ? 0.4 : 1,
   };
 
-  // console.log("allLists", attachments);
-
   return (
     <div ref={setNodeRef} style={style} className="mb-3 group relative">
       <Card className="border-slate-200    shadow-sm bg-white ">
@@ -78,12 +81,17 @@ export const SortableTaskCard = ({
           </div>
 
           <div className="flex items-center gap-1">
+            <Button
+              variant={"ghost"}
+              onClick={() => {
+                setIsOpen();
+                setParam("id", _id);
+              }}>
+              <Edit />
+            </Button>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 opacity-0 group-hover:opacity-100">
+                <Button variant="ghost" size="icon" className="h-7 w-7 ">
                   <MoreVertical className="h-3 w-3" />
                 </Button>
               </PopoverTrigger>

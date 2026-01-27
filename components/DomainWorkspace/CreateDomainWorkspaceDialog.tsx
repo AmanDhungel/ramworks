@@ -275,7 +275,7 @@ export function FileUploadField({
         <FormItem>
           <FormControl>
             <div className="space-y-3">
-              {!value ? (
+              {!value || value.length === 0 ? (
                 <DropzoneArea onFileChange={onChange} />
               ) : (
                 <FilePreview file={value} onClear={() => onChange(null)} />

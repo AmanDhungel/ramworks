@@ -35,16 +35,18 @@ const PRESET_COLORS = [
 interface CustomColorPickerProps {
   form: UseFormReturn<any>;
   label?: string;
+  name?: string;
 }
 
 export const CustomColorPicker: React.FC<CustomColorPickerProps> = ({
   form,
   label = "Color",
+  name = "labelColor",
 }) => {
   return (
     <FormField
       control={form.control}
-      name="labelColor"
+      name={name}
       render={({ field }) => (
         <FormItem>
           <FormLabel>Vendor Label Color</FormLabel>
@@ -55,29 +57,27 @@ export const CustomColorPicker: React.FC<CustomColorPickerProps> = ({
 
                 <div className="rounded-lg overflow-hidden border w-full">
                   <HexColorPicker
-                    color={field.value}
+                    color={field.value ?? ""}
                     onChange={field.onChange}
                     className="w-full h-[220px]"
                     style={{ width: "100%" }}
                   />
                 </div>
 
-                {/* Hex Input */}
                 <div className="flex items-center gap-2">
                   <Input disabled value="HEX" className="w-16 text-center" />
 
                   <HexColorInput
-                    color={field.value}
+                    color={field.value ?? ""}
                     onChange={field.onChange}
                     prefixed
                     className={cn(
                       "flex-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     )}
                   />
                 </div>
 
-                {/* Preset Colors */}
                 <div className="space-y-2">
                   <Label className="text-sm text-muted-foreground">
                     Saved colors

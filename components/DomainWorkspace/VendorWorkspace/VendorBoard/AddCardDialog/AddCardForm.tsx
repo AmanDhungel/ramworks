@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm, FormProvider, useFormContext } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AddTaskPayloadSchema, TaskFormValues } from "./schema";
@@ -39,10 +39,11 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCreateTaskList, useCreateTasks } from "@/services/board.service";
 import { toast } from "react-toastify";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { FormField } from "@/components/ui/form";
 import useDialogOpen from "@/context/Dialog";
 import MainRightSection from "./DialogRightSection/MainComponent";
+import { useUpdateParams } from "@/helper/removeparam";
 
 export default function TaskManagerForm({ id }: { id: string }) {
   const form = useForm<TaskFormValues>({
@@ -54,6 +55,9 @@ export default function TaskManagerForm({ id }: { id: string }) {
     },
   });
   const { open, setIsOpen } = useDialogOpen();
+  // const searchParams = useSearchParams();
+  // const searchId = searchParams.get("id");
+  const { removeParam } = useUpdateParams();
   const selectedMembers = form.watch("contacts") || [];
   const checklists = form.watch("checklists");
   const deadline = form.watch("deadline");
@@ -67,6 +71,12 @@ export default function TaskManagerForm({ id }: { id: string }) {
       : [...selectedMembers, id];
     form.setValue("contacts", next);
   };
+
+  // useEffect(() => {
+  //   if (searchId) {
+  //     form.reset();
+  //   }
+  // }, []);
 
   const { mutate } = useCreateTasks(id);
 
@@ -114,6 +124,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
       onOpenChange={() => {
         setIsOpen();
         form.reset();
+        removeParam("id");
       }}>
       <DialogTrigger asChild>
         <Button

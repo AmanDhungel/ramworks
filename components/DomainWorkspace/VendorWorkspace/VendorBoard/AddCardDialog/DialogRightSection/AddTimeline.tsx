@@ -32,10 +32,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileUploadField } from "@/components/DomainWorkspace/CreateDomainWorkspaceDialog";
 import { MultipleFileUploadField } from "@/components/ui/MultipleFileUpload";
 
-// Schema for the main form
 const formSchema = z.object({
   status: z.string().min(1, "Status is required"),
   date: z.string().min(1, "Date is required"),

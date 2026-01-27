@@ -22,6 +22,22 @@ export type ActivityType = {
   updatedAt: string;
 };
 
+export type SingleBoardData = {
+  _id: string;
+  title: string;
+  vendor: string;
+  workspace: string;
+  background_images: string[];
+  background_color: string;
+  visibility: string;
+  task_lists: {
+    _id: string;
+    title: string;
+    completed: boolean;
+    locked: boolean;
+  };
+};
+
 export type BoardType = {
   _id: string;
   title: string;
@@ -166,11 +182,13 @@ export type TaskListProps = {
 };
 
 export const useCreateBoard = () => {
-  return useMutation<ApiResponseType<VendorFormValues>, any, VendorFormValues>({
+  return useMutation<ApiResponseType<VendorFormValues>, any, FormData>({
     mutationKey: ["createBoard"],
-    mutationFn: (data: VendorFormValues) =>
-      Post<VendorFormValues, ApiResponseType<VendorFormValues>>({
-        url: "/client_api/board/create_board",
+    mutationFn: (data: FormData) =>
+      Post<FormData, ApiResponseType<VendorFormValues>>({
+        url: data.get("_id")
+          ? `/client_api/board/edit_board/${data.get("_id")}`
+          : "/client_api/board/create_board",
         data: data,
       }),
   });
@@ -220,10 +238,10 @@ export const useCreateTasks = (id: string) => {
 };
 
 export const useGetSingleBoard = (id: string) => {
-  return useFetcher<ApiResponseType<ActivityType>>(
+  return useFetcher<ApiResponseType<SingleBoardData>>(
     ["singleBoard", id],
     null,
-    `/client_api/activity/${id}`,
+    `/client_api/board/${id}`,
   );
 };
 
@@ -274,4 +292,12 @@ export const useDragDropTaskList = (id: string) => {
         data: data,
       }),
   });
+};
+
+export const useGetSingleTaskLIst = (id: string) => {
+  return useFetcher<ApiResponseType<ActivityType>>(
+    ["singleBoard", id],
+    null,
+    `/client_api/board/${id}`,
+  );
 };

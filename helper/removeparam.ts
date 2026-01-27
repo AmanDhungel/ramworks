@@ -21,5 +21,10 @@ export function useUpdateParams() {
     });
   };
 
-  return { setParam, removeParam };
+  const getParam = (name: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    return params.get(name);
+  };
+
+  return { setParam, removeParam, getParam };
 }

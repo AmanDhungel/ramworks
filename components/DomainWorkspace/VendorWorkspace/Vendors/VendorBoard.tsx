@@ -29,6 +29,8 @@ import Image from "next/image";
 import { CreateNewBoard } from "./CreateNewBoard";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useGetBoard } from "@/services/board.service";
+import useDialogOpen from "@/context/Dialog";
+import { useUpdateParams } from "@/helper/removeparam";
 
 interface Board {
   _id: string;
@@ -40,6 +42,8 @@ interface Board {
 
 const BoardCard = ({ board }: { board: Board }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { setIsOpen } = useDialogOpen();
+  const { setParam } = useUpdateParams();
   const router = useRouter();
   const params = useParams();
 
@@ -85,7 +89,11 @@ const BoardCard = ({ board }: { board: Board }) => {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-7 w-7 text-slate-600 hover:bg-slate-100">
+                  className="h-7 w-7 text-slate-600 hover:bg-slate-100"
+                  onClick={() => {
+                    setIsOpen();
+                    setParam("board", board._id);
+                  }}>
                   <Edit2 className="h-4 w-4" />
                 </Button>
                 <Button
@@ -112,13 +120,6 @@ const BoardCard = ({ board }: { board: Board }) => {
           </p>
         </CardContent>
       </Card>
-
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute -bottom-3 -right-2 h-8 w-8 rounded-full border-slate-200 bg-white shadow-md hover:bg-slate-50">
-        <Plus className="h-4 w-4 text-slate-500" />
-      </Button>
     </div>
   );
 };
@@ -197,7 +198,7 @@ export default function VendorDashboard() {
         </div>
       </div>
 
-      <div className=" flex gap-10">
+      <div className=" grid grid-cols-1 md:grid-cols-2 sm:grid-col-2 xl:grid-col-4 gap-10">
         {isFetching ? (
           <Loader2 className="animate-spin" />
         ) : (
