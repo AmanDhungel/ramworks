@@ -33,6 +33,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  useDeletePromotion,
+  useGetPromotion,
+} from "@/services/promotion.service";
+import AddPromotionDialog from "./AddPromotionList";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
+import { useQueryClient } from "@tanstack/react-query";
 
 // --- Mock Data based on Promotion Design ---
 const PROMOTION_DATA = [
@@ -79,9 +86,27 @@ const PROMOTION_DATA = [
 ];
 
 export default function PromotionList() {
+  const { data } = useGetPromotion();
+  const { mutate, isPending } = useDeletePromotion();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = React.useState(false);
+  const [isEdit, setIsEdit] = React.useState(false);
+
+  const handleDelete = (id: string) => {
+    mutate(
+      { id: id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["promotion"] });
+        },
+        onError: (error) => {
+          console.error("Error deleting Promotion:", error);
+        },
+      },
+    );
+  };
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
-      {/* Header Section */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Promotion</h1>
@@ -91,10 +116,7 @@ export default function PromotionList() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2 font-bold px-5 h-11">
-            <Plus size={18} className="border rounded-full p-0.5" /> Add
-            Promotion
-          </Button>
+          <AddPromotionDialog open={open} setOpen={setOpen} />
           <Button
             variant="outline"
             size="icon"
@@ -105,7 +127,6 @@ export default function PromotionList() {
       </div>
 
       <Card className="border-none shadow-sm overflow-hidden bg-white">
-        {/* Card Header with Filter */}
         <div className="p-5 flex justify-between items-center border-b">
           <h3 className="font-bold text-slate-800">Promotion List</h3>
           <Select defaultValue="7">
@@ -120,7 +141,6 @@ export default function PromotionList() {
         </div>
 
         <div className="p-6">
-          {/* Search and Row Count */}
           <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
               Row Per Page
@@ -143,7 +163,6 @@ export default function PromotionList() {
             </div>
           </div>
 
-          {/* Promotion Table */}
           <div className="rounded-md border border-slate-100">
             <Table>
               <TableHeader className="bg-[#E9ECEF]">
@@ -166,13 +185,13 @@ export default function PromotionList() {
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700 py-4">
                     Promotion Date
                   </TableHead>
-                  <TableHead className="w-20"></TableHead>
+                  <TableHead className="w-20">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {PROMOTION_DATA.map((item) => (
+                {data?.data.map((item) => (
                   <TableRow
-                    key={item.id}
+                    key={item._id}
                     className="group hover:bg-slate-50/50 border-slate-100">
                     <TableCell className="px-4">
                       <Checkbox className="border-slate-300" />
@@ -181,32 +200,33 @@ export default function PromotionList() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
                           <AvatarImage
-                            src={`/api/placeholder/36/36?id=${item.id}`}
+                            src={`/api/placeholder/36/36?id=${item._id}`}
                           />
                           <AvatarFallback>U</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-bold text-slate-800 leading-tight">
-                            {item.name}
+                            {item.promotion_for.name}
                           </p>
                           <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
-                            {item.role}
+                            {item.promotion_for.about}
                           </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm">
-                      Designing
+                      {item.promotion_for.company.name ?? "No Company"}
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm">
-                      {item.from}
+                      {item.promotion_from.name}
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm">
-                      {item.to}
+                      {item.promotion_to.name}
                     </TableCell>
-                    <TableCell className="text-slate-500 font-semibold text-sm whitespace-nowrap">
-                      {item.date}
+                    <TableCell className="text-slate-500 font-semibold text-sm">
+                      {item.promotion_date.split("T")[0]}
                     </TableCell>
+
                     <TableCell>
                       <div className="flex justify-end gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
                         <Button
@@ -215,12 +235,13 @@ export default function PromotionList() {
                           className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50">
                           <Pencil size={14} />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50">
-                          <Trash2 size={14} />
-                        </Button>
+                        <div className="mt-2">
+                          <DeleteConfirmDialog
+                            onConfirm={() => handleDelete(item._id ?? "")}
+                            text={item.promotion_for.name}
+                            isPending={isPending}
+                          />
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>

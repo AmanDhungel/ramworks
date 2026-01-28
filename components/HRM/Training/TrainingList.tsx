@@ -225,7 +225,6 @@ export default function TrainingList() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {/* Stacked Avatars */}
                       <div className="flex -space-x-2">
                         {item.employees.slice(0, 2).map((item, i) => (
                           <Avatar
