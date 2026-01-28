@@ -120,7 +120,7 @@ const ActivityTable = () => {
   const [activityType, setActivityType] = React.useState("all");
   const { setIsOpen } = useDialogOpen();
   const { data: activity, isFetching } = useGetActivity();
-  const { setParam } = useUpdateParams();
+  const { setParams } = useUpdateParams();
   const { mutate } = useDeleteActivity();
 
   const queryClient = useQueryClient();
@@ -324,7 +324,9 @@ const ActivityTable = () => {
                       className="cursor-pointer hover:text-blue-500"
                       onClick={() => {
                         setIsOpen();
-                        setParam("activity_id", act._id);
+                        setParams({
+                          activity_id: act._id,
+                        });
                       }}
                     />
                     <DeleteConfirmDialog
