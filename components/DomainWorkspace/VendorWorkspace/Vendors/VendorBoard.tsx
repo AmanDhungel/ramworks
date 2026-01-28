@@ -43,7 +43,7 @@ interface Board {
 const BoardCard = ({ board }: { board: Board }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { setIsOpen } = useDialogOpen();
-  const { setParam } = useUpdateParams();
+  // const { setParam } = useUpdateParams();
   const router = useRouter();
   const params = useParams();
 
@@ -54,7 +54,11 @@ const BoardCard = ({ board }: { board: Board }) => {
           <Image
             width={500}
             height={500}
-            src={board.image || "/placeholder-image.png"}
+            src={
+              (board.image.length > 0 &&
+                process.env.NEXT_PUBLIC_API_URL + board.image[0]) ||
+              "/placeholder-image.png"
+            }
             alt={board.title}
             className="h-full w-full object-cover"
             onClick={() =>
@@ -92,7 +96,9 @@ const BoardCard = ({ board }: { board: Board }) => {
                   className="h-7 w-7 text-slate-600 hover:bg-slate-100"
                   onClick={() => {
                     setIsOpen();
-                    setParam("board", board._id);
+                    // setParam({
+                    //   board: board._id,
+                    // });
                   }}>
                   <Edit2 className="h-4 w-4" />
                 </Button>
@@ -135,7 +141,7 @@ export default function VendorDashboard() {
       .map((board: any) => ({
         _id: board._id,
         title: board.title,
-        image: board.image ?? "/placeholder-image.png",
+        image: board.background_images ?? "/placeholder-image.png",
         urlId: board.urlId ?? "",
         urlVendor: board.urlVendor ?? "",
       }))
@@ -198,7 +204,7 @@ export default function VendorDashboard() {
         </div>
       </div>
 
-      <div className=" grid grid-cols-1 md:grid-cols-2 sm:grid-col-2 xl:grid-col-4 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-col-2 xl:grid-col-2 gap-10">
         {isFetching ? (
           <Loader2 className="animate-spin" />
         ) : (

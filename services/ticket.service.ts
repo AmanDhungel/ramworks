@@ -3,18 +3,20 @@ import { ApiResponseType } from "./apitypes";
 import { useMutation } from "@tanstack/react-query";
 import { Post } from "@/lib/action";
 import { DepartmentType } from "./departments.service";
+import { EmployeeType } from "./employee.service";
 
 export type TicketType = {
   _id?: string;
   title: string;
   event_category: "water_leakage" | "new_project" | "electricity_problem";
   subject: string;
-  assigned_to: string[];
+  assigned_to: EmployeeType[];
   description?: string;
   due_date: string;
   expected_closing_date: string;
   priority: "low" | "medium" | "high" | "urgent";
   status: "open" | "in_progress" | "resolved" | "closed";
+  createdAt?: string;
 };
 
 export const useGetTicket = () => {

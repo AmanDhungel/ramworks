@@ -3,8 +3,8 @@
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Calendar as CalendarIcon, UploadCloud, Search } from "lucide-react";
-import React, { useState } from "react";
+import { Search } from "lucide-react";
+import { useState } from "react";
 
 import {
   Dialog,
@@ -33,31 +33,86 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MultipleFileUploadField } from "@/components/ui/MultipleFileUpload";
+import { useGetContact } from "@/services/contact.service";
+import { useUpdateParams } from "@/helper/removeparam";
+import { useCreateTimeLine } from "@/services/timeline.service";
+import { useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
-  status: z.string().min(1, "Status is required"),
+  board: z.string(),
+  task_list: z.string(),
+  task: z.string(),
+  status: z.enum([
+    "scheduled",
+    "confirmed",
+    "in_progress",
+    "completed",
+    "canceled",
+  ]),
   date: z.string().min(1, "Date is required"),
-  memberIds: z.array(z.string()),
+  members: z.array(z.string()),
   description: z.string().optional(),
+  attachment_file: z
+    .array(z.union([z.string(), z.file()]))
+    .refine(
+      (files) => files.length > 0 && files.some((file) => file instanceof File),
+      "At least one file is required",
+    ),
 });
 
-const MEMBERS = [
-  { id: "1", name: "Michael Walker", img: "/avatar1.png" },
-  { id: "2", name: "Thomas Bordelon", img: "/avatar2.png" },
-  { id: "3", name: "Doglas Martini", img: "/avatar3.png" },
-  { id: "4", name: "Cameron Drake", img: "/avatar4.png" },
-  { id: "5", name: "Harvey Smith", img: "/avatar5.png" },
-  { id: "6", name: "Doris Crowley", img: "/avatar6.png" },
-];
-
-export function AddTimelineDialog() {
+export function AddTimelineDialog({
+  board,
+  taskListId,
+  taskId,
+}: {
+  board: string;
+  taskListId: string;
+  taskId: string;
+}) {
   const [open, setOpen] = useState(false);
   const [innerDialogOpen, setInnerDialogOpen] = useState(false);
+  const { data: contact } = useGetContact();
+  const queryClient = useQueryClient();
+
+  const { mutate } = useCreateTimeLine();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { status: "", date: "", memberIds: ["1"], description: "" },
+    defaultValues: {
+      status: "in_progress",
+      date: "",
+      members: [],
+      description: "",
+      task_list: taskListId ?? "",
+      task: taskId ?? "",
+      board: board ?? "",
+    },
   });
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const formData = new FormData();
+
+    formData.append("task_list", taskListId ?? "");
+    formData.append("task", taskId ?? "");
+    formData.append("board", board ?? "");
+    formData.append("status", data.status);
+    formData.append("date", data.date);
+    formData.append("members", JSON.stringify(data.members));
+    formData.append("description", data.description ?? "");
+    if (data.attachment_file && data.attachment_file.length > 0) {
+      data.attachment_file.forEach((file) => {
+        formData.append("attachment_file", file);
+      });
+    }
+    mutate(formData as FormData, {
+      onSuccess: () => {
+        form.reset();
+        setOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["dndboard"] });
+      },
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -76,9 +131,8 @@ export function AddTimelineDialog() {
 
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit((v) => console.log(v))}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-4 p-6">
-            {/* Status & Date Fields */}
             <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
@@ -92,13 +146,16 @@ export function AddTimelineDialog() {
                       onValueChange={field.onChange}
                       defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className="bg-[#f8faff] border-slate-100 h-12">
+                        <SelectTrigger className="bg-[#f8faff] border-slate-100 h-12 w-full">
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
+                        <SelectItem value="in_progress">In Progress</SelectItem>
                         <SelectItem value="scheduled">Scheduled</SelectItem>
                         <SelectItem value="confirmed">Confirmed</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="canceled">Canceled</SelectItem>
                       </SelectContent>
                     </Select>
                   </FormItem>
@@ -129,7 +186,11 @@ export function AddTimelineDialog() {
             </div>
 
             <div className="border rounded-xl bg-[#f8faff] p-1">
-              <Dialog open={innerDialogOpen} onOpenChange={setInnerDialogOpen}>
+              <Dialog
+                open={innerDialogOpen}
+                onOpenChange={() => {
+                  setInnerDialogOpen(!innerDialogOpen);
+                }}>
                 <DialogTrigger asChild>
                   <div className="p-4 cursor-pointer">
                     <FormLabel className="text-slate-600 font-semibold cursor-pointer">
@@ -152,28 +213,28 @@ export function AddTimelineDialog() {
                   </div>
 
                   <ScrollArea className="h-[300px] pr-4">
-                    {MEMBERS.map((member) => (
+                    {contact?.data.map((member) => (
                       <FormField
-                        key={member.id}
+                        key={member._id}
                         control={form.control}
-                        name="memberIds"
+                        name="members"
                         render={({ field }) => (
                           <div className="flex items-center space-x-3 py-3 border-b border-slate-50 last:border-0">
                             <Checkbox
-                              checked={field.value?.includes(member.id)}
+                              checked={field.value?.includes(member._id)}
                               onCheckedChange={(checked) => {
                                 return checked
-                                  ? field.onChange([...field.value, member.id])
+                                  ? field.onChange([...field.value, member._id])
                                   : field.onChange(
                                       field.value?.filter(
-                                        (v) => v !== member.id,
+                                        (v) => v !== member._id,
                                       ),
                                     );
                               }}
                               className="data-[state=checked]:bg-orange-500 border-slate-300"
                             />
                             <Avatar className="h-8 w-8">
-                              <AvatarImage src={member.img} />
+                              <AvatarImage src={member.createdAt} />
                               <AvatarFallback>{member.name[0]}</AvatarFallback>
                             </Avatar>
                             <span className="text-sm font-medium text-slate-700">
@@ -216,7 +277,7 @@ export function AddTimelineDialog() {
 
             <MultipleFileUploadField
               label="Attachments"
-              name="attachment"
+              name="attachment_file"
               control={form.control}
             />
 
@@ -231,7 +292,7 @@ export function AddTimelineDialog() {
               <Button
                 type="submit"
                 className="flex-1 bg-orange-500 hover:bg-orange-600">
-                Add Policy
+                Add Timeline
               </Button>
             </div>
           </form>

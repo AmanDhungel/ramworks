@@ -40,6 +40,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetTrainers } from "@/services/training.service";
+import AddTrainerDialog from "./AddTrainers";
 
 // --- Mock Data following image_6f1b63.png ---
 const TRAINING_DATA = [
@@ -86,6 +88,7 @@ const TRAINING_DATA = [
 ];
 
 export default function TrainersList() {
+  const { data } = useGetTrainers();
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans text-slate-900">
       <div className="flex justify-between items-center mb-6">
@@ -97,9 +100,7 @@ export default function TrainersList() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2 rounded-md px-5 h-10 font-bold shadow-sm">
-            <Plus className="h-4 w-4 border rounded-full p-0.5" /> Add Training
-          </Button>
+          <AddTrainerDialog />
           <Button
             variant="outline"
             size="icon"
@@ -181,21 +182,21 @@ export default function TrainersList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {TRAINING_DATA.map((item) => (
+                {data?.data.map((item) => (
                   <TableRow
-                    key={item.id}
+                    key={item._id}
                     className="group hover:bg-slate-50/50 border-slate-100 transition-colors">
                     <TableCell className="px-4 py-4">
                       <Checkbox className="border-slate-300" />
                     </TableCell>
                     <TableCell className="font-bold text-slate-500">
-                      {item.name}
+                      {item.first_name} {item.last_name}
                     </TableCell>
                     <TableCell>{item.phone}</TableCell>
                     <TableCell>{item.email}</TableCell>
 
                     <TableCell className="text-slate-500 max-w-[200px] truncate">
-                      {item.desc}
+                      {item.description}
                     </TableCell>
 
                     <TableCell>

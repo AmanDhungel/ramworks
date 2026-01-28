@@ -40,6 +40,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetTraining } from "@/services/training.service";
+import AddTrainingDialog from "./AddTraining";
 
 // --- Mock Data following image_6f1b63.png ---
 const TRAINING_DATA = [
@@ -101,6 +103,7 @@ const TRAINING_DATA = [
 ];
 
 export default function TrainingList() {
+  const { data } = useGetTraining();
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans text-slate-900">
       <div className="flex justify-between items-center mb-6">
@@ -112,9 +115,7 @@ export default function TrainingList() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2 rounded-md px-5 h-10 font-bold shadow-sm">
-            <Plus className="h-4 w-4 border rounded-full p-0.5" /> Add Training
-          </Button>
+          <AddTrainingDialog />
           <Button
             variant="outline"
             size="icon"
@@ -200,55 +201,60 @@ export default function TrainingList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {TRAINING_DATA.map((item) => (
+                {data?.data.map((item) => (
                   <TableRow
-                    key={item.id}
+                    key={item._id}
                     className="group hover:bg-slate-50/50 border-slate-100 transition-colors">
                     <TableCell className="px-4 py-4">
                       <Checkbox className="border-slate-300" />
                     </TableCell>
                     <TableCell className="font-bold text-slate-500">
-                      {item.type}
+                      {item.training_type.type}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarImage src="/api/placeholder/32/32" />
                           <AvatarFallback>
-                            {item.trainer.substring(0, 2)}
+                            {item.trainer.first_name.substring(0, 2)}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-bold text-slate-800 whitespace-nowrap">
-                          {item.trainer}
+                          {item.trainer.first_name} {item.trainer.last_name}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell>
                       {/* Stacked Avatars */}
                       <div className="flex -space-x-2">
-                        {[...Array(3)].map((_, i) => (
+                        {item.employees.slice(0, 2).map((item, i) => (
                           <Avatar
-                            key={i}
+                            key={item._id}
                             className="h-7 w-7 border-2 border-white ring-0">
                             <AvatarImage
                               src={`/api/placeholder/28/28?id=${i}`}
                             />
-                            <AvatarFallback>U</AvatarFallback>
+                            <AvatarFallback>
+                              {item.name.substring(0, 2)}
+                            </AvatarFallback>
                           </Avatar>
                         ))}
-                        <div className="h-7 w-7 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-orange-600">
-                          +{item.employees - 3}
-                        </div>
+                        {item.employees.length > 2 && (
+                          <div className="h-7 w-7 rounded-full bg-orange-100 border-2 border-white flex items-center justify-center text-[10px] font-bold text-orange-600">
+                            +{item.employees.length - 2}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-slate-500 font-medium whitespace-nowrap">
-                      {item.duration}
+                      {item.start_date.split("T")[0]} -{" "}
+                      {item.end_date.split("T")[0]}
                     </TableCell>
                     <TableCell className="text-slate-500 max-w-[200px] truncate">
-                      {item.desc}
+                      {item.description}
                     </TableCell>
                     <TableCell className="font-bold text-slate-500">
-                      ${item.cost}
+                      ${item.training_cost}
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -280,7 +286,6 @@ export default function TrainingList() {
             </Table>
           </div>
 
-          {/* Pagination */}
           <div className="mt-8 flex flex-wrap justify-between items-center text-[13px] font-bold text-slate-400 px-2">
             <p>Showing 1 - 5 of 5 entries</p>
             <div className="flex items-center gap-1.5">

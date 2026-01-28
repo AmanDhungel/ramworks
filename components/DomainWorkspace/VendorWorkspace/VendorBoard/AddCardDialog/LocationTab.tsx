@@ -1,27 +1,21 @@
 "use client";
+import dynamic from "next/dynamic";
+import { useState, useRef } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import { TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Crosshair, ImagePlus, X, FileText } from "lucide-react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  useMapEvents,
-  useMap,
-} from "react-leaflet";
-import { useState, useEffect, useRef } from "react";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import Image from "next/image";
 import { TaskFormValues } from "./schema";
 
-const icon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+const LeafletMap = dynamic(() => import("./LeafletMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-full w-full bg-slate-100 animate-pulse flex items-center justify-center text-slate-400 text-xs">
+      Loading Maps...
+    </div>
+  ),
 });
 
 export default function LocationTab() {
@@ -30,20 +24,18 @@ export default function LocationTab() {
   const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Use lat/lng inside "location" object
-  const lat = useWatch({ control, name: "location.lat" }) as number | undefined;
-  const lng = useWatch({ control, name: "location.lng" }) as number | undefined;
+  const lat = useWatch({ control, name: "location.lat" });
+  const lng = useWatch({ control, name: "location.lng" });
   const attachedImages = useWatch({ control, name: "location_photos" }) || [];
 
   const defaultPos: [number, number] = [51.505, -0.09];
   const currentPos: [number, number] = lat && lng ? [lat, lng] : defaultPos;
 
-  // --- Geolocation & Reverse Geocode ---
   const handleReverseGeocode = async (latitude: number, longitude: number) => {
     setIsLocating(true);
     try {
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
       );
       const data = await response.json();
       if (data.address) {
@@ -51,12 +43,15 @@ export default function LocationTab() {
         setValue("location.city", data.address.city || data.address.town || "");
         setValue("location.zip_code", data.address.postcode || "");
       }
+    } catch (err) {
+      console.error("Geocoding failed", err);
     } finally {
       setIsLocating(false);
     }
   };
 
   const requestUserLocation = () => {
+    if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude, longitude } = pos.coords;
       setValue("location.lat", latitude);
@@ -65,7 +60,6 @@ export default function LocationTab() {
     });
   };
 
-  // --- File Upload ---
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
@@ -76,33 +70,12 @@ export default function LocationTab() {
   };
 
   const removeImage = (index: number) => {
-    const updatedPreviews = previews.filter((_, i) => i !== index);
+    setPreviews((prev) => prev.filter((_, i) => i !== index));
     const updatedFiles = attachedImages.filter(
-      (_: any, i: number) => i !== index
+      (_: any, i: number) => i !== index,
     );
-    setPreviews(updatedPreviews);
     setValue("location_photos", updatedFiles);
   };
-
-  // --- Map Logic ---
-  function ClickHandler() {
-    useMapEvents({
-      click(e) {
-        setValue("location.lat", e.latlng.lat);
-        setValue("location.lng", e.latlng.lng);
-        handleReverseGeocode(e.latlng.lat, e.latlng.lng);
-      },
-    });
-    return null;
-  }
-
-  function ChangeView({ center }: { center: [number, number] }) {
-    const map = useMap();
-    useEffect(() => {
-      map.flyTo(center, 15);
-    }, [center]);
-    return null;
-  }
 
   return (
     <TabsContent value="location" className="space-y-6 pb-10">
@@ -112,37 +85,42 @@ export default function LocationTab() {
         </h3>
         <button
           type="button"
+          disabled={isLocating}
           onClick={requestUserLocation}
-          className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline">
-          <Crosshair className="w-3 h-3" /> Use My Location
+          className="text-xs font-semibold text-blue-600 flex items-center gap-1 hover:underline disabled:opacity-50">
+          <Crosshair
+            className={`w-3 h-3 ${isLocating ? "animate-spin" : ""}`}
+          />
+          {isLocating ? "Locating..." : "Use My Location"}
         </button>
       </div>
 
       <div className="space-y-6 border border-slate-200 rounded-xl p-6 bg-white shadow-sm">
-        {/* Map */}
-        <div className="h-64 w-full rounded-lg border border-slate-200 overflow-hidden z-0">
-          <MapContainer center={currentPos} zoom={13} className="h-full w-full">
-            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <ClickHandler />
-            <ChangeView center={currentPos} />
-            {lat && lng && <Marker position={[lat, lng]} icon={icon} />}
-          </MapContainer>
+        <div className="h-64 w-full rounded-lg border border-slate-200 overflow-hidden relative z-0">
+          <LeafletMap
+            center={currentPos}
+            lat={lat}
+            lng={lng}
+            onMapClick={(clickedLat, clickedLng) => {
+              setValue("location.lat", clickedLat);
+              setValue("location.lng", clickedLng);
+              handleReverseGeocode(clickedLat, clickedLng);
+            }}
+          />
         </div>
 
-        {/* Address Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
           <div className="md:col-span-2 space-y-2">
             <Label className="text-xs text-slate-500">Location Objective</Label>
             <Input
               {...register("location.type")}
-              placeholder="Address fetched from map..."
-              value={"site_visit"}
+              placeholder="e.g. Site Visit"
               className="bg-slate-50/50"
             />
             <Label className="text-xs text-slate-500">Street Address</Label>
             <Input
               {...register("location.address")}
-              placeholder="Address fetched from map..."
+              placeholder="Select on map or type address..."
               className="bg-slate-50/50"
             />
           </div>
@@ -159,7 +137,6 @@ export default function LocationTab() {
           </div>
         </div>
 
-        {/* Image Attachment */}
         <div className="space-y-3 pt-2">
           <Label className="text-xs font-medium text-slate-500 flex items-center gap-2">
             <ImagePlus className="w-4 h-4" /> Location Photos

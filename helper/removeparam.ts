@@ -6,10 +6,12 @@ export function useUpdateParams() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const setParam = (name: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(name, value);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  const setParams = (params: Record<string, string>) => {
+    const queryParams = new URLSearchParams(searchParams.toString());
+    Object.entries(params).forEach(([key, value]) => {
+      queryParams.set(key, value);
+    });
+    router.replace(`${pathname}?${queryParams.toString()}`, { scroll: false });
   };
 
   const removeParam = (name: string) => {
@@ -21,10 +23,19 @@ export function useUpdateParams() {
     });
   };
 
+  const removeMultipleParams = (names: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    names.forEach((name) => params.delete(name));
+    const query = params.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  };
+
   const getParam = (name: string) => {
     const params = new URLSearchParams(searchParams.toString());
     return params.get(name);
   };
 
-  return { setParam, removeParam, getParam };
+  return { setParams, removeParam, getParam, removeMultipleParams };
 }

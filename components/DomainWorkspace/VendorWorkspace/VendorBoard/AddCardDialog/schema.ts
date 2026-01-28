@@ -2,6 +2,7 @@ import * as z from "zod";
 
 export const AddTaskPayloadSchema = z.object({
   _id: z.string().optional(),
+  completed: z.boolean().optional(),
   title: z.string(),
   description: z.string().optional(),
   priority: z.string(),
@@ -54,6 +55,7 @@ export const AddTaskPayloadSchema = z.object({
       address: z.string().optional(),
       city: z.string().optional(),
       zip_code: z.string().optional(),
+      photos: z.array(z.instanceof(Blob)).optional(),
     })
     .optional(),
   attachments: z.array(z.instanceof(Blob)).optional(),

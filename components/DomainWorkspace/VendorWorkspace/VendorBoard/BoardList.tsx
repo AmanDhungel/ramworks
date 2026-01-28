@@ -24,7 +24,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 
 export const BoardList = ({
   id,
@@ -187,7 +186,6 @@ export const BoardList = ({
               items={safeTasks.map((t) => t._id)}
               strategy={verticalListSortingStrategy}>
               {safeTasks.map((task, index) => {
-                console.log("Task:", task);
                 return (
                   <SortableTaskCard
                     key={task._id}

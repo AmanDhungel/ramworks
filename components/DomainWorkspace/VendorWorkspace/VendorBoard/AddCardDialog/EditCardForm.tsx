@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   BadgeDollarSign,
+  Edit,
   LayoutPanelTop,
   Paperclip,
   Pin,
@@ -39,19 +40,47 @@ import { useCreateTasks } from "@/services/board.service";
 import { toast } from "react-toastify";
 import { useParams } from "next/navigation";
 import { FormField } from "@/components/ui/form";
+import MainRightSection from "./DialogRightSection/MainComponent";
+import { useUpdateParams } from "@/helper/removeparam";
+import { useEffect } from "react";
 
-export default function TaskManagerForm({ id }: { id: string }) {
+export default function EditTaskManagerForm({
+  _id,
+  title,
+  description,
+  priority,
+  location,
+  deadline,
+  custom_fields,
+  contacts,
+  labels,
+  completed,
+  checklists,
+  attachments,
+  invoices,
+  tasklistId,
+}: TaskFormValues & { tasklistId: string }) {
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(AddTaskPayloadSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      checklists: [],
+      title: title,
+      description: description,
+      priority: priority,
+      location: location,
+      deadline: deadline,
+      custom_fields: custom_fields,
+      contacts: contacts,
+      labels: labels,
+      completed: completed,
+      checklists: checklists,
+      attachments: attachments,
+      invoices: invoices,
     },
   });
+  const { setParams, removeMultipleParams } = useUpdateParams();
   const selectedMembers = form.watch("contacts") || [];
-  const checklists = form.watch("checklists");
-  const deadline = form.watch("deadline");
+  const CheckListWatch = form.watch("checklists");
+  const deadlineWatch = form.watch("deadline");
   const params = useParams();
   const boardId = Array.isArray(params?.board)
     ? params.board[0]
@@ -63,12 +92,13 @@ export default function TaskManagerForm({ id }: { id: string }) {
     form.setValue("contacts", next);
   };
 
-  const { mutate } = useCreateTasks(id);
+  const { mutate } = useCreateTasks(_id ?? "");
 
   const onSubmit = (data: TaskFormValues) => {
     const formData = new FormData();
 
     formData.append("_id", boardId ?? "");
+    formData.append("task_list", tasklistId ?? "");
     formData.append("title", data.title);
     formData.append("description", data.description ?? "");
     formData.append("priority", data.priority);
@@ -104,19 +134,23 @@ export default function TaskManagerForm({ id }: { id: string }) {
   };
 
   return (
-    <Dialog onOpenChange={() => form.reset()}>
+    <Dialog
+      onOpenChange={(val) => {
+        if (val) {
+          setParams({
+            tasklistId: tasklistId,
+            task: _id ?? "",
+          });
+        } else {
+          removeMultipleParams(["task", "tasklistId"]);
+        }
+      }}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          className="w-full justify-start text-slate-600 hover:bg-white/50 mt-2 h-10 px-2 border border-transparent hover:border-slate-300">
-          <Plus className="h-4 w-4 mr-2" />
-          <span className="text-sm font-medium">Add a card</span>
-          <LayoutPanelTop className="h-4 w-4 ml-auto text-slate-400" />
-        </Button>
+        <Edit />
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] md:min-w-4xl  h-full overflow-y-auto">
+      <DialogContent className="sm:max-w-[425px] md:min-w-7xl  h-full overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Task</DialogTitle>
+          <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>
             Make changes to your profile here. Click save when you&apos;re done.
           </DialogDescription>
@@ -125,7 +159,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-12 gap-8">
-            <div className="md:col-span-12 space-y-6">
+            <div className="md:col-span-7 space-y-6">
               <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold flex items-center gap-2">
                   <span className="p-1 border rounded">📋</span> Lorem
@@ -176,7 +210,7 @@ export default function TaskManagerForm({ id }: { id: string }) {
                 ),
               )}
 
-              {checklists?.map((checklist, checklistIndex) => (
+              {CheckListWatch?.map((checklist, checklistIndex) => (
                 <div key={checklistIndex} className="mb-4">
                   <h1 className="font-bold">{checklist.title}</h1>
 
@@ -205,13 +239,12 @@ export default function TaskManagerForm({ id }: { id: string }) {
                 </div>
               ))}
 
-              {deadline && (
+              {deadlineWatch && (
                 <div className="flex items-center gap-3 p-2 bg-slate-50 rounded">
                   <h1>Deadline:</h1>
-                  <Input disabled type="date" value={deadline} />
+                  <Input disabled type="date" value={deadlineWatch} />
                 </div>
               )}
-              {/* <Input disabled value={deadline.time} /> */}
 
               <Tabs defaultValue="" className="w-full">
                 <TabsList className="flex flex-wrap h-auto bg-transparent gap-2 justify-start">
@@ -292,6 +325,10 @@ export default function TaskManagerForm({ id }: { id: string }) {
                   Done
                 </Button>
               </div>
+            </div>
+
+            <div className="md:col-span-5 sm:col-span-7 border-l ">
+              <MainRightSection />
             </div>
           </form>
         </FormProvider>

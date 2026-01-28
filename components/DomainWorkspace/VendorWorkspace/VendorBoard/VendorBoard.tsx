@@ -31,7 +31,6 @@ import { useParams } from "next/navigation";
 import { toast } from "react-toastify";
 import Loading from "@/components/Loading";
 import { useQueryClient } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
 import { CirclePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -106,10 +105,9 @@ export default function VendorBoard() {
     if (!activeContainer || !overContainer || activeContainer === overContainer)
       return;
 
-    // UPDATE DISPLAY STATE ONLY: This makes the UI feel smooth
     setDisplayLists((prev) => {
       const source = prev.find((l) => l._id === activeContainer)!;
-      const destination = prev.find((l) => l._id === overContainer)!;
+      // const destination = prev.find((l) => l._id === overContainer)!;
       const movedTask = source.tasks.find((t: any) => t._id === activeId);
 
       if (!movedTask) return prev;

@@ -1,22 +1,13 @@
 "use client";
 
-import React from "react";
 import {
   Plus,
   Search,
-  MoreVertical,
   Pencil,
   Trash2,
   ChevronLeft,
   ChevronRight,
-  Download,
-  Filter,
   Settings,
-  LayoutGrid,
-  List,
-  CheckCircle2,
-  ChevronDown,
-  ExternalLink,
 } from "lucide-react";
 
 import {
@@ -27,11 +18,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -40,45 +30,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-// --- Mock Data following image_6f1b63.png ---
-const TRAINING_DATA = [
-  {
-    id: 1,
-    type: "Git Training",
-    desc: "Version control and code collaboration.",
-    status: "Active",
-  },
-  {
-    id: 2,
-    type: "HTML Training",
-    desc: "Basics of web page structure and markup.",
-    status: "Active",
-  },
-  {
-    id: 3,
-    type: "React Training",
-    desc: "Dynamic web applications with components.",
-    status: "Active",
-  },
-  {
-    id: 4,
-    type: "Nodejs Training",
-    desc: "Building scalable server-side applications.",
-    status: "Active",
-  },
-  {
-    id: 5,
-    type: "Vuejs Training",
-    desc: "Interactive single-page applications.",
-    status: "Active",
-  },
-];
+import { useGetTrainingType } from "@/services/training.service";
+import AddTrainingTypeDialog from "./AddTrainingType";
 
 export default function TrainingType() {
+  const { data: trainingTypes } = useGetTrainingType();
+
+  console.log(trainingTypes);
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans text-slate-900">
-      {/* Page Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[#1F2937]">Training</h1>
@@ -88,9 +48,7 @@ export default function TrainingType() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2 rounded-md px-5 h-10 font-bold shadow-sm">
-            <Plus className="h-4 w-4 border rounded-full p-0.5" /> Add Training
-          </Button>
+          <AddTrainingTypeDialog />
           <Button
             variant="outline"
             size="icon"
@@ -101,7 +59,6 @@ export default function TrainingType() {
       </div>
 
       <Card className="border-none shadow-sm overflow-hidden">
-        {/* Table Filter Bar */}
         <div className="p-5 flex flex-wrap justify-between items-center gap-4 border-b bg-white">
           <CardTitle className="text-base font-bold text-slate-800">
             Training List
@@ -118,7 +75,6 @@ export default function TrainingType() {
         </div>
 
         <div className="p-6 bg-white">
-          {/* Row Per Page & Search */}
           <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-500 uppercase tracking-tight">
               Row Per Page
@@ -143,7 +99,6 @@ export default function TrainingType() {
             </div>
           </div>
 
-          {/* Training Data Table */}
           <div className="rounded-md border border-slate-100 overflow-hidden">
             <Table>
               <TableHeader className="bg-[#E9ECEF]">
@@ -166,9 +121,9 @@ export default function TrainingType() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {TRAINING_DATA.map((item) => (
+                {trainingTypes?.data.map((item) => (
                   <TableRow
-                    key={item.id}
+                    key={item._id}
                     className="group hover:bg-slate-50/50 border-slate-100 transition-colors">
                     <TableCell className="px-4 py-4">
                       <Checkbox className="border-slate-300" />
@@ -177,13 +132,13 @@ export default function TrainingType() {
                       {item.type}
                     </TableCell>
                     <TableCell className="text-slate-500 max-w-[200px] truncate">
-                      {item.desc}
+                      {item.description}
                     </TableCell>
 
                     <TableCell>
                       <Badge
                         variant="secondary"
-                        className="bg-[#10B981] hover:bg-[#10B981] text-white text-[10px] font-bold px-2 py-0.5 rounded gap-1.5 border-none">
+                        className={`${item.status === "active" ? "bg-[#10B981]" : "bg-red-500"} text-white text-[10px] font-bold px-2 py-0.5 rounded gap-1.5 border-none`}>
                         <div className="h-1 w-1 rounded-full bg-white" />{" "}
                         {item.status}
                       </Badge>

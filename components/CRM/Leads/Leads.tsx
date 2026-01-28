@@ -283,7 +283,6 @@ const LeadTable = ({
 
 export default function LeadsGridPage() {
   const { data: leadData, isFetching } = useGetLeads();
-  console.log("Leads Data:", leadData);
   return (
     <div className="min-h-screen bg-[#f8f9fa] p-4 md:p-6 font-sans">
       {/* Breadcrumb & Top Actions */}

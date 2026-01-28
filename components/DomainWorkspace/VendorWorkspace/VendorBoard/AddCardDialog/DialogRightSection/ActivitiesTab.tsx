@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { MessageSquare, Phone, StickyNote, Calendar } from "lucide-react";
+import { MessageSquare, StickyNote } from "lucide-react";
 import {
   Select,
   SelectContent,

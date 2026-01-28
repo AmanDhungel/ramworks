@@ -29,13 +29,6 @@ import Link from "next/link";
 import { useGetTicket } from "@/services/ticket.service";
 import TicketDialog from "./AddTicketDialog";
 
-const STATS = [
-  { label: "New Tickets", count: 120, trend: "+19.01%", color: "orange" },
-  { label: "Open Tickets", count: 60, trend: "+19.01%", color: "purple" },
-  { label: "Solved Tickets", count: 50, trend: "+19.01%", color: "green" },
-  { label: "Pending Tickets", count: 10, trend: "+19.01%", color: "cyan" },
-];
-
 const TICKETS = [
   {
     id: "Tic - 001",
@@ -105,9 +98,39 @@ const TICKETS = [
 
 export default function TicketsDashboard() {
   const { data } = useGetTicket();
+  const [todayDate] = React.useState(
+    () => new Date(Date.now() - 3 * 30 * 24 * 60 * 60 * 1000),
+  );
+  const STATS = [
+    {
+      label: "New Tickets",
+      count: data?.data.filter((t) => new Date(t.createdAt ?? "") > todayDate)
+        .length,
+      trend: "+19.01%",
+      color: "orange",
+    },
+    {
+      label: "Open Tickets",
+      count: data?.data.filter((t) => t.status === "open").length,
+      trend: "+19.01%",
+      color: "purple",
+    },
+    {
+      label: "Solved Tickets",
+      count: data?.data.filter((t) => t.status === "resolved").length,
+      trend: "+19.01%",
+      color: "green",
+    },
+    {
+      label: "Pending Tickets",
+      count: data?.data.filter((t) => t.status === "in_progress").length,
+      trend: "+19.01%",
+      color: "cyan",
+    },
+  ];
+
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
-      {/* Header Section */}
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Tickets</h1>
@@ -172,7 +195,6 @@ export default function TicketsDashboard() {
         ))}
       </div>
 
-      {/* Filter Bar */}
       <Card className="mb-6 border-none shadow-sm">
         <CardContent className="p-4 flex flex-wrap justify-between items-center gap-4">
           <h3 className="font-bold text-slate-800">Ticket Grid</h3>
@@ -209,7 +231,7 @@ export default function TicketsDashboard() {
 
       {/* Ticket Grid (Lower Section) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {TICKETS.map((ticket, i) => (
+        {data?.data.map((ticket, i) => (
           <Card
             key={i}
             className="border-none shadow-sm group hover:ring-1 hover:ring-orange-200 transition-all">
@@ -224,10 +246,12 @@ export default function TicketsDashboard() {
 
               <div className="flex flex-col items-center text-center mt-2">
                 <div className="relative mb-4">
-                  <Link href={`/hrm/tickets/tickets/${ticket.id}`}>
+                  <Link href={`/hrm/tickets/tickets/${ticket._id}`}>
                     <Avatar className="h-16 w-16 border-2 border-orange-100 p-0.5">
-                      <AvatarImage src={ticket.user} />
-                      <AvatarFallback>EH</AvatarFallback>
+                      <AvatarImage src={ticket.assigned_to[0].name} />
+                      <AvatarFallback>
+                        {ticket.assigned_to[0].name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </Link>
                   <div className="absolute bottom-1 right-1 h-3 w-3 bg-green-500 border-2 border-white rounded-full" />
@@ -235,31 +259,29 @@ export default function TicketsDashboard() {
                 <h4 className="font-bold text-slate-900 text-lg leading-tight">
                   {ticket.title}
                 </h4>
-                <Badge
-                  variant="outline"
-                  className="mt-2 text-[10px] uppercase font-bold text-blue-500 bg-blue-50 border-none px-2 py-0">
-                  {ticket.id}
-                </Badge>
               </div>
 
               <div className="mt-6 space-y-4">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-400">Category</span>
                   <span className="font-bold text-slate-700">
-                    {ticket.category}
+                    {ticket.event_category}
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-400">Status</span>
                   <Badge className="bg-pink-50 text-pink-500 hover:bg-pink-50 border-none font-medium text-xs px-3">
-                    ● Open
+                    ●{" "}
+                    {ticket.status === "in_progress"
+                      ? "In Progress"
+                      : ticket.status}
                   </Badge>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-slate-400">Priority</span>
                   <Badge
                     variant="outline"
-                    className={`border ${ticket.priority === "High" ? "text-red-500 border-red-200" : "text-blue-500 border-blue-200"} font-bold text-xs px-3`}>
+                    className={`border ${ticket.priority === "high" ? "text-red-500 border-red-200" : "text-blue-500 border-blue-200"} font-bold text-xs px-3`}>
                     ● {ticket.priority}
                   </Badge>
                 </div>

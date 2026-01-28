@@ -112,8 +112,6 @@ export function CreateNewBoard() {
   const { data: SingleBorad, isFetching: isLoadingSingleData } =
     useGetSingleBoard(board ?? "");
 
-  console.log("SingleBorad", SingleBorad);
-
   const form = useForm<VendorFormValues>({
     resolver: zodResolver(vendorSchema),
     defaultValues: {

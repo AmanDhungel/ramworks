@@ -1,9 +1,39 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useUpdateParams } from "@/helper/removeparam";
+import { useCreateComment } from "@/services/comment.service";
 import { Bold, Italic, Link, Pencil, Trash2 } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useState } from "react";
 
 export function CommentsTab() {
+  const { getParam } = useUpdateParams();
+  const params = useParams();
+  const [comment, setComment] = useState("");
+  const boardParam = params.board;
+  const board =
+    typeof boardParam === "string"
+      ? boardParam
+      : (boardParam?.[0] ?? undefined);
+
+  console.log("Board:", board);
+  const taskListId = getParam("tasklistId") ?? "";
+  const taskId = getParam("task") ?? "";
+  const { mutate } = useCreateComment();
+
+  const handleComment = () => {
+    const data = new FormData();
+    data.append("board", board ?? "");
+    data.append("task_list", taskListId ?? "");
+    data.append("task", taskId ?? "");
+    data.append("comment", comment);
+    mutate(data, {
+      onSuccess: () => {
+        setComment("");
+      },
+    });
+  };
   const comments = [
     {
       id: 1,
@@ -30,6 +60,7 @@ export function CommentsTab() {
         <Textarea
           className="border-none focus-visible:ring-0 min-h-[100px] resize-none"
           placeholder="Write a comment..."
+          onChange={(e) => setComment(e.target.value)}
         />
         <div className="flex justify-between items-center mt-4 pt-4 border-t">
           <div className="flex gap-4 text-gray-500">
@@ -37,7 +68,9 @@ export function CommentsTab() {
             <Italic className="w-5 h-5 cursor-pointer" />
             <Link className="w-5 h-5 cursor-pointer" />
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700 px-8">
+          <Button
+            className="bg-blue-600 hover:bg-blue-700 px-8"
+            onClick={handleComment}>
             Comment
           </Button>
         </div>

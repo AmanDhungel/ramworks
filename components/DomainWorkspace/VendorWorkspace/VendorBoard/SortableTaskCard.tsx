@@ -22,6 +22,7 @@ import { AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Avatar } from "@/components/ui/avatar";
 import useDialogOpen from "@/context/Dialog";
 import { useUpdateParams } from "@/helper/removeparam";
+import EditTaskManagerForm from "./AddCardDialog/EditCardForm";
 
 export const SortableTaskCard = ({
   _id,
@@ -34,9 +35,7 @@ export const SortableTaskCard = ({
   isOverlay,
   attachments,
   checklists,
-  comments,
-  companies,
-  assignees,
+  labels,
   completed,
   contacts,
   custom_fields,
@@ -45,11 +44,8 @@ export const SortableTaskCard = ({
   invoices,
   location,
   priority,
-  updatedAt,
 }: any) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const { setIsOpen } = useDialogOpen();
-  const { setParam } = useUpdateParams();
 
   const {
     attributes,
@@ -81,14 +77,22 @@ export const SortableTaskCard = ({
           </div>
 
           <div className="flex items-center gap-1">
-            <Button
-              variant={"ghost"}
-              onClick={() => {
-                setIsOpen();
-                setParam("id", _id);
-              }}>
-              <Edit />
-            </Button>
+            <EditTaskManagerForm
+              _id={_id}
+              title={title}
+              description={description}
+              priority={priority}
+              location={location}
+              deadline={deadline}
+              custom_fields={custom_fields}
+              contacts={contacts}
+              labels={labels}
+              completed={completed}
+              checklists={checklists}
+              attachments={attachments}
+              invoices={invoices}
+              tasklistId={tasklistId}
+            />
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-7 w-7 ">
