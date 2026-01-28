@@ -34,6 +34,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  useDeleteRegisnation,
+  useGetResignation,
+} from "@/services/regisnation.service";
+import AddResignationDialog from "./AddResignation";
+import { DeleteConfirmDialog } from "@/components/ui/DynamicDeleteButton";
+import { useQueryClient } from "@tanstack/react-query";
 
 // --- Mock Data based on Promotion Design ---
 const PROMOTION_DATA = [
@@ -80,6 +87,19 @@ const PROMOTION_DATA = [
 ];
 
 export default function ResignationList() {
+  const { data } = useGetResignation();
+  const { mutate, isPending } = useDeleteRegisnation();
+  const queryClient = useQueryClient();
+  const handleDelete = (id: string) => {
+    mutate(
+      { id: id },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["resignation"] });
+        },
+      },
+    );
+  };
   return (
     <div className="p-6 bg-[#F8F9FA] min-h-screen font-sans">
       <div className="flex justify-between items-center mb-6">
@@ -91,10 +111,7 @@ export default function ResignationList() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button className="bg-[#FF6B35] hover:bg-[#E85A20] gap-2 font-bold px-5 h-11">
-            <CirclePlus size={18} className="border rounded-full p-0.5" /> Add
-            Resignation
-          </Button>
+          <AddResignationDialog />
           <Button
             variant="outline"
             size="icon"
@@ -150,27 +167,27 @@ export default function ResignationList() {
                     <Checkbox className="border-slate-300" />
                   </TableHead>
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700 py-4">
-                    Promoted Employee
+                    Resigining Employee
                   </TableHead>
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700 py-4">
                     Department
                   </TableHead>
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700 py-4">
-                    Promotion Designation From
+                    Reason
                   </TableHead>
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700 py-4">
-                    Promotion Designation To
+                    Notice Date
                   </TableHead>
                   <TableHead className="uppercase text-[11px] font-bold text-slate-700 py-4">
-                    Promotion Date
+                    Resignation Date
                   </TableHead>
                   <TableHead className="w-20"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {PROMOTION_DATA.map((item) => (
+                {data?.data.map((item) => (
                   <TableRow
-                    key={item.id}
+                    key={item._id}
                     className="group hover:bg-slate-50/50 border-slate-100">
                     <TableCell className="px-4">
                       <Checkbox className="border-slate-300" />
@@ -179,31 +196,31 @@ export default function ResignationList() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-9 w-9">
                           <AvatarImage
-                            src={`/api/placeholder/36/36?id=${item.id}`}
+                            src={`/api/placeholder/36/36?id=${item._id}`}
                           />
                           <AvatarFallback>U</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-bold text-slate-800 leading-tight">
-                            {item.name}
+                            {item.resigning_employee.name}
                           </p>
                           <p className="text-[10px] font-bold text-slate-400 uppercase mt-1">
-                            {item.role}
+                            {item.resigning_employee.about}
                           </p>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm">
-                      Designing
+                      {item.resigning_employee.about}
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm">
-                      {item.from}
+                      {item.reason}
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm">
-                      {item.to}
+                      {item.notice_date}
                     </TableCell>
                     <TableCell className="text-slate-500 font-semibold text-sm whitespace-nowrap">
-                      {item.date}
+                      {item.resignation_date}
                     </TableCell>
                     <TableCell>
                       <div className="flex justify-end gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
@@ -213,12 +230,13 @@ export default function ResignationList() {
                           className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50">
                           <Pencil size={14} />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-slate-400 hover:text-red-600 hover:bg-red-50">
-                          <Trash2 size={14} />
-                        </Button>
+                        <div className="mt-2 h-8 w-8 text-slate-400 ">
+                          <DeleteConfirmDialog
+                            text={item.resigning_employee.name}
+                            onConfirm={() => handleDelete(item._id ?? "")}
+                            isPending={isPending}
+                          />
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -227,7 +245,6 @@ export default function ResignationList() {
             </Table>
           </div>
 
-          {/* Pagination */}
           <div className="mt-8 flex justify-between items-center">
             <p className="text-[13px] font-bold text-slate-400">
               Showing 1 - 5 of 5 entries
